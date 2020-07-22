@@ -48,6 +48,14 @@ Trim FASTX file.
         "--unmatched-output", type=str, default=None,
         help="""Path to fasta/q file where to write records that do not match
         the pattern. Format will match the input.""")
+    advanced.add_argument(
+        "--flag-delim", type=str, default="¦",
+        help="""Delimiter for flags. Used twice for flag separation and once
+        for key-value pairs. It should be a single character. Default: '¦'.
+        Example: header¦¦flag1key¦flag1value¦¦flag2key¦flag2value""")
+    advanced.add_argument(
+        "--comment-space", type=str, default=" ",
+        help="""Delimiter for header comments. Defaults to a space.""")
 
     parser.set_defaults(parse=parse_arguments, run=run)
 
@@ -56,6 +64,7 @@ Trim FASTX file.
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.regex = regex.compile(args.pattern)
+    assert 1 == len(args.flag_delim)
     return args
 
 
@@ -80,7 +89,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Pattern: {args.pattern}")
 
     logging.info("Trimming...")
-    trimmer = FastxTrimmer(args.regex, fmt)
+    trimmer = FastxTrimmer(args.regex, fmt, args.flag_delim, args.comment_space)
     for record in tqdm(IH):
         record, is_trimmed = trimmer.trim(record)
         foutput[is_trimmed](record)

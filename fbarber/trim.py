@@ -15,15 +15,15 @@ class FastxTrimmer(object):
     __unmatched_count: int = 0
 
     def __init__(self, pattern: Pattern, fmt: str,
-                 flag_delim: str = "¦", space: str = " "):
+                 flag_delim: str = "¦", comment_space: str = " "):
         super(FastxTrimmer, self).__init__()
         self._pattern = pattern
         assert fmt in ["fasta", "fastq"]
         self.__fmt = fmt
         assert 1 == len(flag_delim)
         self.__delim = flag_delim
-        assert 1 == len(space)
-        self.__comment_space = space
+        assert 1 == len(comment_space)
+        self.__comment_space = comment_space
         if "fasta" == self.__fmt:
             self.trim = self._trim_fasta
         elif "fastq" == self.__fmt:
