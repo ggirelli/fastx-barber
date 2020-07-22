@@ -57,6 +57,9 @@ Trim FASTX file.
     advanced.add_argument(
         "--comment-space", type=str, default=" ",
         help="""Delimiter for header comments. Defaults to a space.""")
+    advanced.add_argument(
+        "--compress-level", type=int, default=6,
+        help="""GZip compression level. Default: 6.""")
 
     parser.set_defaults(parse=parse_arguments, run=run)
 
@@ -73,13 +76,13 @@ def run(args: argparse.Namespace) -> None:
     IH, fmt = get_fastx_parser(args.input)
     logging.info(f"Input: {args.input}")
 
-    OH = SimpleFastxWriter(args.output)
+    OH = SimpleFastxWriter(args.output, args.compress_level)
     assert fmt == OH.format, (
         "format mismatch between input and requested output")
     logging.info(f"Output: {args.output}")
 
     if args.unmatched_output is not None:
-        UH = SimpleFastxWriter(args.unmatched_output)
+        UH = SimpleFastxWriter(args.unmatched_output, args.compress_level)
         assert fmt == UH.format, (
             "format mismatch between input and requested output")
         logging.info(f"Unmatched output: {args.unmatched_output}")

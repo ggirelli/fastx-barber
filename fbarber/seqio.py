@@ -42,11 +42,11 @@ def get_fastx_parser(handle: str) -> Tuple[FastXParser, str]:
 
 class SimpleFastxWriter(object):
     """Simple record writer class for fasta and fastq files"""
-    def __init__(self, path: str):
+    def __init__(self, path: str, compress_level: int = 6):
         super(SimpleFastxWriter, self).__init__()
         self.__fmt, gzipped = get_fastx_format(path)
         if gzipped:
-            self._OH = gzip.open(path, "wt+")
+            self._OH = gzip.open(path, "wt+", compress_level)
         else:
             self._OH = open(path, "w+")
         if "fasta" == self.__fmt:
