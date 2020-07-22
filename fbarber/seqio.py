@@ -9,8 +9,8 @@ import os
 from typing import Tuple, Union
 
 FastXParser = Union[
-    SeqIO.QualityIO.FastqPhredIterator,
-    SeqIO.FastaIO.FastaIterator]
+    SeqIO.QualityIO.FastqGeneralIterator,
+    SeqIO.FastaIO.SimpleFastaParser]
 
 
 def get_fastx_handler(handle: str) -> Tuple[FastXParser, str]:
@@ -20,9 +20,9 @@ def get_fastx_handler(handle: str) -> Tuple[FastXParser, str]:
         base, ext = os.path.splitext(base)
     assert ext in [".fa", ".fasta", ".fq", ".fastq"], ext
     if ext in [".fa", ".fasta"]:
-        handle = SeqIO.parse(handle, "fasta")
+        handle = SeqIO.FastaIO.SimpleFastaParser(handle)
         fmt = "fasta"
     elif ext in [".fq", ".fastq"]:
-        handle = SeqIO.parse(handle, "fastq")
+        handle = SeqIO.QualityIO.FastqGeneralIterator(handle)
         fmt = "fastq"
     return (handle, fmt)
