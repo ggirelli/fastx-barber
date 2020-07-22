@@ -38,7 +38,7 @@ Trim FASTX file.
     parser.add_argument(
         "--pattern", type=str, default=default_pattern,
         help=f"""Pattern to match to reads and extract flagged groups.
-        Default: {default_pattern}""")
+        Remember to use quotes. Default: '{default_pattern}'""")
 
     parser.add_argument(
         "--version", action="version", version=f"{sys.argv[0]} {__version__}")
