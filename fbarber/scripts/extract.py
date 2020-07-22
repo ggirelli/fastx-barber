@@ -95,7 +95,7 @@ def run(args: argparse.Namespace) -> None:
     trimmer = FastxExtractor(
         args.regex, fmt, args.flag_delim, args.comment_space)
     for record in tqdm(IH):
-        record, is_trimmed = trimmer.trim(record)
+        record, is_trimmed = trimmer.extract(record)
         foutput[is_trimmed](record)
 
     logging.info("".join((
