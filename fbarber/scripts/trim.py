@@ -13,9 +13,10 @@ import regex
 import sys
 from tqdm import tqdm
 
-logging.basicConfig(level=20, format='%(asctime)s '
-    + '[P%(process)s:%(module)s:%(funcName)s] %(levelname)s: %(message)s',
-    datefmt='%m/%d/%Y %I:%M:%S')
+logging.basicConfig(
+    level=20, format="".join((
+        "%(asctime)s [P%(process)s:%(module)s:%(funcName)s] ",
+        "%(levelname)s: %(message)s")), datefmt="%m/%d/%Y %I:%M:%S")
 
 
 def init_parser(subparsers: argparse._SubParsersAction
