@@ -35,6 +35,7 @@ FASTX trimming tools.
         help='Access the help page for a sub-command with: sub-command -h')
 
     scripts.extract.init_parser(subparsers)
+    scripts.trim.init_parser(subparsers)
 
     args = parser.parse_args()
     args = args.parse(args)
