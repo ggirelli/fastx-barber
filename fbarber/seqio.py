@@ -18,41 +18,64 @@ FastXParser = Union[
     SeqIO.FastaIO.SimpleFastaParser]
 
 
-def get_fastx_input_handler(handle: str) -> Tuple[FastXParser, str]:
-    base, ext = os.path.splitext(handle)
-    if ".gz" == ext:
-        handle = gzip.open(handle, "rt")
+def get_fastx_format(path: str) -> Tuple[str, bool]:
+    base, ext = os.path.splitext(path)
+    gzipped = ".gz" == ext
+    if gzipped:
         base, ext = os.path.splitext(base)
     assert ext in [".fa", ".fasta", ".fq", ".fastq"], ext
     if ext in [".fa", ".fasta"]:
-        handle = SeqIO.FastaIO.SimpleFastaParser(handle)
-        fmt = "fasta"
+        return ("fasta", gzipped)
     elif ext in [".fq", ".fastq"]:
+        return ("fastq", gzipped)
+
+
+def get_fastx_parser(handle: str) -> Tuple[FastXParser, str]:
+    fmt, gzipped = get_fastx_format(handle)
+    if gzipped:
+        handle = gzip.open(handle, "rt")
+    if fmt == "fasta":
+        handle = SeqIO.FastaIO.SimpleFastaParser(handle)
+    elif fmt == "fastq":
         handle = SeqIO.QualityIO.FastqGeneralIterator(handle)
-        fmt = "fastq"
     return (handle, fmt)
 
 
-def write_simple_fasta_record(record: FastaSimpleRecord) -> None:
-    print("writing fasta")
+class SimpleFastxWriter(object):
+    """docstring for SimpleFastxWriter"""
+    def __init__(self, path: str):
+        super(SimpleFastxWriter, self).__init__()
+        self.__fmt, gzipped = get_fastx_format(path)
+        if gzipped:
+            self._OH = gzip.open(path, "wt+")
+        else:
+            self._OH = open(path, "w+")
 
+    @property
+    def format(self):
+        return self.__fmt
 
-def write_simple_fastq_record(record: FastqSimpleRecord) -> None:
-    print("writing fastq")
+    def write_fasta_record(self, record: FastaSimpleRecord) -> None:
+        self._OH.write(f">{record[0]}\n{record[1]}\n")
 
+    def write_fastq_record(self, record: FastqSimpleRecord) -> None:
+        self._OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
 
-def write_simple_fastx_record(record: FastxSimpleRecord) -> None:
-    try:
-        check_type("record", record, FastaSimpleRecord)
-    except TypeError:
-        pass
-    else:
-        write_simple_fasta_record(record)
-        return
-    try:
-        check_type("record", record, FastqSimpleRecord)
-    except TypeError:
-        raise
-    else:
-        write_simple_fastq_record(record)
-        return
+    def write_record(self, record: FastxSimpleRecord) -> None:
+        try:
+            check_type("record", record, FastaSimpleRecord)
+        except TypeError:
+            pass
+        else:
+            self.write_fasta_record(record)
+            return
+        try:
+            check_type("record", record, FastqSimpleRecord)
+        except TypeError:
+            raise
+        else:
+            self.write_fastq_record(record)
+            return
+
+    def close(self):
+        self._OH.close()

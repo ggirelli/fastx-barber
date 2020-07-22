@@ -5,11 +5,12 @@
 
 import argparse
 from fbarber.const import __version__
-from fbarber.seqio import get_fastx_input_handler
-from fbarber.seqio import write_simple_fastx_record
+from fbarber.seqio import get_fastx_parser
+from fbarber.seqio import SimpleFastxWriter
 from fbarber.trim import FastxTrimmer
 import regex
 import sys
+from tqdm import tqdm
 
 
 def init_parser(subparsers: argparse._SubParsersAction
@@ -48,9 +49,13 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace) -> None:
-    IH, fmt = get_fastx_input_handler(args.input)
+    IH, fmt = get_fastx_parser(args.input)
+    OH = SimpleFastxWriter(args.output)
+    assert fmt == OH.format, (
+        "format mismatch between input and requested output")
     trimmer = FastxTrimmer(args.pattern, fmt)
-    for record in IH:
+    for record in tqdm(IH):
         trimmed, is_trimmed = trimmer.trim(record)
         if is_trimmed:
-            write_simple_fastx_record(trimmed)
+            OH.write_record(trimmed)
+    OH.close()
