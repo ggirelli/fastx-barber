@@ -5,8 +5,10 @@
 
 import argparse
 from fbarber.const import __version__
-from fbarber.seqio import get_fastx_handler
+from fbarber.seqio import get_fastx_input_handler
+from fbarber.seqio import write_simple_fastx_record
 from fbarber.trim import FastxTrimmer
+import regex
 import sys
 
 
@@ -21,10 +23,14 @@ Trim FASTX file.
 
     parser.add_argument("input", type=str, metavar="in.fastx[.gz]",
                         help="""Path to the fasta/q file to trim.""")
+    parser.add_argument("output", type=str, metavar="out.fastx[.gz]",
+                        help="""Path to the fasta/q file to trim.
+                        Format will match the input.""")
 
     parser.add_argument(
         "--pattern", type=str,
-        help="""""", default="test")
+        help="Pattern to match to reads and extract flagged groups.",
+        default="^(?<UMI>.{8})(?<BC>GTCGTATC){s<2}(?<CS>GATC){s<2}")
 
     parser.add_argument(
         "--version", action="version", version=f"{sys.argv[0]} {__version__}")
@@ -37,11 +43,14 @@ Trim FASTX file.
 
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
+    args.pattern = regex.compile(args.pattern)
     return args
 
 
 def run(args: argparse.Namespace) -> None:
-    IH, fmt = get_fastx_handler(args.input)
+    IH, fmt = get_fastx_input_handler(args.input)
     trimmer = FastxTrimmer(args.pattern, fmt)
     for record in IH:
-        trimmer.trim(record)
+        trimmed, is_trimmed = trimmer.trim(record)
+        if is_trimmed:
+            write_simple_fastx_record(trimmed)
