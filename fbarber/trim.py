@@ -10,6 +10,10 @@ from typing import Pattern, Match, Optional, Tuple
 
 class FastxTrimmer(object):
     """Trimming class for fasta and fastq files"""
+
+    __matched_count: int = 0
+    __unmatched_count: int = 0
+
     def __init__(self, pattern: Pattern, fmt: str,
                  flag_delim: str = "¦", space: str = " "):
         super(FastxTrimmer, self).__init__()
@@ -25,6 +29,18 @@ class FastxTrimmer(object):
         elif "fastq" == self.__fmt:
             self.trim = self._trim_fastq
 
+    @property
+    def matched_count(self):
+        return self.__matched_count
+
+    @property
+    def unmatched_count(self):
+        return self.__unmatched_count
+
+    @property
+    def parsed_count(self):
+        return self.__matched_count + self.__unmatched_count
+
     def trim(self, record: seqio.FastxSimpleRecord
              ) -> Tuple[seqio.FastxSimpleRecord, bool]:
         pass
@@ -34,21 +50,27 @@ class FastxTrimmer(object):
         name, seq, qual = record
         match = regex.match(self._pattern, seq)
         if match is None:
+            self.__unmatched_count += 1
             return (record, False)
-        seq = regex.sub(self._pattern, "", seq)
-        name = self.__update_name(name, match, qual)
-        qual = qual[-len(seq):]
-        return ((name, seq, qual), True)
+        else:
+            seq = regex.sub(self._pattern, "", seq)
+            name = self.__update_name(name, match, qual)
+            qual = qual[-len(seq):]
+            self.__matched_count += 1
+            return ((name, seq, qual), True)
 
     def _trim_fasta(self, record: seqio.FastaSimpleRecord
                     ) -> Tuple[seqio.FastaSimpleRecord, bool]:
         name, seq = record
         match = regex.match(self._pattern, seq)
         if match is None:
+            self.__unmatched_count += 1
             return (record, False)
-        seq = regex.sub(self._pattern, "", seq)
-        name = self.__update_name(name, match)
-        return ((name, seq), True)
+        else:
+            seq = regex.sub(self._pattern, "", seq)
+            name = self.__update_name(name, match)
+            self.__matched_count += 1
+            return ((name, seq), True)
 
     def __update_name(self, name: str, match: Match,
                       qual: Optional[str] = None) -> str:
