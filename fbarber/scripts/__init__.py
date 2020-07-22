@@ -3,6 +3,6 @@
 @contact: gigi.ga90@gmail.com
 '''
 
-from fbarber.scripts import extract
+from fbarber.scripts import extract, trim
 
-__all__ = ["extract"]
+__all__ = ["extract", "trim"]
