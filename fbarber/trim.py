@@ -8,7 +8,7 @@ import regex
 from typing import Pattern, Match, Optional, Tuple
 
 
-class FastxTrimmer(object):
+class FastxExtractor(object):
     """Trimming class for fasta and fastq files"""
 
     __matched_count: int = 0
@@ -16,7 +16,7 @@ class FastxTrimmer(object):
 
     def __init__(self, pattern: Pattern, fmt: str,
                  flag_delim: str = "¦", comment_space: str = " "):
-        super(FastxTrimmer, self).__init__()
+        super(FastxExtractor, self).__init__()
         self._pattern = pattern
         assert fmt in ["fasta", "fastq"]
         self.__fmt = fmt
@@ -25,9 +25,9 @@ class FastxTrimmer(object):
         assert 1 == len(comment_space)
         self.__comment_space = comment_space
         if "fasta" == self.__fmt:
-            self.trim = self._trim_fasta
+            self.extract = self._extract_fasta
         elif "fastq" == self.__fmt:
-            self.trim = self._trim_fastq
+            self.extract = self._extract_fastq
 
     @property
     def matched_count(self):
@@ -41,12 +41,12 @@ class FastxTrimmer(object):
     def parsed_count(self):
         return self.__matched_count + self.__unmatched_count
 
-    def trim(self, record: seqio.FastxSimpleRecord
-             ) -> Tuple[seqio.FastxSimpleRecord, bool]:
+    def extract(self, record: seqio.FastxSimpleRecord
+                ) -> Tuple[seqio.FastxSimpleRecord, bool]:
         pass
 
-    def _trim_fastq(self, record: seqio.FastqSimpleRecord
-                    ) -> Tuple[seqio.FastqSimpleRecord, bool]:
+    def _extract_fastq(self, record: seqio.FastqSimpleRecord
+                       ) -> Tuple[seqio.FastqSimpleRecord, bool]:
         name, seq, qual = record
         match = regex.match(self._pattern, seq)
         if match is None:
@@ -59,8 +59,8 @@ class FastxTrimmer(object):
             self.__matched_count += 1
             return ((name, seq, qual), True)
 
-    def _trim_fasta(self, record: seqio.FastaSimpleRecord
-                    ) -> Tuple[seqio.FastaSimpleRecord, bool]:
+    def _extract_fasta(self, record: seqio.FastaSimpleRecord
+                       ) -> Tuple[seqio.FastaSimpleRecord, bool]:
         name, seq = record
         match = regex.match(self._pattern, seq)
         if match is None:

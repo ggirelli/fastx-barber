@@ -7,7 +7,7 @@ import argparse
 from fbarber.const import __version__
 from fbarber.seqio import get_fastx_parser
 from fbarber.seqio import SimpleFastxWriter
-from fbarber.trim import FastxTrimmer
+from fbarber.trim import FastxExtractor
 import logging
 import regex
 import sys
@@ -22,11 +22,10 @@ logging.basicConfig(
 def init_parser(subparsers: argparse._SubParsersAction
                 ) -> argparse.ArgumentParser:
     parser = subparsers.add_parser(
-        __name__.split(".")[-1], description="""
-Trim FASTX file.
-""",
+        __name__.split(".")[-1],
+        description="Extract flags from adapter and trim FASTX file.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Trim a FASTX file..")
+        help="Extract flags from adapter and trim a FASTX file..")
 
     parser.add_argument("input", type=str, metavar="in.fastx[.gz]",
                         help="""Path to the fasta/q file to trim.""")
@@ -93,7 +92,8 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Pattern: {args.pattern}")
 
     logging.info("Trimming...")
-    trimmer = FastxTrimmer(args.regex, fmt, args.flag_delim, args.comment_space)
+    trimmer = FastxExtractor(
+        args.regex, fmt, args.flag_delim, args.comment_space)
     for record in tqdm(IH):
         record, is_trimmed = trimmer.trim(record)
         foutput[is_trimmed](record)
