@@ -34,10 +34,11 @@ Trim FASTX file.
                         help="""Path to fasta/q file where to write
                         trimmed records. Format will match the input.""")
 
+    default_pattern = "^(?<UMI>.{8})(?<BC>GTCGTATC)(?<CS>GATC){s<2}"
     parser.add_argument(
-        "--pattern", type=str,
-        help="Pattern to match to reads and extract flagged groups.",
-        default="^(?<UMI>.{8})(?<BC>GTCGTATC)(?<CS>GATC){s<2}")
+        "--pattern", type=str, default=default_pattern,
+        help=f"""Pattern to match to reads and extract flagged groups.
+        Default: {default_pattern}""")
 
     parser.add_argument(
         "--version", action="version", version=f"{sys.argv[0]} {__version__}")
