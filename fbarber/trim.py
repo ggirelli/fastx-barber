@@ -14,19 +14,20 @@ class FastxTrimmer(object):
                  flag_delim: str = "¦", space: str = " "):
         super(FastxTrimmer, self).__init__()
         self._pattern = pattern
-        assert fmt in ['fasta', 'fastq']
+        assert fmt in ["fasta", "fastq"]
         self.__fmt = fmt
         assert 1 == len(flag_delim)
         self.__delim = flag_delim
         assert 1 == len(space)
         self.__comment_space = space
+        if "fasta" == self.__fmt:
+            self.trim = self._trim_fasta
+        elif "fastq" == self.__fmt:
+            self.trim = self._trim_fastq
 
     def trim(self, record: seqio.FastxSimpleRecord
              ) -> Tuple[seqio.FastxSimpleRecord, bool]:
-        if "fasta" == self.__fmt:
-            return self._trim_fasta(record)
-        elif "fastq" == self.__fmt:
-            return self._trim_fastq(record)
+        pass
 
     def _trim_fastq(self, record: seqio.FastqSimpleRecord
                     ) -> Tuple[seqio.FastqSimpleRecord, bool]:
@@ -66,21 +67,3 @@ class FastxTrimmer(object):
                 qual_bits += f"{self.__delim}{group_qual}"
             name += qual_bits
         return name
-
-
-class FastaTrimmer(FastxTrimmer):
-    """Alias for FastxTrimmer(fmt="fasta")"""
-    def __init__(self, pattern: str, flag_delim: str = "¦", space: str = " "):
-        super(FastaTrimmer, self).__init__(pattern, "fasta", flag_delim, space)
-
-    def trim(self, record: seqio.FastaSimpleRecord) -> None:
-        self._trim_fasta(record)
-
-
-class FastqTrimmer(FastxTrimmer):
-    """Alias for FastxTrimmer(fmt="fastq")"""
-    def __init__(self, pattern: str, flag_delim: str = "¦", space: str = " "):
-        super(FastqTrimmer, self).__init__(pattern, "fastq", flag_delim, space)
-
-    def trim(self, record: seqio.FastqSimpleRecord) -> None:
-        self._trim_fastq(record)

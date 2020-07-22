@@ -7,7 +7,6 @@ from Bio import SeqIO
 import gzip
 import os
 from typing import Tuple, Union
-from typeguard import check_type
 
 FastaSimpleRecord = Tuple[str, str]
 FastqSimpleRecord = Tuple[str, str, str]
@@ -42,7 +41,7 @@ def get_fastx_parser(handle: str) -> Tuple[FastXParser, str]:
 
 
 class SimpleFastxWriter(object):
-    """docstring for SimpleFastxWriter"""
+    """Simple record writer class for fasta and fastq files"""
     def __init__(self, path: str):
         super(SimpleFastxWriter, self).__init__()
         self.__fmt, gzipped = get_fastx_format(path)
@@ -50,32 +49,23 @@ class SimpleFastxWriter(object):
             self._OH = gzip.open(path, "wt+")
         else:
             self._OH = open(path, "w+")
+        if "fasta" == self.__fmt:
+            self.write_record = self._write_fasta_record
+        elif "fastq" == self.__fmt:
+            self.write_record = self._write_fastq_record
 
     @property
     def format(self):
         return self.__fmt
 
-    def write_fasta_record(self, record: FastaSimpleRecord) -> None:
+    def _write_record(self, record: FastaSimpleRecord) -> None:
+        pass
+
+    def _write_fasta_record(self, record: FastaSimpleRecord) -> None:
         self._OH.write(f">{record[0]}\n{record[1]}\n")
 
-    def write_fastq_record(self, record: FastqSimpleRecord) -> None:
+    def _write_fastq_record(self, record: FastqSimpleRecord) -> None:
         self._OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
-
-    def write_record(self, record: FastxSimpleRecord) -> None:
-        try:
-            check_type("record", record, FastaSimpleRecord)
-        except TypeError:
-            pass
-        else:
-            self.write_fasta_record(record)
-            return
-        try:
-            check_type("record", record, FastqSimpleRecord)
-        except TypeError:
-            raise
-        else:
-            self.write_fastq_record(record)
-            return
 
     def close(self):
         self._OH.close()

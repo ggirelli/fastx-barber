@@ -40,8 +40,7 @@ setup(
     install_requires=[
         'biopython==1.77',
         'regex==2020.7.14',
-        'tqdm==4.48.0',
-        'typeguard==2.9.1'
+        'tqdm==4.48.0'
     ],
     scripts=[],
     entry_points={'console_scripts': [
