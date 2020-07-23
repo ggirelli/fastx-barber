@@ -49,10 +49,10 @@ def init_parser(subparsers: argparse._SubParsersAction
         help="""Path to fasta/q file where to write records that do not match
         the pattern. Format will match the input.""")
     advanced.add_argument(
-        "--flag-delim", type=str, default="¦",
+        "--flag-delim", type=str, default="~",
         help="""Delimiter for flags. Used twice for flag separation and once
-        for key-value pairs. It should be a single character. Default: '¦'.
-        Example: header¦¦flag1key¦flag1value¦¦flag2key¦flag2value""")
+        for key-value pairs. It should be a single character. Default: '~'.
+        Example: header~~flag1key~flag1value~~flag2key~flag2value""")
     advanced.add_argument(
         "--comment-space", type=str, default=" ",
         help="""Delimiter for header comments. Defaults to a space.""")

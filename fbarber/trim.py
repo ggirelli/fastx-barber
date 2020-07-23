@@ -15,7 +15,7 @@ class FastxExtractor(object):
     __unmatched_count: int = 0
 
     def __init__(self, pattern: Pattern, fmt: str,
-                 flag_delim: str = "¦", comment_space: str = " "):
+                 flag_delim: str = "~", comment_space: str = " "):
         super(FastxExtractor, self).__init__()
         self._pattern = pattern
         assert fmt in ["fasta", "fastq"]
