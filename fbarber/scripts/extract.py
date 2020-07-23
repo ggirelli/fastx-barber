@@ -87,7 +87,7 @@ def run(args: argparse.Namespace) -> None:
         logging.info(f"Unmatched output: {args.unmatched_output}")
         foutput = {True: OH.write_record, False: UH.write_record}
     else:
-        foutput = {True: OH.write_record, False: lambda x: x}
+        foutput = {True: OH.write_record, False: lambda x: None}
 
     logging.info(f"Pattern: {args.pattern}")
 

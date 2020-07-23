@@ -41,10 +41,6 @@ class FastxExtractor(object):
     def parsed_count(self):
         return self.__matched_count + self.__unmatched_count
 
-    def extract(self, record: seqio.FastxSimpleRecord
-                ) -> Tuple[seqio.FastxSimpleRecord, bool]:
-        pass
-
     def _extract_fastq(self, record: seqio.FastqSimpleRecord
                        ) -> Tuple[seqio.FastqSimpleRecord, bool]:
         name, seq, qual = record

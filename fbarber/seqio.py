@@ -6,7 +6,7 @@
 from Bio import SeqIO
 import gzip
 import os
-from typing import Tuple, Union
+from typing import IO, Tuple, Union
 
 FastaSimpleRecord = Tuple[str, str]
 FastqSimpleRecord = Tuple[str, str, str]
@@ -27,17 +27,20 @@ def get_fastx_format(path: str) -> Tuple[str, bool]:
         return ("fasta", gzipped)
     elif ext in [".fq", ".fastq"]:
         return ("fastq", gzipped)
+    else:
+        return ("", False)
 
 
-def get_fastx_parser(handle: str) -> Tuple[FastXParser, str]:
-    fmt, gzipped = get_fastx_format(handle)
+def get_fastx_parser(path: str) -> Tuple[FastXParser, str]:
+    fmt, gzipped = get_fastx_format(path)
+    handle: Union[str, IO] = path
     if gzipped:
-        handle = gzip.open(handle, "rt")
+        handle = gzip.open(path, "rt")
     if fmt == "fasta":
-        handle = SeqIO.FastaIO.SimpleFastaParser(handle)
+        parser = SeqIO.FastaIO.SimpleFastaParser(handle)
     elif fmt == "fastq":
-        handle = SeqIO.QualityIO.FastqGeneralIterator(handle)
-    return (handle, fmt)
+        parser = SeqIO.QualityIO.FastqGeneralIterator(handle)
+    return (parser, fmt)
 
 
 class SimpleFastxWriter(object):
