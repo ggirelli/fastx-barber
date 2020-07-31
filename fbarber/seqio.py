@@ -50,7 +50,7 @@ def get_fastx_parser(path: str) -> Tuple[FastXParser, FastxFormats]:
     handle: Union[str, IO] = path
     if gzipped:
         handle = gzip.open(path, "rt")
-    assert FastxFormats.has_value(fmt)
+    assert fmt in FastxFormats
     if FastxFormats.FASTA == fmt:
         parser = SeqIO.FastaIO.SimpleFastaParser(handle)
         parser = ((*x, None) for x in parser)
