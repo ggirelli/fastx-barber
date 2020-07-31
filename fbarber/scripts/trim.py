@@ -61,7 +61,8 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.regex = regex.compile(args.pattern)
 
     assert not os.path.isfile(args.log_file)
-    assert os.path.isdir(os.path.dirname(args.log_file))
+    log_dir = os.path.dirname(args.log_file)
+    assert os.path.isdir(log_dir) or '' == log_dir
     log_settings: Dict[str, Any] = {
         "level": 20,
         "format": "".join((
