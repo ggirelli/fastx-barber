@@ -60,7 +60,7 @@ def init_parser(subparsers: argparse._SubParsersAction
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.regex = regex.compile(args.pattern)
 
-    assert not os.path.isfile(args.log_file)
+    assert not os.path.isdir(args.log_file)
     log_dir = os.path.dirname(args.log_file)
     assert os.path.isdir(log_dir) or '' == log_dir
     log_settings: Dict[str, Any] = {
@@ -70,7 +70,8 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
             "%(levelname)s: %(message)s")),
         "datefmt": "%m/%d/%Y %I:%M:%S"}
     if args.log_file is not None:
-        log_settings['filename'] = open(args.log_file, "w+")
+        log_settings['filename'] = args.log_file
+        log_settings['filemode'] = "w+"
     logging.basicConfig(**log_settings)
 
     return args
