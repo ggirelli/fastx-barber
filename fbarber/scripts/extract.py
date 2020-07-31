@@ -20,6 +20,14 @@ logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
 def init_parser(subparsers: argparse._SubParsersAction
                 ) -> argparse.ArgumentParser:
+    """Initialize parser
+
+    Arguments:
+        subparsers {argparse._SubParsersAction}
+
+    Returns:
+        argparse.ArgumentParser -- parsed arguments
+    """
     parser = subparsers.add_parser(
         __name__.split(".")[-1],
         description="Extract flags from adapter and trim FASTX file.",
@@ -65,6 +73,14 @@ def init_parser(subparsers: argparse._SubParsersAction
 
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
+    """Parse arguments
+
+    Arguments:
+        args {argparse.Namespace} -- input arguments
+
+    Returns:
+        argparse.Namespace -- parsed arguments
+    """
     args.regex = regex.compile(args.pattern)
     assert 1 == len(args.flag_delim)
 
@@ -81,6 +97,11 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace) -> None:
+    """Run extract command
+
+    Arguments:
+        args {argparse.Namespace} -- input arguments
+    """
     IH, fmt = get_fastx_parser(args.input)
     logging.info(f"Input: {args.input}")
 
@@ -101,7 +122,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Pattern: {args.pattern}")
 
     matcher = FastxMatcher(args.regex)
-    extractor = get_fastx_flag_extractor(fmt)(
+    flag_extractor = get_fastx_flag_extractor(fmt)(
         args.flag_delim, args.comment_space)
     trimmer = get_fastx_trimmer(fmt)
 
@@ -109,7 +130,7 @@ def run(args: argparse.Namespace) -> None:
     for record in tqdm(IH):
         match, matched = matcher.match(record)
         if matched:
-            record = extractor.extract(record, match)
+            record = flag_extractor.update(record, match)
             record = trimmer.trim_re(record, match)
         foutput[matched](record)
 
