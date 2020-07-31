@@ -4,19 +4,18 @@
 """
 
 import argparse
-from fbarber.const import __version__
-from fbarber.seqio import get_fastx_parser
-from fbarber.seqio import SimpleFastxWriter
-from fbarber.trim import FastxExtractor
+from fbarber.const import __version__, logfmt, log_datefmt
+from fbarber.extract import get_fastx_flag_extractor
+from fbarber.match import FastxMatcher
+from fbarber.seqio import get_fastx_parser, get_fastx_writer
+from fbarber.trim import get_fastx_trimmer
 import logging
-import regex
+import os
+import regex  # type: ignore
 import sys
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
-logging.basicConfig(
-    level=20, format="".join((
-        "%(asctime)s [P%(process)s:%(module)s:%(funcName)s] ",
-        "%(levelname)s: %(message)s")), datefmt="%m/%d/%Y %I:%M:%S")
+logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
 
 def init_parser(subparsers: argparse._SubParsersAction
@@ -49,10 +48,10 @@ def init_parser(subparsers: argparse._SubParsersAction
         help="""Path to fasta/q file where to write records that do not match
         the pattern. Format will match the input.""")
     advanced.add_argument(
-        "--flag-delim", type=str, default="¦",
+        "--flag-delim", type=str, default="~",
         help="""Delimiter for flags. Used twice for flag separation and once
-        for key-value pairs. It should be a single character. Default: '¦'.
-        Example: header¦¦flag1key¦flag1value¦¦flag2key¦flag2value""")
+        for key-value pairs. It should be a single character. Default: '~'.
+        Example: header~~flag1key~flag1value~~flag2key~flag2value""")
     advanced.add_argument(
         "--comment-space", type=str, default=" ",
         help="""Delimiter for header comments. Defaults to a space.""")
@@ -68,6 +67,16 @@ def init_parser(subparsers: argparse._SubParsersAction
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.regex = regex.compile(args.pattern)
     assert 1 == len(args.flag_delim)
+
+    assert not os.path.isdir(args.log_file)
+    log_dir = os.path.dirname(args.log_file)
+    assert os.path.isdir(log_dir) or '' == log_dir
+    fh = logging.FileHandler(args.log_file)
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(logging.Formatter(logfmt))
+    logging.getLogger('').addHandler(fh)
+    logging.info(f"Writing log to: {args.log_file}")
+
     return args
 
 
@@ -75,31 +84,39 @@ def run(args: argparse.Namespace) -> None:
     IH, fmt = get_fastx_parser(args.input)
     logging.info(f"Input: {args.input}")
 
-    OH = SimpleFastxWriter(args.output, args.compress_level)
+    OH = get_fastx_writer(fmt)(args.output, args.compress_level)
     assert fmt == OH.format, (
         "format mismatch between input and requested output")
     logging.info(f"Output: {args.output}")
 
     if args.unmatched_output is not None:
-        UH = SimpleFastxWriter(args.unmatched_output, args.compress_level)
+        UH = get_fastx_writer(fmt)(args.unmatched_output, args.compress_level)
         assert fmt == UH.format, (
             "format mismatch between input and requested output")
         logging.info(f"Unmatched output: {args.unmatched_output}")
-        foutput = {True: OH.write_record, False: UH.write_record}
+        foutput = {True: OH.write, False: UH.write}
     else:
-        foutput = {True: OH.write_record, False: lambda x: x}
+        foutput = {True: OH.write, False: lambda x: None}
 
     logging.info(f"Pattern: {args.pattern}")
 
-    logging.info("Trimming...")
-    trimmer = FastxExtractor(
-        args.regex, fmt, args.flag_delim, args.comment_space)
+    matcher = FastxMatcher(args.regex)
+    extractor = get_fastx_flag_extractor(fmt)(
+        args.flag_delim, args.comment_space)
+    trimmer = get_fastx_trimmer(fmt)
+
+    logging.info("Trimming and extracting flags...")
     for record in tqdm(IH):
-        record, is_trimmed = trimmer.extract(record)
-        foutput[is_trimmed](record)
+        match, matched = matcher.match(record)
+        if matched:
+            record = extractor.extract(record, match)
+            record = trimmer.trim_re(record, match)
+        foutput[matched](record)
+
+    parsed_count = matcher.matched_count + matcher.unmatched_count
 
     logging.info("".join((
-        f"Trimmed {trimmer.matched_count}/{trimmer.parsed_count} records.")))
+        f"Trimmed {matcher.matched_count}/{parsed_count} records.")))
 
     OH.close()
     if args.unmatched_output is not None:
