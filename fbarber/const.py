@@ -7,6 +7,12 @@ from enum import Enum
 
 __version__ = "0.0.1"
 
+logfmt = "".join((
+    "%(asctime)s ",
+    "[P%(process)s:%(module)s:%(funcName)s] ",
+    "%(levelname)s: %(message)s"))
+log_datefmt = "%m/%d/%Y %I:%M:%S"
+
 
 class FastxFormats(Enum):
     FASTA = "fasta"

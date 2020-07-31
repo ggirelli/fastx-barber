@@ -4,7 +4,7 @@
 """
 
 import argparse
-from fbarber.const import __version__
+from fbarber.const import __version__, logfmt, log_datefmt
 from fbarber.match import FastxMatcher
 from fbarber.seqio import get_fastx_parser, get_fastx_writer
 from fbarber.trim import get_fastx_trimmer
@@ -13,7 +13,8 @@ import os
 import regex  # type: ignore
 import sys
 from tqdm import tqdm  # type: ignore
-from typing import Any, Dict
+
+logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
 
 def init_parser(subparsers: argparse._SubParsersAction
@@ -63,16 +64,11 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     assert not os.path.isdir(args.log_file)
     log_dir = os.path.dirname(args.log_file)
     assert os.path.isdir(log_dir) or '' == log_dir
-    log_settings: Dict[str, Any] = {
-        "level": 20,
-        "format": "".join((
-            "%(asctime)s [P%(process)s:%(module)s:%(funcName)s] ",
-            "%(levelname)s: %(message)s")),
-        "datefmt": "%m/%d/%Y %I:%M:%S"}
-    if args.log_file is not None:
-        log_settings['filename'] = args.log_file
-        log_settings['filemode'] = "w+"
-    logging.basicConfig(**log_settings)
+    fh = logging.FileHandler(args.log_file)
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(logging.Formatter(logfmt))
+    logging.getLogger('').addHandler(fh)
+    logging.info(f"Writing log to: {args.log_file}")
 
     return args
 
