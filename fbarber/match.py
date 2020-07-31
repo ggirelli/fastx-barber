@@ -40,9 +40,9 @@ class FastxMatcher(ABCMatcher):
               ) -> Tuple[Match, bool]:
         name, seq, _ = record
         match = regex.match(self._pattern, seq)
-        matched = match is None
+        matched = match is not None
         if matched:
-            self._unmatched_count += 1
-        else:
             self._matched_count += 1
+        else:
+            self._unmatched_count += 1
         return (match, matched)
