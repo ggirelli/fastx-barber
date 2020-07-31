@@ -9,14 +9,11 @@ from fbarber.match import FastxMatcher
 from fbarber.seqio import get_fastx_parser, get_fastx_writer
 from fbarber.trim import get_fastx_trimmer
 import logging
+import os
 import regex  # type: ignore
 import sys
 from tqdm import tqdm  # type: ignore
-
-logging.basicConfig(
-    level=20, format="".join((
-        "%(asctime)s [P%(process)s:%(module)s:%(funcName)s] ",
-        "%(levelname)s: %(message)s")), datefmt="%m/%d/%Y %I:%M:%S")
+from typing import Any, Dict
 
 
 def init_parser(subparsers: argparse._SubParsersAction
@@ -51,6 +48,9 @@ def init_parser(subparsers: argparse._SubParsersAction
     advanced.add_argument(
         "--compress-level", type=int, default=6,
         help="""GZip compression level. Default: 6.""")
+    advanced.add_argument(
+        "--log-file", type=str,
+        help="""Path to file where to write the log.""")
 
     parser.set_defaults(parse=parse_arguments, run=run)
 
@@ -59,6 +59,19 @@ def init_parser(subparsers: argparse._SubParsersAction
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.regex = regex.compile(args.pattern)
+
+    assert not os.path.isfile(args.log_file)
+    assert os.path.isdir(os.path.dirname(args.log_file))
+    log_settings: Dict[str, Any] = {
+        "level": 20,
+        "format": "".join((
+            "%(asctime)s [P%(process)s:%(module)s:%(funcName)s] ",
+            "%(levelname)s: %(message)s")),
+        "datefmt": "%m/%d/%Y %I:%M:%S"}
+    if args.log_file is not None:
+        log_settings['filename'] = open(args.log_file, "w+")
+    logging.basicConfig(**log_settings)
+
     return args
 
 
