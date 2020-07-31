@@ -59,7 +59,6 @@ def init_parser(subparsers: argparse._SubParsersAction
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.regex = regex.compile(args.pattern)
-    assert 1 == len(args.flag_delim)
     return args
 
 
