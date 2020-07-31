@@ -15,6 +15,16 @@ log_datefmt = "%m/%d/%Y %I:%M:%S"
 
 
 class FastxFormats(Enum):
+    """Fastx formats
+
+    Extends:
+        Enum
+
+    Variables:
+        FASTA {str}
+        FASTQ {str}
+        NONE {str} -- Not fastx
+    """
     FASTA = "fasta"
     FASTQ = "fastq"
     NONE = "None"
@@ -25,6 +35,15 @@ class FastxFormats(Enum):
 
 
 class FastxExtensions(Enum):
+    """Fastx extensions
+
+    Extends:
+        Enum
+
+    Variables:
+        FASTA {tuple}
+        FASTQ {tuple}
+    """
     FASTA = (".fa", ".fasta")
     FASTQ = (".fq", ".fastq")
 

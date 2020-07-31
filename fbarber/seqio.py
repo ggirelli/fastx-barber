@@ -112,7 +112,7 @@ class SimpleFastxWriter(ABCSimpleWriter):
         ABCSimpleWriter
 
     Variables:
-        _fmt {FastxFormats} -- "fasta" or "fastq"
+        _fmt {FastxFormats}
     """
     _fmt: FastxFormats
 
@@ -136,7 +136,7 @@ class SimpleFastxWriter(ABCSimpleWriter):
         """Fastx file format
 
         Returns:
-            strFastxFormats -- "fasta" or "fastq"
+            FastxFormats
         """
         return self._fmt
 
@@ -218,7 +218,7 @@ def get_fastx_writer(fmt: FastxFormats) -> Type[SimpleFastxWriter]:
     Retrieves appropriate simple writer class.
 
     Arguments:
-        fmt {str} -- "fasta" or "fastq"
+        fmt {FastxFormats}
 
     Returns:
         Type[SimpleFastxWriter] -- simple writer class

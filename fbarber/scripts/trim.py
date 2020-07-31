@@ -19,6 +19,14 @@ logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
 def init_parser(subparsers: argparse._SubParsersAction
                 ) -> argparse.ArgumentParser:
+    """Initialize parser
+
+    Arguments:
+        subparsers {argparse._SubParsersAction}
+
+    Returns:
+        argparse.ArgumentParser -- parsed arguments
+    """
     parser = subparsers.add_parser(
         __name__.split(".")[-1],
         description="Trim FASTX file.",
@@ -59,6 +67,14 @@ def init_parser(subparsers: argparse._SubParsersAction
 
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
+    """Parse arguments
+
+    Arguments:
+        args {argparse.Namespace} -- input arguments
+
+    Returns:
+        argparse.Namespace -- parsed arguments
+    """
     args.regex = regex.compile(args.pattern)
 
     assert not os.path.isdir(args.log_file)
@@ -74,6 +90,11 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace) -> None:
+    """Run trim command
+
+    Arguments:
+        args {argparse.Namespace} -- input arguments
+    """
     IH, fmt = get_fastx_parser(args.input)
     logging.info(f"Input: {args.input}")
 
