@@ -5,13 +5,12 @@
 
 import argparse
 from fbarber.const import __version__
-from fbarber.seqio import get_fastx_parser
-from fbarber.seqio import SimpleFastxWriter
-from fbarber.trim import FastxExtractor
+from fbarber.seqio import get_fastx_parser, get_fastx_writer
+from fbarber.extract import get_fastx_flag_extractor
 import logging
-import regex
+import regex  # type: ignore
 import sys
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 logging.basicConfig(
     level=20, format="".join((
@@ -75,25 +74,25 @@ def run(args: argparse.Namespace) -> None:
     IH, fmt = get_fastx_parser(args.input)
     logging.info(f"Input: {args.input}")
 
-    OH = SimpleFastxWriter(args.output, args.compress_level)
+    OH = get_fastx_writer(fmt)(args.output, args.compress_level)
     assert fmt == OH.format, (
         "format mismatch between input and requested output")
     logging.info(f"Output: {args.output}")
 
     if args.unmatched_output is not None:
-        UH = SimpleFastxWriter(args.unmatched_output, args.compress_level)
+        UH = get_fastx_writer(fmt)(args.unmatched_output, args.compress_level)
         assert fmt == UH.format, (
             "format mismatch between input and requested output")
         logging.info(f"Unmatched output: {args.unmatched_output}")
-        foutput = {True: OH.write_record, False: UH.write_record}
+        foutput = {True: OH.write, False: UH.write}
     else:
-        foutput = {True: OH.write_record, False: lambda x: None}
+        foutput = {True: OH.write, False: lambda x: None}
 
     logging.info(f"Pattern: {args.pattern}")
 
     logging.info("Trimming...")
-    trimmer = FastxExtractor(
-        args.regex, fmt, args.flag_delim, args.comment_space)
+    trimmer = get_fastx_flag_extractor(fmt)(
+        args.regex, args.flag_delim, args.comment_space)
     for record in tqdm(IH):
         record, is_trimmed = trimmer.extract(record)
         foutput[is_trimmed](record)

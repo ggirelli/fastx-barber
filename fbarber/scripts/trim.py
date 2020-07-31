@@ -5,8 +5,7 @@
 
 import argparse
 from fbarber.const import __version__
-from fbarber.seqio import get_fastx_parser
-from fbarber.seqio import SimpleFastxWriter
+from fbarber.seqio import get_fastx_parser, get_fastx_writer
 import logging
 import sys
 
@@ -51,7 +50,7 @@ def run(args: argparse.Namespace) -> None:
     IH, fmt = get_fastx_parser(args.input)
     logging.info(f"Input: {args.input}")
 
-    OH = SimpleFastxWriter(args.output, args.compress_level)
+    OH = get_fastx_writer(fmt)(args.output, args.compress_level)
     assert fmt == OH.format, (
         "format mismatch between input and requested output")
     logging.info(f"Output: {args.output}")
