@@ -5,9 +5,13 @@
 
 import argparse
 from fbarber.const import __version__
+from fbarber.match import FastxMatcher
 from fbarber.seqio import get_fastx_parser, get_fastx_writer
+from fbarber.trim import get_fastx_trimmer
 import logging
+import regex  # type: ignore
 import sys
+from tqdm import tqdm  # type: ignore
 
 logging.basicConfig(
     level=20, format="".join((
@@ -28,13 +32,25 @@ def init_parser(subparsers: argparse._SubParsersAction
     parser.add_argument("output", type=str, metavar="out.fastx[.gz]",
                         help="""Path to fasta/q file where to write
                         trimmed records. Format will match the input.""")
-    parser.add_argument("length", type=int,
-                        help="Length to trim.")
+
+    default_pattern = "^(?<UMI>.{8})(?<BC>GTCGTATC)(?<CS>GATC){s<2}"
+    parser.add_argument(
+        "--pattern", type=str, default=default_pattern,
+        help=f"""Pattern to match to reads and trim.
+        Remember to use quotes. Default: '{default_pattern}'""")
 
     parser.add_argument(
         "--version", action="version", version=f"{sys.argv[0]} {__version__}")
 
-    # advanced = parser.add_argument_group("advanced arguments")
+    advanced = parser.add_argument_group("advanced arguments")
+
+    advanced.add_argument(
+        "--unmatched-output", type=str, default=None,
+        help="""Path to fasta/q file where to write records that do not match
+        the pattern. Format will match the input.""")
+    advanced.add_argument(
+        "--compress-level", type=int, default=6,
+        help="""GZip compression level. Default: 6.""")
 
     parser.set_defaults(parse=parse_arguments, run=run)
 
@@ -42,7 +58,8 @@ def init_parser(subparsers: argparse._SubParsersAction
 
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    assert 1 >= args.length
+    args.regex = regex.compile(args.pattern)
+    assert 1 == len(args.flag_delim)
     return args
 
 
@@ -55,7 +72,33 @@ def run(args: argparse.Namespace) -> None:
         "format mismatch between input and requested output")
     logging.info(f"Output: {args.output}")
 
-    raise NotImplementedError
+    if args.unmatched_output is not None:
+        UH = get_fastx_writer(fmt)(args.unmatched_output, args.compress_level)
+        assert fmt == UH.format, (
+            "format mismatch between input and requested output")
+        logging.info(f"Unmatched output: {args.unmatched_output}")
+        foutput = {True: OH.write, False: UH.write}
+    else:
+        foutput = {True: OH.write, False: lambda x: None}
+
+    logging.info(f"Pattern: {args.pattern}")
+
+    matcher = FastxMatcher(args.regex)
+    trimmer = get_fastx_trimmer(fmt)
+
+    logging.info("Trimming...")
+    for record in tqdm(IH):
+        match, matched = matcher.match(record)
+        if matched:
+            record = trimmer.trim_re(record, match)
+        foutput[matched](record)
+
+    parsed_count = matcher.matched_count + matcher.unmatched_count
+
+    logging.info("".join((
+        f"Trimmed {matcher.matched_count}/{parsed_count} records.")))
 
     OH.close()
+    if args.unmatched_output is not None:
+        UH.close()
     logging.info("Done.")
