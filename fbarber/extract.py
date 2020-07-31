@@ -6,40 +6,26 @@
 from abc import ABCMeta, abstractmethod
 from fbarber.seqio import FastxSimpleRecord
 from fbarber.const import FastxFormats
-import regex  # type: ignore
-from typing import Pattern, Match, Optional, Tuple, Type
+from typing import Any, Match, Optional, Type
 
 
 class ABCFlagExtractor(metaclass=ABCMeta):
     """Flag extractor abstract base class"""
 
-    _matched_count: int = 0
-    _unmatched_count: int = 0
+    _delim: str
+    _comment_space: str
 
-    def __init__(self, pattern: Pattern,
+    def __init__(self,
                  flag_delim: str = "~",
                  comment_space: str = " "):
-        self._pattern = pattern
         assert 1 == len(flag_delim)
         self._delim = flag_delim
         assert 1 == len(comment_space)
         self._comment_space = comment_space
 
-    @property
-    def matched_count(self) -> int:
-        return self._matched_count
-
-    @property
-    def unmatched_count(self) -> int:
-        return self._unmatched_count
-
-    @property
-    def parsed_count(self) -> int:
-        return self._matched_count + self._unmatched_count
-
     @abstractmethod
-    def extract(self, record: FastxSimpleRecord
-                ) -> Tuple[FastxSimpleRecord, bool]: pass
+    def extract(self, record: Any, match: Match
+                ) -> Any: pass
 
     @abstractmethod
     def _update_name(self, name: str, match: Match,
@@ -49,24 +35,18 @@ class ABCFlagExtractor(metaclass=ABCMeta):
 class FastaFlagExtractor(ABCFlagExtractor):
     """Fasta flag extractor class"""
 
-    def __init__(self, pattern: Pattern,
+    def __init__(self,
                  flag_delim: str = "~",
                  comment_space: str = " "):
         super(FastaFlagExtractor, self).__init__(
-            pattern, flag_delim, comment_space)
+            flag_delim, comment_space)
 
-    def extract(self, record: FastxSimpleRecord
-                ) -> Tuple[FastxSimpleRecord, bool]:
+    def extract(self, record: FastxSimpleRecord, match: Match
+                ) -> FastxSimpleRecord:
+        assert match is not None
         name, seq, _ = record
-        match = regex.match(self._pattern, seq)
-        if match is None:
-            self._unmatched_count += 1
-            return (record, False)
-        else:
-            seq = regex.sub(self._pattern, "", seq)
-            name = self._update_name(name, match)
-            self._matched_count += 1
-            return ((name, seq, None), True)
+        name = self._update_name(name, match)
+        return (name, seq, None)
 
     def _update_name(self, name: str, match: Match,
                      qual: Optional[str] = None) -> str:
@@ -81,26 +61,19 @@ class FastaFlagExtractor(ABCFlagExtractor):
 class FastqFlagExtractor(FastaFlagExtractor):
     """Fastq flag extractor class"""
 
-    def __init__(self, pattern: Pattern,
+    def __init__(self,
                  flag_delim: str = "~",
                  comment_space: str = " "):
         super(FastqFlagExtractor, self).__init__(
-            pattern, flag_delim, comment_space)
+            flag_delim, comment_space)
 
-    def extract(self, record: FastxSimpleRecord
-                ) -> Tuple[FastxSimpleRecord, bool]:
+    def extract(self, record: FastxSimpleRecord, match: Match
+                ) -> FastxSimpleRecord:
+        assert match is not None
         name, seq, qual = record
         assert qual is not None
-        match = regex.match(self._pattern, seq)
-        if match is None:
-            self._unmatched_count += 1
-            return (record, False)
-        else:
-            seq = regex.sub(self._pattern, "", seq)
-            name = self._update_name(name, match, qual)
-            qual = qual[-len(seq):]
-            self._matched_count += 1
-            return ((name, seq, qual), True)
+        name = self._update_name(name, match, qual)
+        return (name, seq, qual)
 
     def _update_name(self, name: str, match: Match,
                      qual: Optional[str] = None) -> str:

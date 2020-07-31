@@ -5,8 +5,10 @@
 
 import argparse
 from fbarber.const import __version__
-from fbarber.seqio import get_fastx_parser, get_fastx_writer
 from fbarber.extract import get_fastx_flag_extractor
+from fbarber.match import FastxMatcher
+from fbarber.seqio import get_fastx_parser, get_fastx_writer
+from fbarber.trim import get_fastx_trimmer
 import logging
 import regex  # type: ignore
 import sys
@@ -90,15 +92,23 @@ def run(args: argparse.Namespace) -> None:
 
     logging.info(f"Pattern: {args.pattern}")
 
-    logging.info("Trimming...")
-    trimmer = get_fastx_flag_extractor(fmt)(
-        args.regex, args.flag_delim, args.comment_space)
+    matcher = FastxMatcher(args.regex)
+    extractor = get_fastx_flag_extractor(fmt)(
+        args.flag_delim, args.comment_space)
+    trimmer = get_fastx_trimmer(fmt)
+
+    logging.info("Trimming and extracting flags...")
     for record in tqdm(IH):
-        record, is_trimmed = trimmer.extract(record)
-        foutput[is_trimmed](record)
+        match, matched = matcher.match(record)
+        if matched:
+            record = extractor.extract(record, match)
+            record = trimmer.trim_re(record, match)
+        foutput[matched](record)
+
+    parsed_count = matcher.matched_count + matcher.unmatched_count
 
     logging.info("".join((
-        f"Trimmed {trimmer.matched_count}/{trimmer.parsed_count} records.")))
+        f"Trimmed {matcher.matched_count}/{parsed_count} records.")))
 
     OH.close()
     if args.unmatched_output is not None:

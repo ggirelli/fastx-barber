@@ -11,8 +11,6 @@ import gzip
 import os
 from typing import Any, IO, Optional, Tuple, Type, Union
 
-FastaSimpleRecord = Tuple[str, str]
-FastqSimpleRecord = Tuple[str, str, str]
 FastxSimpleRecord = Tuple[str, str, Optional[str]]
 
 FastXParser = Union[
@@ -142,6 +140,18 @@ class SimpleFastxWriter(ABCSimpleWriter):
         """
         return self._fmt
 
+    @abstractmethod
+    def write(self, record: FastxSimpleRecord) -> None:
+        """Write record to output buffer
+
+        Decorators:
+            abstractmethod
+
+        Arguments:
+            record {FastxSimpleRecord} -- record to be written
+        """
+        pass
+
 
 class SimpleFastaWriter(SimpleFastxWriter):
     """Simple record writer class for fasta files
@@ -164,11 +174,11 @@ class SimpleFastaWriter(SimpleFastxWriter):
         super(SimpleFastaWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTA == self.format
 
-    def write(self, record: FastaSimpleRecord) -> None:
+    def write(self, record: FastxSimpleRecord) -> None:
         """Write fasta record to output buffer
 
         Arguments:
-            record {FastaSimpleRecord} -- fasta record to be written
+            record {FastxSimpleRecord} -- fasta record to be written
         """
         self._OH.write(f">{record[0]}\n{record[1]}\n")
 
@@ -193,11 +203,11 @@ class SimpleFastqWriter(SimpleFastxWriter):
         super(SimpleFastqWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTQ == self.format
 
-    def write(self, record: FastqSimpleRecord) -> None:
+    def write(self, record: FastxSimpleRecord) -> None:
         """Write fastq record to output buffer
 
         Arguments:
-            record {FastqSimpleRecord} -- fastq record to be written
+            record {FastxSimpleRecord} -- fastq record to be written
         """
         self._OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
 
