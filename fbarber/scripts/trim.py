@@ -29,7 +29,7 @@ def init_parser(subparsers: argparse._SubParsersAction
         __name__.split(".")[-1],
         description="Trim FASTX file.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Trim a FASTX file..")
+        help="Trim a FASTX file.")
 
     parser.add_argument("input", type=str, metavar="in.fastx[.gz]",
                         help="""Path to the fasta/q file to trim.""")
