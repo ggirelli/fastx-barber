@@ -16,8 +16,7 @@ from tqdm import tqdm  # type: ignore
 logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
 
-def init_parser(subparsers: argparse._SubParsersAction
-                ) -> argparse.ArgumentParser:
+def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     """Initialize parser
 
     Arguments:
@@ -30,40 +29,65 @@ def init_parser(subparsers: argparse._SubParsersAction
         __name__.split(".")[-1],
         description="Extract flags from adapter and trim FASTX file.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Extract flags from adapter and trim a FASTX file.")
+        help="Extract flags from adapter and trim a FASTX file.",
+    )
 
-    parser.add_argument("input", type=str, metavar="in.fastx[.gz]",
-                        help="""Path to the fasta/q file to trim.""")
-    parser.add_argument("output", type=str, metavar="out.fastx[.gz]",
-                        help="""Path to fasta/q file where to write
-                        trimmed records. Format will match the input.""")
+    parser.add_argument(
+        "input",
+        type=str,
+        metavar="in.fastx[.gz]",
+        help="""Path to the fasta/q file to trim.""",
+    )
+    parser.add_argument(
+        "output",
+        type=str,
+        metavar="out.fastx[.gz]",
+        help="""Path to fasta/q file where to write
+                        trimmed records. Format will match the input.""",
+    )
 
     default_pattern = "^(?<UMI>.{8})(?<BC>GTCGTATC)(?<CS>GATC){s<2}"
     parser.add_argument(
-        "--pattern", type=str, default=default_pattern,
+        "--pattern",
+        type=str,
+        default=default_pattern,
         help=f"""Pattern to match to reads and extract flagged groups.
-        Remember to use quotes. Default: '{default_pattern}'""")
+        Remember to use quotes. Default: '{default_pattern}'""",
+    )
 
     parser = com.add_version_option(parser)
 
     advanced = parser.add_argument_group("advanced arguments")
     advanced = com.add_unmatched_output_option(advanced)
     advanced.add_argument(
-        "--flag-delim", type=str, default="~",
+        "--flag-delim",
+        type=str,
+        default="~",
         help="""Delimiter for flags. Used twice for flag separation and once
         for key-value pairs. It should be a single character. Default: '~'.
-        Example: header~~flag1key~flag1value~~flag2key~flag2value""")
+        Example: header~~flag1key~flag1value~~flag2key~flag2value""",
+    )
     advanced.add_argument(
-        "--selected-flags", type=str,
+        "--selected-flags",
+        type=str,
         help="""Comma-separate names of flags to be extracted.
-        By default it extracts all flags.""")
+        By default it extracts all flags.""",
+    )
     advanced.add_argument(
-        "--no-qual-flags", action="store_const", dest="qual_flags",
-        const=False, default=True, help="""Do not extract quality flags
-        (when running on a fastq file).""")
+        "--no-qual-flags",
+        action="store_const",
+        dest="qual_flags",
+        const=False,
+        default=True,
+        help="""Do not extract quality flags
+        (when running on a fastq file).""",
+    )
     advanced.add_argument(
-        "--comment-space", type=str, default=" ",
-        help="""Delimiter for header comments. Defaults to a space.""")
+        "--comment-space",
+        type=str,
+        default=" ",
+        help="""Delimiter for header comments. Defaults to a space.""",
+    )
     advanced = com.add_compress_level_option(advanced)
     advanced = com.add_log_file_option(advanced)
 
@@ -120,8 +144,7 @@ def run(args: argparse.Namespace) -> None:
 
     parsed_count = matcher.matched_count + matcher.unmatched_count
 
-    logging.info("".join((
-        f"Trimmed {matcher.matched_count}/{parsed_count} records.")))
+    logging.info("".join((f"Trimmed {matcher.matched_count}/{parsed_count} records.")))
 
     OH.close()
     if args.unmatched_output is not None and UH is not None:

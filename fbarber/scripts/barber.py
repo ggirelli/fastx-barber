@@ -1,8 +1,7 @@
-
-'''
+"""
 @author: Gabriele Girelli
 @contact: gigi.ga90@gmail.com
-'''
+"""
 
 import argparse
 from fbarber.const import __version__
@@ -17,22 +16,25 @@ def default_parser(*args) -> None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description=f'''
+        description=f"""
 Version:    {__version__}
 Author:     Gabriele Girelli
 Docs:       http://ggirelli.github.io/fast-barber
 Code:       http://github.com/ggirelli/fast-barber
 
 FASTX trimming tools.
-''',
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.set_defaults(parse=default_parser)
-    parser.add_argument('--version', action='version',
-                        version=f'{sys.argv[0]} {__version__}')
+    parser.add_argument(
+        "--version", action="version", version=f"{sys.argv[0]} {__version__}"
+    )
 
     subparsers = parser.add_subparsers(
         title="sub-commands",
-        help='Access the help page for a sub-command with: sub-command -h')
+        help="Access the help page for a sub-command with: sub-command -h",
+    )
 
     scripts.extract.init_parser(subparsers)
     scripts.match.init_parser(subparsers)

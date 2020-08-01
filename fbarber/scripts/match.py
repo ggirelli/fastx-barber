@@ -14,8 +14,7 @@ from tqdm import tqdm  # type: ignore
 logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
 
-def init_parser(subparsers: argparse._SubParsersAction
-                ) -> argparse.ArgumentParser:
+def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     """Initialize parser
 
     Arguments:
@@ -28,20 +27,32 @@ def init_parser(subparsers: argparse._SubParsersAction
         __name__.split(".")[-1],
         description="Scan FASTX file for matches.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Scan a FASTX file for matches.")
+        help="Scan a FASTX file for matches.",
+    )
 
-    parser.add_argument("input", type=str, metavar="in.fastx[.gz]",
-                        help="""Path to the fasta/q file
-                        to scan for matches.""")
-    parser.add_argument("output", type=str, metavar="out.fastx[.gz]",
-                        help="""Path to fasta/q file where to write
-                        matching records. Format will match the input.""")
+    parser.add_argument(
+        "input",
+        type=str,
+        metavar="in.fastx[.gz]",
+        help="""Path to the fasta/q file
+                        to scan for matches.""",
+    )
+    parser.add_argument(
+        "output",
+        type=str,
+        metavar="out.fastx[.gz]",
+        help="""Path to fasta/q file where to write
+                        matching records. Format will match the input.""",
+    )
 
     default_pattern = "^(?<UMI>.{8})(?<BC>GTCGTATC)(?<CS>GATC){s<2}"
     parser.add_argument(
-        "--pattern", type=str, default=default_pattern,
+        "--pattern",
+        type=str,
+        default=default_pattern,
         help=f"""Pattern to match to reads.
-        Remember to use quotes. Default: '{default_pattern}'""")
+        Remember to use quotes. Default: '{default_pattern}'""",
+    )
 
     parser = com.add_version_option(parser)
 
@@ -89,8 +100,7 @@ def run(args: argparse.Namespace) -> None:
         foutput[matched](record)
 
     parsed_count = matcher.matched_count + matcher.unmatched_count
-    logging.info("".join((
-        f"Matched {matcher.matched_count}/{parsed_count} records.")))
+    logging.info("".join((f"Matched {matcher.matched_count}/{parsed_count} records.")))
 
     OH.close()
     if args.unmatched_output is not None and UH is not None:

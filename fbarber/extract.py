@@ -1,7 +1,7 @@
-'''
+"""
 @author: Gabriele Girelli
 @contact: gigi.ga90@gmail.com
-'''
+"""
 
 from abc import ABCMeta, abstractmethod
 from fbarber.seqio import FastxSimpleRecord
@@ -92,8 +92,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
         """
         super(FastaFlagExtractor, self).__init__(selected_flags)
 
-    def extract(self, record: FastxSimpleRecord, match: Match
-                ) -> Dict[str, FlagData]:
+    def extract(self, record: FastxSimpleRecord, match: Match) -> Dict[str, FlagData]:
         """Extract flags
 
         Arguments:
@@ -114,15 +113,14 @@ class FastaFlagExtractor(ABCFlagExtractor):
                 flag_data.update([flag])
         return flag_data
 
-    def __extract_single_flag(self, match: Match, gid: int,
-                              flag: Optional[Tuple[str, str]] = None
-                              ) -> Tuple[str, FlagData]:
+    def __extract_single_flag(
+        self, match: Match, gid: int, flag: Optional[Tuple[str, str]] = None
+    ) -> Tuple[str, FlagData]:
         if flag is None:
             flag = list(match.groupdict().items())[gid]
         return (flag[0], (flag[1], match.start(gid + 1), match.end(gid + 1)))
 
-    def update(self, record: FastxSimpleRecord, match: Match
-               ) -> FastxSimpleRecord:
+    def update(self, record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
         """Update record
 
         Arguments:
@@ -151,8 +149,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
         """
         super(FastqFlagExtractor, self).__init__(selected_flags)
 
-    def extract(self, record: FastxSimpleRecord, match: Match
-                ) -> Dict[str, FlagData]:
+    def extract(self, record: FastxSimpleRecord, match: Match) -> Dict[str, FlagData]:
         """Extract flags
 
         Arguments:
@@ -169,8 +166,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
                 flag_data.update([flag])
         return flag_data
 
-    def update(self, record: FastxSimpleRecord, match: Match
-               ) -> FastxSimpleRecord:
+    def update(self, record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
         """Update record
 
         Arguments:
@@ -178,8 +174,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
             match {Match} -- results of matching the record to a flag pattern
         """
         _, _, qual = record
-        name, seq, _ = super(FastqFlagExtractor, self
-                             ).update(record, match)
+        name, seq, _ = super(FastqFlagExtractor, self).update(record, match)
         return (name, seq, qual)
 
 

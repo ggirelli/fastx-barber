@@ -1,7 +1,7 @@
-'''
+"""
 @author: Gabriele Girelli
 @contact: gigi.ga90@gmail.com
-'''
+"""
 
 from abc import ABCMeta, abstractmethod
 from fbarber.const import FastxFormats
@@ -40,8 +40,7 @@ class FastaTrimmer(ABCTrimmer):
         super(FastaTrimmer, self).__init__()
 
     @staticmethod
-    def trim_re(record: FastxSimpleRecord, match: Match
-                ) -> FastxSimpleRecord:
+    def trim_re(record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
         """Trim fasta record using regexp match
 
         Decorators:
@@ -64,8 +63,7 @@ class FastqTrimmer(FastaTrimmer):
         super(FastqTrimmer, self).__init__()
 
     @staticmethod
-    def trim_re(record: FastxSimpleRecord, match: Match
-                ) -> FastxSimpleRecord:
+    def trim_re(record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
         """Trim fastq record using regexp match
 
         Decorators:
@@ -79,7 +77,7 @@ class FastqTrimmer(FastaTrimmer):
         name, seq, qual = record
         assert qual is not None
         seq = regex.sub(match.re, "", seq)
-        qual = qual[-len(seq):]
+        qual = qual[-len(seq) :]
         return (name, seq, qual)
 
 

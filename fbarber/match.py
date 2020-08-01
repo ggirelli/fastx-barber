@@ -1,7 +1,7 @@
-'''
+"""
 @author: Gabriele Girelli
 @contact: gigi.ga90@gmail.com
-'''
+"""
 
 from abc import ABCMeta, abstractmethod
 from fbarber.seqio import FastxSimpleRecord
@@ -67,8 +67,7 @@ class FastxMatcher(ABCMatcher):
         """
         super(FastxMatcher, self).__init__(pattern)
 
-    def match(self, record: FastxSimpleRecord
-              ) -> Tuple[Match, bool]:
+    def match(self, record: FastxSimpleRecord) -> Tuple[Match, bool]:
         """Match a record with the provided pattern
 
         Arguments:
