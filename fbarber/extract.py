@@ -6,10 +6,10 @@
 from abc import ABCMeta, abstractmethod
 from fbarber.seqio import FastxSimpleRecord
 from fbarber.const import FastxFormats
-from typing import Any, List, Match, Optional, Tuple, Type
+from typing import Any, Dict, List, Match, Optional, Tuple, Type
 
-"""Flag data, contains name, matched str, start, and end position"""
-FlagData = Tuple[str, str, int, int]
+"""Flag data, contains matched str, start, and end position"""
+FlagData = Tuple[str, int, int]
 
 
 class ABCFlagExtractor(metaclass=ABCMeta):
@@ -55,7 +55,7 @@ class ABCFlagExtractor(metaclass=ABCMeta):
         self._comment_space = comment_space
 
     @abstractmethod
-    def extract(self, record: Any, match: Match) -> List[FlagData]:
+    def extract(self, record: Any, match: Match) -> Dict[str, FlagData]:
         """Extract flags (according to self._selected_flags)
 
         Decorators:
@@ -93,7 +93,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
         super(FastaFlagExtractor, self).__init__(selected_flags)
 
     def extract(self, record: FastxSimpleRecord, match: Match
-                ) -> List[FlagData]:
+                ) -> Dict[str, FlagData]:
         """Extract flags
 
         Arguments:
@@ -101,23 +101,25 @@ class FastaFlagExtractor(ABCFlagExtractor):
             match {Match} -- results of matching the record to a flag pattern
         """
         assert match is not None
-        flag_data: List[FlagData] = []
-        flags = list(match.groupdict().items())
+        flag_data: Dict[str, FlagData] = {}
+        flag_info = list(match.groupdict().items())
         if self._selected_flags is not None:
             for gid in range(len(match.groups())):
-                if flags[gid][0] in self._selected_flags:
-                    flag_data.append(self.__extract_single_flag(match, gid))
+                if flag_info[gid][0] in self._selected_flags:
+                    flag = self.__extract_single_flag(match, gid)
+                    flag_data.update([flag])
         else:
             for gid in range(len(match.groups())):
-                flag_data.append(self.__extract_single_flag(match, gid))
+                flag = self.__extract_single_flag(match, gid)
+                flag_data.update([flag])
         return flag_data
 
     def __extract_single_flag(self, match: Match, gid: int,
                               flag: Optional[Tuple[str, str]] = None
-                              ) -> FlagData:
+                              ) -> Tuple[str, FlagData]:
         if flag is None:
             flag = list(match.groupdict().items())[gid]
-        return (*flag, match.start(gid + 1), match.end(gid + 1))
+        return (flag[0], (flag[1], match.start(gid + 1), match.end(gid + 1)))
 
     def update(self, record: FastxSimpleRecord, match: Match
                ) -> FastxSimpleRecord:
@@ -129,7 +131,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
         """
         name, seq, _ = record
         name_bits = name.split(self._comment_space)
-        for name, flag, start, end in self.extract(record, match):
+        for name, (flag, start, end) in self.extract(record, match).items():
             name_bits[0] += f"{self._flag_delim}{self._flag_delim}{name}"
             name_bits[0] += f"{self._flag_delim}{flag}"
         name = " ".join(name_bits)
@@ -148,7 +150,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
         super(FastqFlagExtractor, self).__init__(selected_flags)
 
     def extract(self, record: FastxSimpleRecord, match: Match
-                ) -> List[FlagData]:
+                ) -> Dict[str, FlagData]:
         """Extract flags
 
         Arguments:
@@ -158,11 +160,11 @@ class FastqFlagExtractor(FastaFlagExtractor):
         assert match is not None
         name, seq, qual = record
         assert qual is not None
-        flags = super(FastqFlagExtractor, self).extract(record, match)
-        for name, flag, start, end in flags:
-            group_slice = slice(start, end)
-            flags.append((f"q{name}", qual[group_slice], start, end))
-        return flags
+        flag_data = super(FastqFlagExtractor, self).extract(record, match)
+        for name, (_, start, end) in flag_data.items():
+            flag = (f"q{name}", (qual[slice(start, end)], start, end))
+            flag_data.update([flag])
+        return flag_data
 
 
 def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
