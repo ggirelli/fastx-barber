@@ -4,15 +4,13 @@
 """
 
 import argparse
-from fbarber.const import __version__, logfmt, log_datefmt
-from fbarber.extract import get_fastx_flag_extractor
+from fbarber.scripts import common as com
+from fbarber.const import logfmt, log_datefmt
+from fbarber.extract import FastqFlagExtractor, get_fastx_flag_extractor
 from fbarber.match import FastxMatcher
-from fbarber.seqio import get_fastx_parser, get_fastx_writer
 from fbarber.trim import get_fastx_trimmer
 import logging
-import os
 import regex  # type: ignore
-import sys
 from tqdm import tqdm  # type: ignore
 
 logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
@@ -46,15 +44,10 @@ def init_parser(subparsers: argparse._SubParsersAction
         help=f"""Pattern to match to reads and extract flagged groups.
         Remember to use quotes. Default: '{default_pattern}'""")
 
-    parser.add_argument(
-        "--version", action="version", version=f"{sys.argv[0]} {__version__}")
+    parser = com.add_version_option(parser)
 
     advanced = parser.add_argument_group("advanced arguments")
-
-    advanced.add_argument(
-        "--unmatched-output", type=str, default=None,
-        help="""Path to fasta/q file where to write records that do not match
-        the pattern. Format will match the input.""")
+    advanced = com.add_unmatched_output_option(advanced)
     advanced.add_argument(
         "--flag-delim", type=str, default="~",
         help="""Delimiter for flags. Used twice for flag separation and once
@@ -65,14 +58,13 @@ def init_parser(subparsers: argparse._SubParsersAction
         help="""Comma-separate names of flags to be extracted.
         By default it extracts all flags.""")
     advanced.add_argument(
+        "--no-qual-flags", action="store_const", dest="qual_flags",
+        const=False, default=True, help="""""")
+    advanced.add_argument(
         "--comment-space", type=str, default=" ",
         help="""Delimiter for header comments. Defaults to a space.""")
-    advanced.add_argument(
-        "--compress-level", type=int, default=6,
-        help="""GZip compression level. Default: 6.""")
-    advanced.add_argument(
-        "--log-file", type=str,
-        help="""Path to file where to write the log.""")
+    advanced = com.add_compress_level_option(advanced)
+    advanced = com.add_log_file_option(advanced)
 
     parser.set_defaults(parse=parse_arguments, run=run)
 
@@ -92,14 +84,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     assert 1 == len(args.flag_delim)
 
     if args.log_file is not None:
-        assert not os.path.isdir(args.log_file)
-        log_dir = os.path.dirname(args.log_file)
-        assert os.path.isdir(log_dir) or '' == log_dir
-        fh = logging.FileHandler(args.log_file)
-        fh.setLevel(logging.INFO)
-        fh.setFormatter(logging.Formatter(logfmt))
-        logging.getLogger('').addHandler(fh)
-        logging.info(f"Writing log to: {args.log_file}")
+        com.add_log_file_handler(args)
 
     if args.selected_flags is not None:
         args.selected_flags = args.selected_flags.split(",")
@@ -113,30 +98,16 @@ def run(args: argparse.Namespace) -> None:
     Arguments:
         args {argparse.Namespace} -- input arguments
     """
-    IH, fmt = get_fastx_parser(args.input)
-    logging.info(f"Input: {args.input}")
-
-    OH = get_fastx_writer(fmt)(args.output, args.compress_level)
-    assert fmt == OH.format, (
-        "format mismatch between input and requested output")
-    logging.info(f"Output: {args.output}")
-
-    if args.unmatched_output is not None:
-        UH = get_fastx_writer(fmt)(args.unmatched_output, args.compress_level)
-        assert fmt == UH.format, (
-            "format mismatch between input and requested output")
-        logging.info(f"Unmatched output: {args.unmatched_output}")
-        foutput = {True: OH.write, False: UH.write}
-    else:
-        foutput = {True: OH.write, False: lambda x: None}
-
     logging.info(f"Pattern: {args.pattern}")
+    fmt, IH, OH, UH, foutput = com.get_io_handlers(args)
 
     matcher = FastxMatcher(args.regex)
+    trimmer = get_fastx_trimmer(fmt)
     flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags)
     flag_extractor.flag_delim = args.flag_delim
     flag_extractor.comment_space = args.comment_space
-    trimmer = get_fastx_trimmer(fmt)
+    if isinstance(flag_extractor, FastqFlagExtractor):
+        flag_extractor.extract_qual_flags = args.qual_flags
 
     logging.info("Trimming and extracting flags...")
     for record in tqdm(IH):
@@ -152,6 +123,6 @@ def run(args: argparse.Namespace) -> None:
         f"Trimmed {matcher.matched_count}/{parsed_count} records.")))
 
     OH.close()
-    if args.unmatched_output is not None:
+    if args.unmatched_output is not None and UH is not None:
         UH.close()
     logging.info("Done.")

@@ -141,6 +141,8 @@ class FastaFlagExtractor(ABCFlagExtractor):
 class FastqFlagExtractor(FastaFlagExtractor):
     """Fastq flag extractor class"""
 
+    extract_qual_flags: bool = True
+
     def __init__(self, selected_flags: Optional[List[str]] = None):
         """Initialize fastq file flag extractor
 
@@ -175,7 +177,9 @@ class FastqFlagExtractor(FastaFlagExtractor):
             match {Match} -- results of matching the record to a flag pattern
         """
         _, _, qual = record
-        name, seq, _ = super(FastqFlagExtractor, self).update(record, match)
+        if self.extract_qual_flags:
+            name, seq, _ = super(FastqFlagExtractor, self
+                                 ).update(record, match)
         return (name, seq, qual)
 
 
