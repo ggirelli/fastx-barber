@@ -161,10 +161,22 @@ class FastqFlagExtractor(FastaFlagExtractor):
         name, seq, qual = record
         assert qual is not None
         flag_data = super(FastqFlagExtractor, self).extract(record, match)
-        for name, (_, start, end) in flag_data.items():
+        for name, (_, start, end) in list(flag_data.items()):
             flag = (f"q{name}", (qual[slice(start, end)], start, end))
             flag_data.update([flag])
         return flag_data
+
+    def update(self, record: FastxSimpleRecord, match: Match
+               ) -> FastxSimpleRecord:
+        """Update record
+
+        Arguments:
+            name {str} -- record to update based on flags
+            match {Match} -- results of matching the record to a flag pattern
+        """
+        _, _, qual = record
+        name, seq, _ = super(FastqFlagExtractor, self).update(record, match)
+        return (name, seq, qual)
 
 
 def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
