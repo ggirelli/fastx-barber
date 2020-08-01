@@ -163,9 +163,10 @@ class FastqFlagExtractor(FastaFlagExtractor):
         name, seq, qual = record
         assert qual is not None
         flag_data = super(FastqFlagExtractor, self).extract(record, match)
-        for name, (_, start, end) in list(flag_data.items()):
-            flag = (f"q{name}", (qual[slice(start, end)], start, end))
-            flag_data.update([flag])
+        if self.extract_qual_flags:
+            for name, (_, start, end) in list(flag_data.items()):
+                flag = (f"q{name}", (qual[slice(start, end)], start, end))
+                flag_data.update([flag])
         return flag_data
 
     def update(self, record: FastxSimpleRecord, match: Match
@@ -177,9 +178,8 @@ class FastqFlagExtractor(FastaFlagExtractor):
             match {Match} -- results of matching the record to a flag pattern
         """
         _, _, qual = record
-        if self.extract_qual_flags:
-            name, seq, _ = super(FastqFlagExtractor, self
-                                 ).update(record, match)
+        name, seq, _ = super(FastqFlagExtractor, self
+                             ).update(record, match)
         return (name, seq, qual)
 
 
