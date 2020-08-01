@@ -1,20 +1,34 @@
-'''
+"""
 @author: Gabriele Girelli
 @contact: gigi.ga90@gmail.com
-'''
+"""
 
 from enum import Enum
 
 __version__ = "0.0.1"
 
-logfmt = "".join((
-    "%(asctime)s ",
-    "[P%(process)s:%(module)s:%(funcName)s] ",
-    "%(levelname)s: %(message)s"))
+logfmt = "".join(
+    (
+        "%(asctime)s ",
+        "[P%(process)s:%(module)s:%(funcName)s] ",
+        "%(levelname)s: %(message)s",
+    )
+)
 log_datefmt = "%m/%d/%Y %I:%M:%S"
 
 
 class FastxFormats(Enum):
+    """Fastx formats
+
+    Extends:
+        Enum
+
+    Variables:
+        FASTA {str}
+        FASTQ {str}
+        NONE {str} -- Not fastx
+    """
+
     FASTA = "fasta"
     FASTQ = "fastq"
     NONE = "None"
@@ -25,6 +39,16 @@ class FastxFormats(Enum):
 
 
 class FastxExtensions(Enum):
+    """Fastx extensions
+
+    Extends:
+        Enum
+
+    Variables:
+        FASTA {tuple}
+        FASTQ {tuple}
+    """
+
     FASTA = (".fa", ".fasta")
     FASTQ = (".fq", ".fastq")
 

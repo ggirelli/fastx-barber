@@ -7,7 +7,6 @@ import argparse
 from fbarber.scripts import common as com
 from fbarber.const import logfmt, log_datefmt
 from fbarber.match import FastxMatcher
-from fbarber.trim import get_fastx_trimmer
 import logging
 import regex  # type: ignore
 from tqdm import tqdm  # type: ignore
@@ -26,23 +25,24 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     """
     parser = subparsers.add_parser(
         __name__.split(".")[-1],
-        description="Trim FASTX file.",
+        description="Scan FASTX file for matches.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Trim a FASTX file.",
+        help="Scan a FASTX file for matches.",
     )
 
     parser.add_argument(
         "input",
         type=str,
         metavar="in.fastx[.gz]",
-        help="""Path to the fasta/q file to trim.""",
+        help="""Path to the fasta/q file
+                        to scan for matches.""",
     )
     parser.add_argument(
         "output",
         type=str,
         metavar="out.fastx[.gz]",
         help="""Path to fasta/q file where to write
-                        trimmed records. Format will match the input.""",
+                        matching records. Format will match the input.""",
     )
 
     default_pattern = "^(?<UMI>.{8})(?<BC>GTCGTATC)(?<CS>GATC){s<2}"
@@ -50,7 +50,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "--pattern",
         type=str,
         default=default_pattern,
-        help=f"""Pattern to match to reads and trim.
+        help=f"""Pattern to match to reads.
         Remember to use quotes. Default: '{default_pattern}'""",
     )
 
@@ -93,18 +93,14 @@ def run(args: argparse.Namespace) -> None:
     fmt, IH, OH, UH, foutput = com.get_io_handlers(args)
 
     matcher = FastxMatcher(args.regex)
-    trimmer = get_fastx_trimmer(fmt)
 
     logging.info("Trimming...")
     for record in tqdm(IH):
         match, matched = matcher.match(record)
-        if matched:
-            record = trimmer.trim_re(record, match)
         foutput[matched](record)
 
     parsed_count = matcher.matched_count + matcher.unmatched_count
-
-    logging.info("".join((f"Trimmed {matcher.matched_count}/{parsed_count} records.")))
+    logging.info("".join((f"Matched {matcher.matched_count}/{parsed_count} records.")))
 
     OH.close()
     if args.unmatched_output is not None and UH is not None:

@@ -1,7 +1,7 @@
-'''
+"""
 @author: Gabriele Girelli
 @contact: gigi.ga90@gmail.com
-'''
+"""
 
 from abc import ABCMeta, abstractmethod
 from Bio import SeqIO  # type: ignore
@@ -14,8 +14,8 @@ from typing import Any, IO, Optional, Tuple, Type, Union
 FastxSimpleRecord = Tuple[str, str, Optional[str]]
 
 FastXParser = Union[
-    SeqIO.QualityIO.FastqGeneralIterator,
-    SeqIO.FastaIO.SimpleFastaParser]
+    SeqIO.QualityIO.FastqGeneralIterator, SeqIO.FastaIO.SimpleFastaParser
+]
 
 
 def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
@@ -70,6 +70,7 @@ class ABCSimpleWriter(metaclass=ABCMeta):
     Variables:
         _OH {IO} -- output buffer handle
     """
+
     _OH: IO
 
     def __init__(self, path: str, compress_level: int = 6):
@@ -112,8 +113,9 @@ class SimpleFastxWriter(ABCSimpleWriter):
         ABCSimpleWriter
 
     Variables:
-        _fmt {FastxFormats} -- "fasta" or "fastq"
+        _fmt {FastxFormats}
     """
+
     _fmt: FastxFormats
 
     def __init__(self, path: str, compress_level: int = 6):
@@ -136,7 +138,7 @@ class SimpleFastxWriter(ABCSimpleWriter):
         """Fastx file format
 
         Returns:
-            strFastxFormats -- "fasta" or "fastq"
+            FastxFormats
         """
         return self._fmt
 
@@ -189,6 +191,7 @@ class SimpleFastqWriter(SimpleFastxWriter):
     Extends:
         SimpleFastxWriter
     """
+
     def __init__(self, path: str, compress_level: int = 6):
         """Initialize fastq simple writer
 
@@ -218,7 +221,7 @@ def get_fastx_writer(fmt: FastxFormats) -> Type[SimpleFastxWriter]:
     Retrieves appropriate simple writer class.
 
     Arguments:
-        fmt {str} -- "fasta" or "fastq"
+        fmt {FastxFormats}
 
     Returns:
         Type[SimpleFastxWriter] -- simple writer class
