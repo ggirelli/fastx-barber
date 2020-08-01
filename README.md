@@ -18,5 +18,4 @@ We welcome any contributions to `fastx-barber`. In short, we use [`black`](https
 
 ## License
 
-MIT License
-Copyright (c) 2020 Gabriele Girelli
+`MIT License - Copyright (c) 2020 Gabriele Girelli`
