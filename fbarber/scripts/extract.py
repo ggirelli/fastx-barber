@@ -59,7 +59,8 @@ def init_parser(subparsers: argparse._SubParsersAction
         By default it extracts all flags.""")
     advanced.add_argument(
         "--no-qual-flags", action="store_const", dest="qual_flags",
-        const=False, default=True, help="""""")
+        const=False, default=True, help="""Do not extract quality flags
+        (when running on a fastq file).""")
     advanced.add_argument(
         "--comment-space", type=str, default=" ",
         help="""Delimiter for header comments. Defaults to a space.""")
