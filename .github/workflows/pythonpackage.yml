@@ -22,8 +22,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+    - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
     - name: Cache pip
@@ -41,12 +40,10 @@ jobs:
     - name: Install flake8
       run: |
         pip install flake8
-    - name: Python Poetry Action
-      uses: abatilo/actions-poetry@v1.0.0
-      with:
-        args: install
-    - name: Black Code Formatter
-      uses: lgeiger/black-action@v1.0.1
+    - uses: dschep/install-poetry-action@v1.3
+    - name: Install with poetry
+      run: poetry install
+    - uses: lgeiger/black-action@v1.0.1
       with:
         args: ". --check"
     - name: Lint with flake8
@@ -55,7 +52,6 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --max-complexity=5 --max-line-length=88 --ignore=E203 --statistics
-    - name: Check with Mypy
-      uses: jpetrucciani/mypy-check@0.761
+    - uses: jpetrucciani/mypy-check@0.761
       with:
         path: '.'
