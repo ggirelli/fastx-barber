@@ -61,6 +61,10 @@ def init_parser(subparsers: argparse._SubParsersAction
         for key-value pairs. It should be a single character. Default: '~'.
         Example: header~~flag1key~flag1value~~flag2key~flag2value""")
     advanced.add_argument(
+        "--selected-flags", type=str,
+        help="""Comma-separate names of flags to be extracted.
+        By default it extracts all flags.""")
+    advanced.add_argument(
         "--comment-space", type=str, default=" ",
         help="""Delimiter for header comments. Defaults to a space.""")
     advanced.add_argument(
@@ -93,6 +97,9 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     logging.getLogger('').addHandler(fh)
     logging.info(f"Writing log to: {args.log_file}")
 
+    if args.selected_flags is not None:
+        args.selected_flags = args.selected_flags.split(",")
+
     return args
 
 
@@ -122,8 +129,9 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Pattern: {args.pattern}")
 
     matcher = FastxMatcher(args.regex)
-    flag_extractor = get_fastx_flag_extractor(fmt)(
-        args.flag_delim, args.comment_space)
+    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags)
+    flag_extractor.flag_delim = args.flag_delim
+    flag_extractor.comment_space = args.comment_space
     trimmer = get_fastx_trimmer(fmt)
 
     logging.info("Trimming and extracting flags...")

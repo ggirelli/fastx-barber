@@ -6,7 +6,10 @@
 from abc import ABCMeta, abstractmethod
 from fbarber.seqio import FastxSimpleRecord
 from fbarber.const import FastxFormats
-from typing import Any, Dict, Match, Type
+from typing import Any, List, Match, Optional, Tuple, Type
+
+"""Flag data, contains name, matched str, start, and end position"""
+FlagData = Tuple[str, str, int, int]
 
 
 class ABCFlagExtractor(metaclass=ABCMeta):
@@ -16,30 +19,44 @@ class ABCFlagExtractor(metaclass=ABCMeta):
         metaclass=ABCMeta
 
     Variables:
-        _delim {str} -- flag delimiter
+        _flag_delim {str} -- flag delimiter
         _comment_space {str} -- fastx comment separator
+        _selected_flags {Optional[List[str]]} -- flags to extract
     """
 
-    _delim: str
-    _comment_space: str
+    _flag_delim: str = "~"
+    _comment_space: str = " "
+    _selected_flags: Optional[List[str]] = None
 
-    def __init__(self,
-                 flag_delim: str = "~",
-                 comment_space: str = " "):
+    def __init__(self, selected_flags: Optional[List[str]] = None):
         """Initialize flag extractor
 
         Keyword Arguments:
-            flag_delim {str} -- flag delimiter (default: {"~"})
-            comment_space {str} -- fastx comment separator (default: {" "})
+            selected_flags {Optional[List[str]]} -- (default: {None})
         """
+        self._selected_flags = selected_flags
+
+    @property
+    def flag_delim(self):
+        return self._flag_delim
+
+    @flag_delim.setter
+    def flag_delim(self, flag_delim: str):
         assert 1 == len(flag_delim)
-        self._delim = flag_delim
+        self._flag_delim = flag_delim
+
+    @property
+    def comment_space(self):
+        return self._flag_delim
+
+    @comment_space.setter
+    def comment_space(self, comment_space: str):
         assert 1 == len(comment_space)
         self._comment_space = comment_space
 
     @abstractmethod
-    def extract(self, record: Any, match: Match) -> Dict[str, str]:
-        """Extract flags
+    def extract(self, record: Any, match: Match) -> List[FlagData]:
+        """Extract flags (according to self._selected_flags)
 
         Decorators:
             abstractmethod
@@ -67,20 +84,16 @@ class ABCFlagExtractor(metaclass=ABCMeta):
 class FastaFlagExtractor(ABCFlagExtractor):
     """Fasta flag extractor class"""
 
-    def __init__(self,
-                 flag_delim: str = "~",
-                 comment_space: str = " "):
+    def __init__(self, selected_flags: Optional[List[str]] = None):
         """Initialize fasta file flag extractor
 
         Keyword Arguments:
-            flag_delim {str} -- flag delimiter (default: {"~"})
-            comment_space {str} -- fasta comment separator (default: {" "})
+            selected_flags {Optional[List[str]]} -- (default: {None})
         """
-        super(FastaFlagExtractor, self).__init__(
-            flag_delim, comment_space)
+        super(FastaFlagExtractor, self).__init__(selected_flags)
 
     def extract(self, record: FastxSimpleRecord, match: Match
-                ) -> Dict[str, str]:
+                ) -> List[FlagData]:
         """Extract flags
 
         Arguments:
@@ -88,7 +101,23 @@ class FastaFlagExtractor(ABCFlagExtractor):
             match {Match} -- results of matching the record to a flag pattern
         """
         assert match is not None
-        return match.groupdict()
+        flag_data: List[FlagData] = []
+        flags = list(match.groupdict().items())
+        if self._selected_flags is not None:
+            for gid in range(len(match.groups())):
+                if flags[gid][0] in self._selected_flags:
+                    flag_data.append(self.__extract_single_flag(match, gid))
+        else:
+            for gid in range(len(match.groups())):
+                flag_data.append(self.__extract_single_flag(match, gid))
+        return flag_data
+
+    def __extract_single_flag(self, match: Match, gid: int,
+                              flag: Optional[Tuple[str, str]] = None
+                              ) -> FlagData:
+        if flag is None:
+            flag = list(match.groupdict().items())[gid]
+        return (*flag, match.start(gid + 1), match.end(gid + 1))
 
     def update(self, record: FastxSimpleRecord, match: Match
                ) -> FastxSimpleRecord:
@@ -100,9 +129,9 @@ class FastaFlagExtractor(ABCFlagExtractor):
         """
         name, seq, _ = record
         name_bits = name.split(self._comment_space)
-        for label, value in self.extract(record, match).items():
-            name_bits[0] += f"{self._delim}{self._delim}{label}"
-            name_bits[0] += f"{self._delim}{value}"
+        for name, flag, start, end in self.extract(record, match):
+            name_bits[0] += f"{self._flag_delim}{self._flag_delim}{name}"
+            name_bits[0] += f"{self._flag_delim}{flag}"
         name = " ".join(name_bits)
         return (name, seq, None)
 
@@ -110,20 +139,16 @@ class FastaFlagExtractor(ABCFlagExtractor):
 class FastqFlagExtractor(FastaFlagExtractor):
     """Fastq flag extractor class"""
 
-    def __init__(self,
-                 flag_delim: str = "~",
-                 comment_space: str = " "):
+    def __init__(self, selected_flags: Optional[List[str]] = None):
         """Initialize fastq file flag extractor
 
         Keyword Arguments:
-            flag_delim {str} -- flag delimiter (default: {"~"})
-            comment_space {str} -- fastq comment separator (default: {" "})
+            selected_flags {Optional[List[str]]} -- (default: {None})
         """
-        super(FastqFlagExtractor, self).__init__(
-            flag_delim, comment_space)
+        super(FastqFlagExtractor, self).__init__(selected_flags)
 
     def extract(self, record: FastxSimpleRecord, match: Match
-                ) -> Dict[str, str]:
+                ) -> List[FlagData]:
         """Extract flags
 
         Arguments:
@@ -134,10 +159,9 @@ class FastqFlagExtractor(FastaFlagExtractor):
         name, seq, qual = record
         assert qual is not None
         flags = super(FastqFlagExtractor, self).extract(record, match)
-        flag_names = list(match.groupdict().keys())
-        for gid in range(len(match.groups())):
-            group_slice = slice(match.start(gid + 1), match.end(gid + 1))
-            flags[f"q{flag_names[gid]}"] = qual[group_slice]
+        for name, flag, start, end in flags:
+            group_slice = slice(start, end)
+            flags.append((f"q{name}", qual[group_slice], start, end))
         return flags
 
 
