@@ -77,14 +77,15 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     """
     args.regex = regex.compile(args.pattern)
 
-    assert not os.path.isdir(args.log_file)
-    log_dir = os.path.dirname(args.log_file)
-    assert os.path.isdir(log_dir) or '' == log_dir
-    fh = logging.FileHandler(args.log_file)
-    fh.setLevel(logging.INFO)
-    fh.setFormatter(logging.Formatter(logfmt))
-    logging.getLogger('').addHandler(fh)
-    logging.info(f"Writing log to: {args.log_file}")
+    if args.log_file is not None:
+        assert not os.path.isdir(args.log_file)
+        log_dir = os.path.dirname(args.log_file)
+        assert os.path.isdir(log_dir) or '' == log_dir
+        fh = logging.FileHandler(args.log_file)
+        fh.setLevel(logging.INFO)
+        fh.setFormatter(logging.Formatter(logfmt))
+        logging.getLogger('').addHandler(fh)
+        logging.info(f"Writing log to: {args.log_file}")
 
     return args
 

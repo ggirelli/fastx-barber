@@ -70,6 +70,9 @@ def init_parser(subparsers: argparse._SubParsersAction
     advanced.add_argument(
         "--compress-level", type=int, default=6,
         help="""GZip compression level. Default: 6.""")
+    advanced.add_argument(
+        "--log-file", type=str,
+        help="""Path to file where to write the log.""")
 
     parser.set_defaults(parse=parse_arguments, run=run)
 
@@ -88,14 +91,15 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.regex = regex.compile(args.pattern)
     assert 1 == len(args.flag_delim)
 
-    assert not os.path.isdir(args.log_file)
-    log_dir = os.path.dirname(args.log_file)
-    assert os.path.isdir(log_dir) or '' == log_dir
-    fh = logging.FileHandler(args.log_file)
-    fh.setLevel(logging.INFO)
-    fh.setFormatter(logging.Formatter(logfmt))
-    logging.getLogger('').addHandler(fh)
-    logging.info(f"Writing log to: {args.log_file}")
+    if args.log_file is not None:
+        assert not os.path.isdir(args.log_file)
+        log_dir = os.path.dirname(args.log_file)
+        assert os.path.isdir(log_dir) or '' == log_dir
+        fh = logging.FileHandler(args.log_file)
+        fh.setLevel(logging.INFO)
+        fh.setFormatter(logging.Formatter(logfmt))
+        logging.getLogger('').addHandler(fh)
+        logging.info(f"Writing log to: {args.log_file}")
 
     if args.selected_flags is not None:
         args.selected_flags = args.selected_flags.split(",")
