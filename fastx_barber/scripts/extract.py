@@ -4,11 +4,11 @@
 """
 
 import argparse
-from fbarber.scripts import common as com
-from fbarber.const import logfmt, log_datefmt
-from fbarber.extract import FastqFlagExtractor, get_fastx_flag_extractor
-from fbarber.match import FastxMatcher
-from fbarber.trim import get_fastx_trimmer
+from fastx_barber.scripts import common as com
+from fastx_barber.const import logfmt, log_datefmt
+from fastx_barber.extract import FastqFlagExtractor, get_fastx_flag_extractor
+from fastx_barber.match import FastxMatcher
+from fastx_barber.trim import get_fastx_trimmer
 import logging
 import regex  # type: ignore
 from tqdm import tqdm  # type: ignore

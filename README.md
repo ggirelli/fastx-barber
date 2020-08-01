@@ -1,10 +1,10 @@
 # fastx-barber
 
-Python package for trimming and sequence extraction from FASTA  and FASTQ files.
+Python package to trim and extract flags from FASTA  and FASTQ files.
 
 ## Requirements
 
-`fastx-barber` has been tested with Python 3.6, 3.7, and 3.8. We recommend installing it using `pipx` (see [below](#install)) to avoid dependency conflicts with other packages. The pacakges we depend on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies).
+`fastx-barber` has been tested with Python 3.6, 3.7, and 3.8. We recommend installing it using `pipx` (see [below](#install)) to avoid dependency conflicts with other packages. The packages it depends on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies). We use [`poetry`](https://github.com/python-poetry/poetry) to handle our dependencies.
 
 ## Install
 

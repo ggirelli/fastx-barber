@@ -4,8 +4,8 @@
 """
 
 from abc import ABCMeta, abstractmethod
-from fbarber.seqio import FastxSimpleRecord
-from fbarber.const import FastxFormats
+from fastx_barber.seqio import FastxSimpleRecord
+from fastx_barber.const import FastxFormats
 from typing import Any, Dict, List, Match, Optional, Tuple, Type
 
 """Flag data, contains matched str, start, and end position"""

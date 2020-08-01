@@ -4,9 +4,9 @@
 """
 
 import argparse
-from fbarber.const import __version__, logfmt, FastxFormats
-from fbarber.seqio import get_fastx_parser, get_fastx_writer
-from fbarber.seqio import FastXParser, SimpleFastxWriter
+from fastx_barber.const import __version__, logfmt, FastxFormats
+from fastx_barber.seqio import get_fastx_parser, get_fastx_writer
+from fastx_barber.seqio import FastXParser, SimpleFastxWriter
 import logging
 import os
 import sys

@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "fastx-barber"
+version = "0.0.1"
+description = "FASTX trimming tools"
+authors = ["Gabriele Girelli <gigi.ga90@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/ggirelli/fastx-barber"
+repository = "https://github.com/ggirelli/fastx-barber"
+keywords = ["fasta", "fastq", "trimming", "bioinformatics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Operating System :: Unix",
+    "Operating System :: POSIX :: Linux",
+]
+include = ["CHANGELOG.md", "LICENSE"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+biopython = "^1.77"
+regex = "^2020.7.14"
+tqdm = "^4.48.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+"fbarber" = "fastx_barber.scripts.barber:main"

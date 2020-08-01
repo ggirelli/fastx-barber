@@ -4,8 +4,8 @@
 """
 
 from abc import ABCMeta, abstractmethod
-from fbarber.const import FastxFormats
-from fbarber.seqio import FastxSimpleRecord
+from fastx_barber.const import FastxFormats
+from fastx_barber.seqio import FastxSimpleRecord
 import regex  # type: ignore
 from typing import Any, Match, Type
 

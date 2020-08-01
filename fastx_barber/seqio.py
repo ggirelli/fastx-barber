@@ -5,8 +5,8 @@
 
 from abc import ABCMeta, abstractmethod
 from Bio import SeqIO  # type: ignore
-from fbarber.io import is_gzipped
-from fbarber.const import FastxFormats, FastxExtensions
+from fastx_barber.io import is_gzipped
+from fastx_barber.const import FastxFormats, FastxExtensions
 import gzip
 import os
 from typing import Any, IO, Optional, Tuple, Type, Union

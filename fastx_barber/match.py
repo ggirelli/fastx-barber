@@ -4,7 +4,7 @@
 """
 
 from abc import ABCMeta, abstractmethod
-from fbarber.seqio import FastxSimpleRecord
+from fastx_barber.seqio import FastxSimpleRecord
 import regex  # type: ignore
 from typing import Any, Match, Pattern, Tuple
 

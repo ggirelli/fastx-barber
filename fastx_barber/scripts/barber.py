@@ -4,8 +4,8 @@
 """
 
 import argparse
-from fbarber.const import __version__
-from fbarber import scripts
+from fastx_barber.const import __version__
+from fastx_barber import scripts
 import sys
 
 

@@ -4,9 +4,9 @@
 """
 
 import argparse
-from fbarber.scripts import common as com
-from fbarber.const import logfmt, log_datefmt
-from fbarber.match import FastxMatcher
+from fastx_barber.scripts import common as com
+from fastx_barber.const import logfmt, log_datefmt
+from fastx_barber.match import FastxMatcher
 import logging
 import regex  # type: ignore
 from tqdm import tqdm  # type: ignore
