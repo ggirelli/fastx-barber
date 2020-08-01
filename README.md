@@ -4,7 +4,7 @@ Python package for trimming and sequence extraction from FASTA  and FASTQ files.
 
 ## Requirements
 
-`fastx-barber` has been tested with Python 3.6, 3.7, and 3.8. We recommend installing it using `pipx` (see [below](#install)) to avoid dependency conflicts with other packages. The pacakges we depend on are listed in our [dependency graph](network/dependencies).
+`fastx-barber` has been tested with Python 3.6, 3.7, and 3.8. We recommend installing it using `pipx` (see [below](#install)) to avoid dependency conflicts with other packages. The pacakges we depend on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies).
 
 ## Install
 
@@ -14,9 +14,7 @@ Once you have `pipx` ready on your system, install the latest stable release of 
 
 ## Contributing
 
-We welcome any contributions to `fastx-barber`. In short, we use [`black`](https://github.com/psf/black) to standardize code format. Any code change also needs to pass `mypy` checks.
-
-For more details, please refer to our [contribution guidelines](CONTRIBUTING.md) if this is your first time contributing! Also, check out our [code of conduct](CODE_OF_CONDUCT.md).
+We welcome any contributions to `fastx-barber`. In short, we use [`black`](https://github.com/psf/black) to standardize code format. Any code change also needs to pass `mypy` checks. For more details, please refer to our [contribution guidelines](CONTRIBUTING.md) if this is your first time contributing! Also, check out our [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
