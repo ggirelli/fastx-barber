@@ -6,7 +6,7 @@ Hi there, and thank you for considering contributing to `fastx-barber` to help u
 
 # Ground Rules
 
-To see what kinds of behaviour are acceptable when contributing to `fastx-barber`, please refer to our [code of conduct](https://github.com/ggirelli/fastx-barber/blob/master/CODE_OF_CONDUCT.md).
+To see what kinds of behavior are acceptable when contributing to `fastx-barber`, please refer to our [code of conduct](https://github.com/ggirelli/fastx-barber/blob/master/CODE_OF_CONDUCT.md).
 
 # Getting started
 
