@@ -1,6 +1,14 @@
 # fastx-barber
 
-Python package to trim and extract flags from FASTA  and FASTQ files.
+A Python3.6+ package to trim and extract flags from FASTA  and FASTQ files.
+
+## Features
+
+* Select your reads based on a pattern (regular expression).
+* Trim your reads based on a pattern (regular expression).
+* Extract parts (flags) of reads based on a pattern and store them in the read headers. You can also extract the corresponding portions of the quality string too (only for fastq files).
+* All patterns use the `regex` Python package to support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (using fuzzy matching might affect the barber's speed).
+* You can also export reads that do not match the provided pattern.
 
 ## Requirements
 
@@ -17,6 +25,17 @@ cd fastx-barber
 pipx install .
 ```
 If you see the stars (✨ 🌟 ✨), then the installation went well!
+
+## Usage
+
+Run:
+
+* `fbarber` to access the barber's services.
+* `fbarber trim` to trim your reads.
+* `fbarber match` to select reads based on a pattern (regular expression).
+* `fbarber extract` to extract parts of a read and store them in the read name, and then trim it.
+
+Add `-h` to see the full help page of a command!
 
 ## Contributing
 
