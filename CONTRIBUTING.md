@@ -29,3 +29,11 @@ If you would like to see a new feature implemented in `fastx-barber`, or to have
 # Style your contributions
 
 We like to have `fastx-barber` code styled with [`black`](https://github.com/psf/black) and checked with `mypy`. `mypy` and `flake8` conforming checks are automatically ran on all pull requests through GitHub Actions.
+
+# Change dependencies
+
+If your code changes `fastx-barber` dependencies, we recommend changing them in the `pyproject.toml` file and then regenerate `requirements.txt` by running:
+
+```
+poetry export -f requirements.txt -o requirements.txt --without-hashes
+```
