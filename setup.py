@@ -19,7 +19,7 @@ with open(ver_path) as ver_file:
     exec(ver_file.read(), const_data)
 
 setup(
-    name='fast-barber',
+    name='fastx-barber',
     version=const_data['__version__'],
     description='FASTX trimming tools',
     long_description=long_description,
