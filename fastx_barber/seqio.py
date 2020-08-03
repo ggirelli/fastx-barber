@@ -9,22 +9,19 @@ from fastx_barber.io import is_gzipped
 from fastx_barber.const import FastxFormats, FastxExtensions
 import gzip
 import os
-from typing import Any, IO, Optional, Tuple, Type, Union
+from typing import Any, IO, Iterator, List, Optional, Tuple, Type, Union
 
-FastxSimpleRecord = Tuple[str, str, Optional[str]]
+SimpleFastxRecord = Tuple[str, str, Optional[str]]
 
-FastXParser = Union[
+SimpleFastxParser = Union[
     SeqIO.QualityIO.FastqGeneralIterator, SeqIO.FastaIO.SimpleFastaParser
 ]
 
 
 def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
-    """Identify fastx file format (fasta or fastq).
-
-    Retrieves fastx file format and gzipped status.
-
-    Arguments:
-        path {str} -- path to fastx file
+    """
+    Returns:
+        Tuple[FastxFormats, bool] -- fastx file format and gzipped status
     """
     base, ext, gzipped = is_gzipped(path)
     if gzipped:
@@ -38,14 +35,8 @@ def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
         return (FastxFormats.NONE, False)
 
 
-def get_fastx_parser(path: str) -> Tuple[FastXParser, FastxFormats]:
-    """Get parser for fasta or fastq file.
-
-    Retrieves appropriate simple parser and associated format (fasta or fastq).
-
-    Arguments:
-        path {str} -- path to fastx file
-    """
+def get_fastx_parser(path: str) -> Tuple[SimpleFastxParser, FastxFormats]:
+    """Retrieves appropriate simple parser and associated format (fasta or fastq)."""
     fmt, gzipped = get_fastx_format(path)
     handle: Union[str, IO] = path
     if gzipped:
@@ -59,6 +50,48 @@ def get_fastx_parser(path: str) -> Tuple[FastXParser, FastxFormats]:
     else:
         parser = (x for x in handle)
     return (parser, fmt)
+
+
+class FastxChunkedParser(object):
+    """Parser with chunking capabilities for fasta and fastq files.
+
+    Variables:
+        __IH: SimpleFastxParser {[type]} -- [description]
+    """
+
+    __IH: SimpleFastxParser
+    __chunk_size: int
+    __chunk_counter: int = 0
+
+    def __init__(self, parser: SimpleFastxParser, chunk_size: int):
+        super(FastxChunkedParser, self).__init__()
+        self.__IH = parser
+        assert chunk_size > 0
+        self.__chunk_size = chunk_size
+
+    @property
+    def chunk_size(self):
+        return self.__chunk_size
+
+    @property
+    def last_chunk_id(self):
+        return self.__chunk_counter
+
+    def __next__(self) -> Tuple[List[SimpleFastxRecord], int]:
+        chunk: List[SimpleFastxRecord] = []
+        while len(chunk) < self.__chunk_size:
+            try:
+                chunk.append(next(self.__IH))
+            except StopIteration:
+                break
+        if 0 == len(chunk):
+            raise StopIteration
+        else:
+            self.__chunk_counter += 1
+            return (chunk, self.__chunk_counter)
+
+    def __iter__(self) -> Iterator[Tuple[List[SimpleFastxRecord], int]]:
+        return self
 
 
 class ABCSimpleWriter(metaclass=ABCMeta):
@@ -89,6 +122,10 @@ class ABCSimpleWriter(metaclass=ABCMeta):
         else:
             self._OH = open(path, "w+")
 
+    @property
+    def name(self) -> str:
+        return self._OH.name
+
     @abstractmethod
     def write(self, record: Any) -> None:
         """Write record to output buffer
@@ -107,125 +144,51 @@ class ABCSimpleWriter(metaclass=ABCMeta):
 
 
 class SimpleFastxWriter(ABCSimpleWriter):
-    """Simple record writer for fasta and fastq files abstract base class
-
-    Extends:
-        ABCSimpleWriter
-
-    Variables:
-        _fmt {FastxFormats}
-    """
 
     _fmt: FastxFormats
 
     def __init__(self, path: str, compress_level: int = 6):
-        """Initialize fastx simple writer
-
-        Identify fastx file format (fasta or fastq).
-
-        Arguments:
-            path {str} -- path to output file
-
-        Keyword Arguments:
-            compress_level {int} -- gzip compression level (default: {6})
-        """
         super(SimpleFastxWriter, self).__init__(path, compress_level)
         self._fmt, _ = get_fastx_format(path)
         assert self._fmt in FastxFormats
 
     @property
     def format(self) -> FastxFormats:
-        """Fastx file format
-
-        Returns:
-            FastxFormats
-        """
         return self._fmt
 
     @abstractmethod
-    def write(self, record: FastxSimpleRecord) -> None:
+    def write(self, record: SimpleFastxRecord) -> None:
         """Write record to output buffer
 
         Decorators:
             abstractmethod
 
         Arguments:
-            record {FastxSimpleRecord} -- record to be written
+            record {SimpleFastxRecord} -- record to be written
         """
         pass
 
 
 class SimpleFastaWriter(SimpleFastxWriter):
-    """Simple record writer class for fasta files
-
-    Extends:
-        SimpleFastxWriter
-    """
-
     def __init__(self, path: str, compress_level: int = 6):
-        """Initialize fasta simple writer
-
-        Checks that the input file extension matches the expected one (fasta).
-
-        Arguments:
-            path {str} -- path to output file
-
-        Keyword Arguments:
-            compress_level {int} -- gzip compression level (default: {6})
-        """
         super(SimpleFastaWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTA == self.format
 
-    def write(self, record: FastxSimpleRecord) -> None:
-        """Write fasta record to output buffer
-
-        Arguments:
-            record {FastxSimpleRecord} -- fasta record to be written
-        """
+    def write(self, record: SimpleFastxRecord) -> None:
         self._OH.write(f">{record[0]}\n{record[1]}\n")
 
 
 class SimpleFastqWriter(SimpleFastxWriter):
-    """Simple record writer class for fastq files
-
-    Extends:
-        SimpleFastxWriter
-    """
-
     def __init__(self, path: str, compress_level: int = 6):
-        """Initialize fastq simple writer
-
-        Checks that the input file extension matches the expected one (fasta).
-
-        Arguments:
-            path {str} -- path to output file
-
-        Keyword Arguments:
-            compress_level {int} -- gzip compression level (default: {6})
-        """
         super(SimpleFastqWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTQ == self.format
 
-    def write(self, record: FastxSimpleRecord) -> None:
-        """Write fastq record to output buffer
-
-        Arguments:
-            record {FastxSimpleRecord} -- fastq record to be written
-        """
+    def write(self, record: SimpleFastxRecord) -> None:
         self._OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
 
 
 def get_fastx_writer(fmt: FastxFormats) -> Type[SimpleFastxWriter]:
-    """Get writer for fastq or fastq file.
-
-    Retrieves appropriate simple writer class.
-
-    Arguments:
-        fmt {FastxFormats}
-
-    Returns:
-        Type[SimpleFastxWriter] -- simple writer class
-    """
+    """Retrieves appropriate simple writer class."""
     if FastxFormats.FASTA == fmt:
         return SimpleFastaWriter
     elif FastxFormats.FASTQ == fmt:

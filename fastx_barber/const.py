@@ -8,11 +8,7 @@ from enum import Enum
 __version__ = "0.0.1"
 
 logfmt = "".join(
-    (
-        "%(asctime)s ",
-        "[P%(process)s:%(module)s:%(funcName)s] ",
-        "%(levelname)s: %(message)s",
-    )
+    ("%(asctime)s ", "[P%(process)s:%(module)s] ", "%(levelname)s: %(message)s",)
 )
 log_datefmt = "%m/%d/%Y %I:%M:%S"
 
@@ -55,3 +51,7 @@ class FastxExtensions(Enum):
     @classmethod
     def has_value(self, value):
         return any(value in v for v in self._value2member_map_)
+
+
+QFLAG_START = "q"
+DEFAULT_PHRED_OFFSET = 33
