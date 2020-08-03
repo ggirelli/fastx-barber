@@ -9,7 +9,7 @@ from fastx_barber.io import is_gzipped
 from fastx_barber.const import FastxFormats, FastxExtensions
 import gzip
 import os
-from typing import Any, IO, Optional, Tuple, Type, Union
+from typing import Any, IO, Iterator, List, Optional, Tuple, Type, Union
 
 FastxSimpleRecord = Tuple[str, str, Optional[str]]
 
@@ -50,6 +50,40 @@ def get_fastx_parser(path: str) -> Tuple[FastXParser, FastxFormats]:
     else:
         parser = (x for x in handle)
     return (parser, fmt)
+
+
+class FastxChunkedParser(object):
+    """Parser with chunking capabilities for fasta and fastq files.
+
+    Variables:
+        __IH: FastXParser {[type]} -- [description]
+    """
+
+    __IH: FastXParser
+    __chunk_size: int
+
+    def __init__(self, parser: FastXParser, chunk_size: int):
+        super(FastxChunkedParser, self).__init__()
+        self.__IH = parser
+        assert chunk_size > 0
+        self.__chunk_size = chunk_size
+
+    @property
+    def chunk_size(self):
+        return self.__chunk_size
+
+    def __next__(self) -> List[FastxSimpleRecord]:
+        chunk: List[FastxSimpleRecord] = []
+        while len(chunk) < self.__chunk_size:
+            try:
+                chunk.append(next(self.__IH))
+            except StopIteration:
+                break
+        return chunk
+
+    def __iter__(self) -> Iterator[List[FastxSimpleRecord]]:
+        self.__IH.seek(0)
+        return self
 
 
 class ABCSimpleWriter(metaclass=ABCMeta):
