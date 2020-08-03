@@ -9,6 +9,7 @@ from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag
 from fastx_barber.qual import QualityFilter
 from fastx_barber.seqio import get_fastx_parser, get_fastx_writer
 from fastx_barber.seqio import FastXParser, SimpleFastxWriter
+import joblib  # type: ignore
 import logging
 import os
 import sys
@@ -159,3 +160,33 @@ def add_log_file_option(arg_group: argparse._ArgumentGroup) -> argparse._Argumen
         "--log-file", type=str, help="""Path to file where to write the log."""
     )
     return arg_group
+
+
+def add_chunk_size_option(
+    arg_group: argparse._ArgumentGroup,
+) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--chunk-size",
+        type=int,
+        default=50000,
+        help=f"""How many records per chunk. Default: 50000""",
+    )
+    return arg_group
+
+
+def add_threads_option(arg_group: argparse._ArgumentGroup) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--threads",
+        type=int,
+        default=1,
+        help=f"""Threads for parallelization. Default: 1""",
+    )
+    return arg_group
+
+
+def check_threads(threads: int) -> int:
+    if threads > joblib.cpu_count():
+        return joblib.cpu_count()
+    elif threads <= 0:
+        return 1
+    return threads

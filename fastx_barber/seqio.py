@@ -81,7 +81,8 @@ class FastxChunkedParser(object):
                 break
         if 0 == len(chunk):
             raise StopIteration
-        return chunk
+        else:
+            return chunk
 
     def __iter__(self) -> Iterator[List[FastxSimpleRecord]]:
         return self
