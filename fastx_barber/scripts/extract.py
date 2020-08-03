@@ -6,7 +6,6 @@
 import argparse
 from fastx_barber.scripts import common as com
 from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET
-from fastx_barber.flag import get_fastx_flag_extractor, FastqFlagExtractor
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
 from fastx_barber.seqio import get_fastx_format, SimpleFastxRecord
@@ -149,11 +148,7 @@ def run_chunk(
 
     matcher = FastxMatcher(args.regex)
     trimmer = get_fastx_trimmer(fmt)
-    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags)
-    flag_extractor.flag_delim = args.flag_delim
-    flag_extractor.comment_space = args.comment_space
-    if isinstance(flag_extractor, FastqFlagExtractor):
-        flag_extractor.extract_qual_flags = args.qual_flags
+    flag_extractor = com.get_flag_extractor(fmt, args)
     quality_flag_filters, filter_fun = com.setup_qual_filters(
         args.filter_qual_flags, args.phred_offset
     )
@@ -167,7 +162,6 @@ def run_chunk(
             record = flag_extractor.update(record, flags_selected)
             record = trimmer.trim_re(record, match)
             pass_filters = filter_fun(flags, quality_flag_filters)
-        if matched:
             if not pass_filters:
                 filtered_counter += 1
                 filter_output_fun(record)

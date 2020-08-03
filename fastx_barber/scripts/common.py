@@ -5,8 +5,12 @@
 
 import argparse
 from fastx_barber.const import __version__, logfmt, FastxFormats
-from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag
-from fastx_barber.qual import QualityFilter
+from fastx_barber.flag import (
+    get_fastx_flag_extractor,
+    ABCFlagExtractor,
+    FastqFlagExtractor,
+)
+from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag, QualityFilter
 from fastx_barber.seqio import (
     get_fastx_parser,
     get_fastx_writer,
@@ -129,6 +133,15 @@ def get_qual_filter_handler(
         return (FH, lambda x: None)
 
 
+def get_flag_extractor(fmt: FastxFormats, args: argparse.Namespace) -> ABCFlagExtractor:
+    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags)
+    flag_extractor.flag_delim = args.flag_delim
+    flag_extractor.comment_space = args.comment_space
+    if isinstance(flag_extractor, FastqFlagExtractor):
+        flag_extractor.extract_qual_flags = args.qual_flags
+    return flag_extractor
+
+
 def add_version_option(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument(
         "--version", action="version", version=f"{sys.argv[0]} {__version__}"
@@ -174,7 +187,7 @@ def add_chunk_size_option(
         "--chunk-size",
         type=int,
         default=50000,
-        help=f"""How many records per chunk. Default: 50000""",
+        help="""How many records per chunk. Default: 50000""",
     )
     return arg_group
 
@@ -184,7 +197,7 @@ def add_threads_option(arg_group: argparse._ArgumentGroup) -> argparse._Argument
         "--threads",
         type=int,
         default=1,
-        help=f"""Threads for parallelization. Default: 1""",
+        help="""Threads for parallelization. Default: 1""",
     )
     return arg_group
 
