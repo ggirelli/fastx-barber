@@ -118,7 +118,6 @@ def get_qual_filter_handler(
         assert not os.path.isdir(path)
         FH = get_fastx_writer(fmt)(path, compress_level)
         assert fmt == FH.format, "format mismatch between input and requested output"
-        logging.info(f"Filter output: {path}")
         return (FH, FH.write)
     else:
         return (None, lambda x: None)

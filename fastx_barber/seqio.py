@@ -61,6 +61,7 @@ class FastxChunkedParser(object):
 
     __IH: FastXParser
     __chunk_size: int
+    __chunk_counter: int = 0
 
     def __init__(self, parser: FastXParser, chunk_size: int):
         super(FastxChunkedParser, self).__init__()
@@ -72,7 +73,11 @@ class FastxChunkedParser(object):
     def chunk_size(self):
         return self.__chunk_size
 
-    def __next__(self) -> List[FastxSimpleRecord]:
+    @property
+    def last_chunk_id(self):
+        return self.__chunk_counter
+
+    def __next__(self) -> Tuple[List[FastxSimpleRecord], int]:
         chunk: List[FastxSimpleRecord] = []
         while len(chunk) < self.__chunk_size:
             try:
@@ -82,9 +87,10 @@ class FastxChunkedParser(object):
         if 0 == len(chunk):
             raise StopIteration
         else:
-            return chunk
+            self.__chunk_counter += 1
+            return (chunk, self.__chunk_counter)
 
-    def __iter__(self) -> Iterator[List[FastxSimpleRecord]]:
+    def __iter__(self) -> Iterator[Tuple[List[FastxSimpleRecord], int]]:
         return self
 
 
@@ -115,6 +121,10 @@ class ABCSimpleWriter(metaclass=ABCMeta):
             self._OH = gzip.open(path, "wt+", compress_level)
         else:
             self._OH = open(path, "w+")
+
+    @property
+    def name(self) -> str:
+        return self._OH.name
 
     @abstractmethod
     def write(self, record: Any) -> None:

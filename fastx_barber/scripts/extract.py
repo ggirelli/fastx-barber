@@ -5,21 +5,22 @@
 
 import argparse
 from fastx_barber.scripts import common as com
-from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET
+from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET, FastxFormats
 from fastx_barber.flag import (
     FlagData,
     ABCFlagExtractor,
     FastqFlagExtractor,
     get_fastx_flag_extractor,
 )
+from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
 from fastx_barber.qual import QualityFilter
-from fastx_barber.seqio import FastxSimpleRecord, FastxChunkedParser
+from fastx_barber.seqio import FastxSimpleRecord, FastxChunkedParser, get_fastx_writer
 from fastx_barber.trim import get_fastx_trimmer, ABCTrimmer
 import joblib  # type: ignore
 import logging
 import regex  # type: ignore
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
@@ -133,24 +134,55 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
-def extract_flags(
-    record: FastxSimpleRecord,
+def run_chunk(
+    chunk: List[FastxSimpleRecord],
+    cid: int,
+    fmt: FastxFormats,
+    output_path: str,
+    unmatched_output_path: Optional[str],
+    filter_qual_output_path: Optional[str],
+    compress_level: int,
     matcher: FastxMatcher,
     trimmer: ABCTrimmer,
     flag_extractor: ABCFlagExtractor,
     quality_flag_filters: Dict[str, QualityFilter],
     filter_fun: Callable,
-) -> Tuple[FastxSimpleRecord, bool, Dict[str, FlagData], bool]:
-    match, matched = matcher.match(record)
-    if matched:
-        flags = flag_extractor.extract_all(record, match)
-        flags_selected = flag_extractor.apply_selection(flags)
-        record = flag_extractor.update(record, flags_selected)
-        record = trimmer.trim_re(record, match)
-        pass_filters = filter_fun(flags, quality_flag_filters)
-        return (record, matched, flags, pass_filters)
-    else:
-        return (record, False, {}, False)
+):
+    OHC = get_fastx_writer(fmt)(f".tmp.batch{cid}.{output_path}", compress_level)
+    UHC = None
+    if unmatched_output_path is not None:
+        UHC = get_fastx_writer(fmt)(
+            f".tmp.batch{cid}.{unmatched_output_path}", compress_level
+        )
+    foutput = com.get_output_fun(OHC, UHC)
+
+    FHC, filter_output_fun = com.get_qual_filter_handler(
+        fmt, compress_level, filter_qual_output_path
+    )
+
+    matched_counter = 0
+    filtered_counter = 0
+    for record in chunk:
+        match, matched = matcher.match(record)
+        if matched:
+            flags = flag_extractor.extract_all(record, match)
+            flags_selected = flag_extractor.apply_selection(flags)
+            record = flag_extractor.update(record, flags_selected)
+            record = trimmer.trim_re(record, match)
+            pass_filters = filter_fun(flags, quality_flag_filters)
+        matched_counter += matched
+        if matched:
+            if not pass_filters:
+                filtered_counter += 1
+                filter_output_fun(record)
+                continue
+            foutput[matched](record)
+
+    OHC.close()
+    if UHC is not None:
+        UHC.close()
+
+    return (filtered_counter, matched_counter, len(chunk))
 
 
 def run(args: argparse.Namespace) -> None:
@@ -160,8 +192,6 @@ def run(args: argparse.Namespace) -> None:
 
     fmt, IH, OH = com.get_io_handlers(args.input, args.output, args.compress_level)
     IH = FastxChunkedParser(IH, args.chunk_size)
-    UH = com.get_unmatched_handler(fmt, args.unmatched_output, args.compress_level)
-    output_fun = com.get_output_fun(OH, UH)
 
     matcher = FastxMatcher(args.regex)
     trimmer = get_fastx_trimmer(fmt)
@@ -179,38 +209,43 @@ def run(args: argparse.Namespace) -> None:
     )
 
     logging.info("Trimming and extracting flags...")
+    output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
+        joblib.delayed(run_chunk)(
+            chunk,
+            cid,
+            fmt,
+            args.output,
+            args.unmatched_output,
+            args.filter_qual_output,
+            args.compress_level,
+            matcher,
+            trimmer,
+            flag_extractor,
+            quality_flag_filters,
+            filter_fun,
+        )
+        for chunk, cid in IH
+    )
+
     parsed_counter = 0
     matched_counter = 0
     filtered_counter = 0
-    for chunk in IH:
-        parsed_counter += len(chunk)
-        output = joblib.Parallel(n_jobs=args.threads, verbose=0)(
-            joblib.delayed(extract_flags)(
-                record,
-                matcher,
-                trimmer,
-                flag_extractor,
-                quality_flag_filters,
-                filter_fun,
-            )
-            for record in chunk
-        )
-        for record, matched, flags, pass_filters in output:
-            matched_counter += matched
-            if matched:
-                if not pass_filters:
-                    filtered_counter += 1
-                    filter_output_fun(record)
-                    continue
-                output_fun[matched](record)
-        logging.info(f"Parsed {parsed_counter} records...")
-
+    for filtered, matched, parsed in output:
+        filtered_counter += filtered
+        matched_counter += matched
+        parsed_counter += parsed
     logging.info(f"{matched_counter}/{parsed_counter} records matched the pattern.")
-    logging.info(
-        f"{filtered_counter}/{matched_counter} records passed the flag filters."
-    )
+    if args.filter_qual_output is not None:
+        logging.info(
+            f"{filtered_counter}/{matched_counter} records passed the quality filters."
+        )
 
-    OH.close()
-    if args.unmatched_output is not None and UH is not None:
-        UH.close()
+    logging.info("Merging batch output...")
+    merger = ChunkMerger(args.compress_level)
+    merger.do(args.output, IH.last_chunk_id, "Matched")
+    if args.unmatched_output is not None:
+        merger.do(args.unmatched_output, IH.last_chunk_id, "Unmatched")
+    if args.filter_qual_output is not None:
+        merger.do(args.filter_qual_output, IH.last_chunk_id, "Filtered")
+
     logging.info("Done.")
