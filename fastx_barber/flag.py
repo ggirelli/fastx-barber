@@ -99,7 +99,6 @@ class ABCFlagExtractor(metaclass=ABCMeta):
         """
         pass
 
-    @abstractmethod
     def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
         """Subselects provided flags.
 
