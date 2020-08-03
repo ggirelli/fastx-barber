@@ -44,6 +44,8 @@ class QualityFilter(QualityIO):
         self, min_qscore: int, max_perc: float, phred_offset: int = DEFAULT_PHRED_OFFSET
     ):
         super(QualityFilter, self).__init__(phred_offset)
+        self.min_qscore = min_qscore
+        self.max_perc = max_perc
 
     @property
     def min_qscore(self) -> int:
