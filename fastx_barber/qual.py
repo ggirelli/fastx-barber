@@ -37,6 +37,9 @@ class QualityFilter(QualityIO):
     __min_qscore: int
     __max_perc: float
 
+    __passed: int = 0
+    __parsed: int = 0
+
     def __init__(
         self, min_qscore: int, max_perc: float, phred_offset: int = DEFAULT_PHRED_OFFSET
     ):
@@ -59,6 +62,14 @@ class QualityFilter(QualityIO):
         assert max_perc >= 0 and max_perc <= 1
         self.__max_perc = max_perc
 
+    @property
+    def passed(self) -> int:
+        return self.__passed
+
+    @property
+    def parsed(self) -> int:
+        return self.__parsed
+
     def qual_pass_filter(self, qual: str) -> bool:
         """
         Arguments:
@@ -67,22 +78,10 @@ class QualityFilter(QualityIO):
         Returns:
             bool -- whether the quality string passes the filter
         """
-        return self.__qual_pass_filter(qual, self.__min_qscore, self.__max_perc)
-
-    def qual_pass_filter_custom(
-        self, qual: str, min_qscore: int, max_perc: float
-    ) -> bool:
-        """
-        Arguments:
-            qual {str} -- phred string
-            min_qscore {int} -- qscore threshold (lower qscores considered low quality)
-            max_perc {float} -- max fraction (inclusive) of low quality bases to pass the filter
-
-        Returns:
-            bool -- whether the quality string passes the filter
-        """
-        assert max_perc >= 0 and max_perc <= 1
-        return self.__qual_pass_filter(qual, min_qscore, max_perc)
+        has_passed = self.__qual_pass_filter(qual, self.__min_qscore, self.__max_perc)
+        self.__passed += has_passed
+        self.__parsed += 1
+        return has_passed
 
     def __qual_pass_filter(self, qual: str, min_qscore: int, max_perc: float) -> bool:
         """
