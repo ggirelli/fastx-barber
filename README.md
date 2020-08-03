@@ -1,5 +1,7 @@
 # fastx-barber
 
+[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558)
+
 A Python3.6+ package to trim and extract flags from FASTA  and FASTQ files.
 
 ## Features
