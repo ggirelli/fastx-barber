@@ -95,12 +95,17 @@ def get_output_fun(
 def setup_qual_filters(
     filter_qual_flags: str, phred_offset: int
 ) -> Tuple[Dict[str, QualityFilter], Callable]:
+    logging.info(f"PHRED offset: {phred_offset}")
     quality_flag_filters: Dict[str, QualityFilter] = {}
     filter_fun = dummy_apply_filter_flag
     if filter_qual_flags is not None:
         quality_flag_filters = QualityFilter.init_flag_filters(
             filter_qual_flags.split(" "), phred_offset
         )
+        for name, f in quality_flag_filters.items():
+            logging.info(
+                f"'{name}'-filter: min_score={f.min_qscore} & max_perc={f.max_perc}"
+            )
         filter_fun = apply_filter_flag
     return (quality_flag_filters, filter_fun)
 
