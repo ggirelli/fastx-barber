@@ -29,11 +29,6 @@ class ABCFlagExtractor(metaclass=ABCMeta):
     _selected_flags: Optional[List[str]] = None
 
     def __init__(self, selected_flags: Optional[List[str]] = None):
-        """Initialize flag extractor
-
-        Keyword Arguments:
-            selected_flags {Optional[List[str]]} -- (default: {None})
-        """
         self._selected_flags = selected_flags
 
     @property
@@ -55,8 +50,10 @@ class ABCFlagExtractor(metaclass=ABCMeta):
         self._comment_space = comment_space
 
     @abstractmethod
-    def extract(self, record: Any, match: Match) -> Dict[str, FlagData]:
-        """Extract flags (according to self._selected_flags)
+    def extract_selected(self, record: Any, match: Match) -> Dict[str, FlagData]:
+        """Extract selected flags
+
+        Flags are selected according to self._selected_flags
 
         Decorators:
             abstractmethod
@@ -64,6 +61,25 @@ class ABCFlagExtractor(metaclass=ABCMeta):
         Arguments:
             record {Any} -- record from where to extract flags
             match {Match} -- results of matching the record to a flag pattern
+
+        Returns:
+            Dict[str, FlagData] -- a dictionary with flag name as key and data as value
+        """
+        pass
+
+    @abstractmethod
+    def extract_all(self, record: Any, match: Match) -> Dict[str, FlagData]:
+        """Extract all flags
+
+        Decorators:
+            abstractmethod
+
+        Arguments:
+            record {Any} -- record from where to extract flags
+            match {Match} -- results of matching the record to a flag pattern
+
+        Returns:
+            Dict[str, FlagData] -- a dictionary with flag name as key and data as value
         """
         pass
 
@@ -75,42 +91,39 @@ class ABCFlagExtractor(metaclass=ABCMeta):
             abstractmethod
 
         Arguments:
-            name {str} -- record to update based on flags
+            record {Any} -- record to update based on flags
             match {Match} -- results of matching the record to a flag pattern
+
+        Returns:
+            Any -- updated record.
         """
         pass
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
-    """Fasta flag extractor class"""
 
     def __init__(self, selected_flags: Optional[List[str]] = None):
-        """Initialize fasta file flag extractor
-
-        Keyword Arguments:
-            selected_flags {Optional[List[str]]} -- (default: {None})
-        """
         super(FastaFlagExtractor, self).__init__(selected_flags)
 
-    def extract(self, record: FastxSimpleRecord, match: Match) -> Dict[str, FlagData]:
-        """Extract flags
-
-        Arguments:
-            record {FastxSimpleRecord} -- record from where to extract flags
-            match {Match} -- results of matching the record to a flag pattern
-        """
+    def extract_selected(
+        self, record: FastxSimpleRecord, match: Match
+    ) -> Dict[str, FlagData]:
         assert match is not None
         flag_data: Dict[str, FlagData] = {}
-        flag_info = list(match.groupdict().items())
+        flag_data_all = self.extract_all(record, match)
         if self._selected_flags is not None:
-            for gid in range(len(match.groups())):
-                if flag_info[gid][0] in self._selected_flags:
-                    flag = self.__extract_single_flag(match, gid)
-                    flag_data.update([flag])
-        else:
-            for gid in range(len(match.groups())):
-                flag = self.__extract_single_flag(match, gid)
-                flag_data.update([flag])
+            for flag, data in flag_data_all.items():
+                if flag in self._selected_flags:
+                    flag_data[flag] = data
+        return flag_data
+
+    def extract_all(
+        self, record: FastxSimpleRecord, match: Match
+    ) -> Dict[str, FlagData]:
+        flag_data: Dict[str, FlagData] = {}
+        for gid in range(len(match.groups())):
+            flag = self.__extract_single_flag(match, gid)
+            flag_data.update([flag])
         return flag_data
 
     def __extract_single_flag(
@@ -121,15 +134,9 @@ class FastaFlagExtractor(ABCFlagExtractor):
         return (flag[0], (flag[1], match.start(gid + 1), match.end(gid + 1)))
 
     def update(self, record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
-        """Update record
-
-        Arguments:
-            name {str} -- record to update based on flags
-            match {Match} -- results of matching the record to a flag pattern
-        """
         name, seq, _ = record
         name_bits = name.split(self._comment_space)
-        for name, (flag, start, end) in self.extract(record, match).items():
+        for name, (flag, start, end) in self.extract_selected(record, match).items():
             name_bits[0] += f"{self._flag_delim}{self._flag_delim}{name}"
             name_bits[0] += f"{self._flag_delim}{flag}"
         name = " ".join(name_bits)
@@ -137,56 +144,50 @@ class FastaFlagExtractor(ABCFlagExtractor):
 
 
 class FastqFlagExtractor(FastaFlagExtractor):
-    """Fastq flag extractor class"""
 
     extract_qual_flags: bool = True
 
     def __init__(self, selected_flags: Optional[List[str]] = None):
-        """Initialize fastq file flag extractor
-
-        Keyword Arguments:
-            selected_flags {Optional[List[str]]} -- (default: {None})
-        """
         super(FastqFlagExtractor, self).__init__(selected_flags)
 
-    def extract(self, record: FastxSimpleRecord, match: Match) -> Dict[str, FlagData]:
-        """Extract flags
-
-        Arguments:
-            record {FastxSimpleRecord} -- record from where to extract flags
-            match {Match} -- results of matching the record to a flag pattern
-        """
+    def extract_selected(
+        self, record: FastxSimpleRecord, match: Match
+    ) -> Dict[str, FlagData]:
         assert match is not None
         name, seq, qual = record
         assert qual is not None
-        flag_data = super(FastqFlagExtractor, self).extract(record, match)
+        flag_data = super(FastqFlagExtractor, self).extract_selected(record, match)
         if self.extract_qual_flags:
-            for name, (_, start, end) in list(flag_data.items()):
-                flag = (f"q{name}", (qual[slice(start, end)], start, end))
-                flag_data.update([flag])
+            flag_data = self.__add_qual_flags(flag_data, qual)
+        return flag_data
+
+    def extract_all(
+        self, record: FastxSimpleRecord, match: Match
+    ) -> Dict[str, FlagData]:
+        assert match is not None
+        name, seq, qual = record
+        assert qual is not None
+        flag_data = super(FastqFlagExtractor, self).extract_all(record, match)
+        if self.extract_qual_flags:
+            flag_data = self.__add_qual_flags(flag_data, qual)
+        return flag_data
+
+    def __add_qual_flags(
+        self, flag_data: Dict[str, FlagData], qual: str
+    ) -> Dict[str, FlagData]:
+        for name, (_, start, end) in list(flag_data.items()):
+            flag = (f"q{name}", (qual[slice(start, end)], start, end))
+            flag_data.update([flag])
         return flag_data
 
     def update(self, record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
-        """Update record
-
-        Arguments:
-            name {str} -- record to update based on flags
-            match {Match} -- results of matching the record to a flag pattern
-        """
         _, _, qual = record
         name, seq, _ = super(FastqFlagExtractor, self).update(record, match)
         return (name, seq, qual)
 
 
 def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
-    """Retrieves appropriate flag extractor class.
-
-    Arguments:
-        fmt {FastxFormats}
-
-    Returns:
-        Type[ABCFlagExtractor] -- flag extractor class
-    """
+    """Retrieves appropriate flag extractor class."""
     if FastxFormats.FASTA == fmt:
         return FastaFlagExtractor
     elif FastxFormats.FASTQ == fmt:

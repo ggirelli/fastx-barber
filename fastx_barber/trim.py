@@ -29,27 +29,20 @@ class ABCTrimmer(metaclass=ABCMeta):
         Arguments:
             record {Any} -- record to be trimmed
             match {Match} -- regexp match
+
+        Returns:
+            Any -- trimmed record
         """
         pass
 
 
 class FastaTrimmer(ABCTrimmer):
-    """Fasta record trimmer class"""
 
     def __init__(self):
         super(FastaTrimmer, self).__init__()
 
     @staticmethod
     def trim_re(record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
-        """Trim fasta record using regexp match
-
-        Decorators:
-            staticmethod
-
-        Arguments:
-            record {Any} -- record to be trimmed
-            match {Match} -- regexp match
-        """
         assert match is not None
         name, seq, _ = record
         seq = regex.sub(match.re, "", seq)
@@ -57,22 +50,12 @@ class FastaTrimmer(ABCTrimmer):
 
 
 class FastqTrimmer(FastaTrimmer):
-    """Fastq record trimmer class"""
 
     def __init__(self):
         super(FastqTrimmer, self).__init__()
 
     @staticmethod
     def trim_re(record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
-        """Trim fastq record using regexp match
-
-        Decorators:
-            staticmethod
-
-        Arguments:
-            record {Any} -- record to be trimmed
-            match {Match} -- regexp match
-        """
         assert match is not None
         name, seq, qual = record
         assert qual is not None
@@ -82,14 +65,7 @@ class FastqTrimmer(FastaTrimmer):
 
 
 def get_fastx_trimmer(fmt: FastxFormats) -> Type[ABCTrimmer]:
-    """Retrieves appropriate trimmer class.
-
-    Arguments:
-        fmt {FastxFormats}
-
-    Returns:
-        Type[ABCTrimmer] -- trimmer class
-    """
+    """Retrieves appropriate trimmer class."""
     if FastxFormats.FASTA == fmt:
         return FastaTrimmer
     elif FastxFormats.FASTQ == fmt:

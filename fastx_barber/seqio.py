@@ -19,12 +19,9 @@ FastXParser = Union[
 
 
 def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
-    """Identify fastx file format (fasta or fastq).
-
-    Retrieves fastx file format and gzipped status.
-
-    Arguments:
-        path {str} -- path to fastx file
+    """
+    Returns:
+        Tuple[FastxFormats, bool] -- fastx file format and gzipped status
     """
     base, ext, gzipped = is_gzipped(path)
     if gzipped:
@@ -39,13 +36,7 @@ def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
 
 
 def get_fastx_parser(path: str) -> Tuple[FastXParser, FastxFormats]:
-    """Get parser for fasta or fastq file.
-
-    Retrieves appropriate simple parser and associated format (fasta or fastq).
-
-    Arguments:
-        path {str} -- path to fastx file
-    """
+    """Retrieves appropriate simple parser and associated format (fasta or fastq)."""
     fmt, gzipped = get_fastx_format(path)
     handle: Union[str, IO] = path
     if gzipped:
@@ -107,39 +98,16 @@ class ABCSimpleWriter(metaclass=ABCMeta):
 
 
 class SimpleFastxWriter(ABCSimpleWriter):
-    """Simple record writer for fasta and fastq files abstract base class
-
-    Extends:
-        ABCSimpleWriter
-
-    Variables:
-        _fmt {FastxFormats}
-    """
 
     _fmt: FastxFormats
 
     def __init__(self, path: str, compress_level: int = 6):
-        """Initialize fastx simple writer
-
-        Identify fastx file format (fasta or fastq).
-
-        Arguments:
-            path {str} -- path to output file
-
-        Keyword Arguments:
-            compress_level {int} -- gzip compression level (default: {6})
-        """
         super(SimpleFastxWriter, self).__init__(path, compress_level)
         self._fmt, _ = get_fastx_format(path)
         assert self._fmt in FastxFormats
 
     @property
     def format(self) -> FastxFormats:
-        """Fastx file format
-
-        Returns:
-            FastxFormats
-        """
         return self._fmt
 
     @abstractmethod
@@ -156,76 +124,27 @@ class SimpleFastxWriter(ABCSimpleWriter):
 
 
 class SimpleFastaWriter(SimpleFastxWriter):
-    """Simple record writer class for fasta files
-
-    Extends:
-        SimpleFastxWriter
-    """
 
     def __init__(self, path: str, compress_level: int = 6):
-        """Initialize fasta simple writer
-
-        Checks that the input file extension matches the expected one (fasta).
-
-        Arguments:
-            path {str} -- path to output file
-
-        Keyword Arguments:
-            compress_level {int} -- gzip compression level (default: {6})
-        """
         super(SimpleFastaWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTA == self.format
 
     def write(self, record: FastxSimpleRecord) -> None:
-        """Write fasta record to output buffer
-
-        Arguments:
-            record {FastxSimpleRecord} -- fasta record to be written
-        """
         self._OH.write(f">{record[0]}\n{record[1]}\n")
 
 
 class SimpleFastqWriter(SimpleFastxWriter):
-    """Simple record writer class for fastq files
-
-    Extends:
-        SimpleFastxWriter
-    """
 
     def __init__(self, path: str, compress_level: int = 6):
-        """Initialize fastq simple writer
-
-        Checks that the input file extension matches the expected one (fasta).
-
-        Arguments:
-            path {str} -- path to output file
-
-        Keyword Arguments:
-            compress_level {int} -- gzip compression level (default: {6})
-        """
         super(SimpleFastqWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTQ == self.format
 
     def write(self, record: FastxSimpleRecord) -> None:
-        """Write fastq record to output buffer
-
-        Arguments:
-            record {FastxSimpleRecord} -- fastq record to be written
-        """
         self._OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
 
 
 def get_fastx_writer(fmt: FastxFormats) -> Type[SimpleFastxWriter]:
-    """Get writer for fastq or fastq file.
-
-    Retrieves appropriate simple writer class.
-
-    Arguments:
-        fmt {FastxFormats}
-
-    Returns:
-        Type[SimpleFastxWriter] -- simple writer class
-    """
+    """Retrieves appropriate simple writer class."""
     if FastxFormats.FASTA == fmt:
         return SimpleFastaWriter
     elif FastxFormats.FASTQ == fmt:

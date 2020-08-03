@@ -10,47 +10,84 @@ from fastx_barber.seqio import FastXParser, SimpleFastxWriter
 import logging
 import os
 import sys
-from typing import Callable, Dict, Optional, Tuple
+from typing import Callable, Dict, IO, Optional, Tuple
 
 
-def add_log_file_handler(args: argparse.Namespace) -> None:
-    assert not os.path.isdir(args.log_file)
-    log_dir = os.path.dirname(args.log_file)
+def add_log_file_handler(path: str, logger_name: str = "") -> None:
+    """Adds log file handler to logger.
+
+    By defaults, adds the handler to the root logger.
+
+    Arguments:
+        path {str} -- path to output log file
+
+    Keyword Arguments:
+        logger_name {str} -- logger name (default: {""})
+    """
+    assert not os.path.isdir(path)
+    log_dir = os.path.dirname(path)
     assert os.path.isdir(log_dir) or "" == log_dir
-    fh = logging.FileHandler(args.log_file)
+    fh = logging.FileHandler(path)
     fh.setLevel(logging.INFO)
     fh.setFormatter(logging.Formatter(logfmt))
-    logging.getLogger("").addHandler(fh)
-    logging.info(f"Writing log to: {args.log_file}")
+    logging.getLogger(logger_name).addHandler(fh)
+    logging.info(f"Writing log to: {path}")
 
 
 def get_io_handlers(
-    args: argparse.Namespace,
+    ipath: str, opath: str, compress_level: int
 ) -> Tuple[
-    FastxFormats,
-    FastXParser,
-    SimpleFastxWriter,
-    Optional[SimpleFastxWriter],
-    Dict[bool, Callable],
+    FastxFormats, FastXParser, SimpleFastxWriter,
 ]:
-    IH, fmt = get_fastx_parser(args.input)
-    logging.info(f"Input: {args.input}")
+    """Prepare IO handlers.
 
-    OH = get_fastx_writer(fmt)(args.output, args.compress_level)
+    Arguments:
+        ipath {str} -- path to input file
+        opath {str} -- path to output file
+        compress_level {int} -- compression level
+    """
+    IH, fmt = get_fastx_parser(ipath)
+    logging.info(f"Input: {ipath}")
+
+    OH = get_fastx_writer(fmt)(opath, compress_level)
     assert fmt == OH.format, "format mismatch between input and requested output"
-    logging.info(f"Output: {args.output}")
+    logging.info(f"Output: {opath}")
 
+    return (fmt, IH, OH)
+
+
+def get_unmatched_handler(
+    fmt: FastxFormats, upath: Optional[str], compress_level: int
+) -> Optional[SimpleFastxWriter]:
+    """Prepare output buffer handler for unmatched records.
+
+    Arguments:
+        upath {Optional[str]} -- path to output file for unmatched records
+        compress_level {int} -- compression level
+    """
     UH: Optional[SimpleFastxWriter]
-    if args.unmatched_output is not None:
-        UH = get_fastx_writer(fmt)(args.unmatched_output, args.compress_level)
+    if upath is not None:
+        UH = get_fastx_writer(fmt)(upath, compress_level)
         assert fmt == UH.format, "format mismatch between input and requested output"
-        logging.info(f"Unmatched output: {args.unmatched_output}")
-        foutput = {True: OH.write, False: UH.write}
+        logging.info(f"Unmatched output: {upath}")
     else:
         UH = None
-        foutput = {True: OH.write, False: lambda x: None}
+    return UH
 
-    return (fmt, IH, OH, UH, foutput)
+
+def get_output_fun(
+    OH: SimpleFastxWriter, UH: Optional[SimpleFastxWriter]
+) -> Dict[bool, Callable]:
+    """Prepare IO handlers.
+
+    Arguments:
+        OH {IO} -- output buffer handler
+        UH {Optional[SimpleFastxWriter]} -- unmatched output buffer handler
+    """
+    if UH is not None:
+        return {True: OH.write, False: UH.write}
+    else:
+        return {True: OH.write, False: lambda x: None}
 
 
 def add_version_option(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

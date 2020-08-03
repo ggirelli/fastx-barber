@@ -19,10 +19,10 @@ def main():
         description=f"""
 Version:    {__version__}
 Author:     Gabriele Girelli
-Docs:       http://ggirelli.github.io/fast-barber
-Code:       http://github.com/ggirelli/fast-barber
+Docs:       http://ggirelli.github.io/fastx-barber
+Code:       http://github.com/ggirelli/fastx-barber
 
-FASTX trimming tools.
+FASTX barber tools.
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

@@ -15,14 +15,6 @@ logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
 
 def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
-    """Initialize parser
-
-    Arguments:
-        subparsers {argparse._SubParsersAction}
-
-    Returns:
-        argparse.ArgumentParser -- parsed arguments
-    """
     parser = subparsers.add_parser(
         __name__.split(".")[-1],
         description="Scan FASTX file for matches.",
@@ -67,30 +59,19 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    """Parse arguments
-
-    Arguments:
-        args {argparse.Namespace} -- input arguments
-
-    Returns:
-        argparse.Namespace -- parsed arguments
-    """
     args.regex = regex.compile(args.pattern)
 
     if args.log_file is not None:
-        com.add_log_file_handler(args)
+        com.add_log_file_handler(args.log_file)
 
     return args
 
 
 def run(args: argparse.Namespace) -> None:
-    """Run trim command
-
-    Arguments:
-        args {argparse.Namespace} -- input arguments
-    """
     logging.info(f"Pattern: {args.pattern}")
-    fmt, IH, OH, UH, foutput = com.get_io_handlers(args)
+    fmt, IH, OH = com.get_io_handlers(args.input, args.output, args.compress_level)
+    UH = com.get_unmatched_handler(fmt, args.unmatched_output, args.compress_level)
+    foutput = com.get_output_fun(OH, UH)
 
     matcher = FastxMatcher(args.regex)
 
