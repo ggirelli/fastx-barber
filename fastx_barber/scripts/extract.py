@@ -7,14 +7,11 @@ import argparse
 from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET
 from fastx_barber.flag import FastqFlagExtractor, get_fastx_flag_extractor
 from fastx_barber.match import FastxMatcher
-from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag
-from fastx_barber.qual import QualityFilter
 from fastx_barber.scripts import common as com
 from fastx_barber.trim import get_fastx_trimmer
 import logging
 import regex  # type: ignore
 from tqdm import tqdm  # type: ignore
-from typing import Dict
 
 logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
