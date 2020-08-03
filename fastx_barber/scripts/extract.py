@@ -139,7 +139,7 @@ def run(args: argparse.Namespace) -> None:
         args.filter_qual_flags, args.phred_offset
     )
     FH, filter_output_fun = com.get_qual_filter_handler(
-        fmt, args.filter_qual_output, args.compress_level
+        fmt, args.compress_level, args.filter_qual_output
     )
 
     logging.info("Trimming and extracting flags...")
