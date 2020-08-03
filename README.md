@@ -12,7 +12,7 @@ A Python3.6+ package to trim and extract flags from FASTA  and FASTQ files.
 * Extract parts (flags) of reads based on a pattern and store them in the read headers.
     - Extract the corresponding portions of the quality string too (only for fastq files).
 * All patterns use the `regex` Python package to support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109).
-    - Using fuzzy matching might affect the barber's speed).
+    - Using fuzzy matching might affect the barber's speed.
 * Export reads that do not match the provided pattern.
 * Parallelized processing by splitting the fastx file in chunks.
 * Filter reads based on quality score of extracted flags.
