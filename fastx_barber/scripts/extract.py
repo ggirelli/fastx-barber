@@ -6,21 +6,15 @@
 import argparse
 from fastx_barber.scripts import common as com
 from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET, FastxFormats
-from fastx_barber.flag import (
-    FlagData,
-    ABCFlagExtractor,
-    FastqFlagExtractor,
-    get_fastx_flag_extractor,
-)
+from fastx_barber.flag import get_fastx_flag_extractor, FastqFlagExtractor
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
-from fastx_barber.qual import QualityFilter
-from fastx_barber.seqio import FastxSimpleRecord, FastxChunkedParser, get_fastx_writer
-from fastx_barber.trim import get_fastx_trimmer, ABCTrimmer
+from fastx_barber.seqio import SimpleFastxRecord
+from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
 import logging
 import regex  # type: ignore
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, List
 
 logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
@@ -135,32 +129,32 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def run_chunk(
-    chunk: List[FastxSimpleRecord],
+    chunk: List[SimpleFastxRecord],
     cid: int,
     fmt: FastxFormats,
-    output_path: str,
-    unmatched_output_path: Optional[str],
-    filter_qual_output_path: Optional[str],
-    compress_level: int,
-    matcher: FastxMatcher,
-    trimmer: ABCTrimmer,
-    flag_extractor: ABCFlagExtractor,
-    quality_flag_filters: Dict[str, QualityFilter],
     filter_fun: Callable,
+    args: argparse.Namespace,
 ):
-    OHC = get_fastx_writer(fmt)(f".tmp.batch{cid}.{output_path}", compress_level)
-    UHC = None
-    if unmatched_output_path is not None:
-        UHC = get_fastx_writer(fmt)(
-            f".tmp.batch{cid}.{unmatched_output_path}", compress_level
-        )
+    OHC = com.get_chunk_handler(cid, fmt, args.output, args.compress_level)
+    assert OHC is not None
+    UHC = com.get_chunk_handler(cid, fmt, args.unmatched_output, args.compress_level)
     foutput = com.get_output_fun(OHC, UHC)
 
     FHC, filter_output_fun = com.get_qual_filter_handler(
-        fmt, compress_level, filter_qual_output_path
+        fmt, args.compress_level, args.filter_qual_output
     )
 
-    matched_counter = 0
+    matcher = FastxMatcher(args.regex)
+    trimmer = get_fastx_trimmer(fmt)
+    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags)
+    flag_extractor.flag_delim = args.flag_delim
+    flag_extractor.comment_space = args.comment_space
+    if isinstance(flag_extractor, FastqFlagExtractor):
+        flag_extractor.extract_qual_flags = args.qual_flags
+    quality_flag_filters, filter_fun = com.setup_qual_filters(
+        args.filter_qual_flags, args.phred_offset
+    )
+
     filtered_counter = 0
     for record in chunk:
         match, matched = matcher.match(record)
@@ -170,7 +164,6 @@ def run_chunk(
             record = flag_extractor.update(record, flags_selected)
             record = trimmer.trim_re(record, match)
             pass_filters = filter_fun(flags, quality_flag_filters)
-        matched_counter += matched
         if matched:
             if not pass_filters:
                 filtered_counter += 1
@@ -182,7 +175,7 @@ def run_chunk(
     if UHC is not None:
         UHC.close()
 
-    return (filtered_counter, matched_counter, len(chunk))
+    return (filtered_counter, matcher.matched_count, len(chunk))
 
 
 def run(args: argparse.Namespace) -> None:
@@ -190,41 +183,11 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Chunk size: {args.chunk_size}")
     logging.info(f"Pattern: {args.pattern}")
 
-    fmt, IH, OH = com.get_io_handlers(args.input, args.output, args.compress_level)
-    IH = FastxChunkedParser(IH, args.chunk_size)
-
-    matcher = FastxMatcher(args.regex)
-    trimmer = get_fastx_trimmer(fmt)
-    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags)
-    flag_extractor.flag_delim = args.flag_delim
-    flag_extractor.comment_space = args.comment_space
-    if isinstance(flag_extractor, FastqFlagExtractor):
-        flag_extractor.extract_qual_flags = args.qual_flags
-
-    quality_flag_filters, filter_fun = com.setup_qual_filters(
-        args.filter_qual_flags, args.phred_offset
-    )
-    FH, filter_output_fun = com.get_qual_filter_handler(
-        fmt, args.compress_level, args.filter_qual_output
-    )
+    fmt, IH = com.get_input_handler(args.input, args.compress_level, args.chunk_size)
 
     logging.info("Trimming and extracting flags...")
     output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
-        joblib.delayed(run_chunk)(
-            chunk,
-            cid,
-            fmt,
-            args.output,
-            args.unmatched_output,
-            args.filter_qual_output,
-            args.compress_level,
-            matcher,
-            trimmer,
-            flag_extractor,
-            quality_flag_filters,
-            filter_fun,
-        )
-        for chunk, cid in IH
+        joblib.delayed(run_chunk)(chunk, cid, fmt, args,) for chunk, cid in IH
     )
 
     parsed_counter = 0

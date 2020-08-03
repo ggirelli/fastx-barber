@@ -4,7 +4,7 @@
 """
 
 from abc import ABCMeta, abstractmethod
-from fastx_barber.seqio import FastxSimpleRecord
+from fastx_barber.seqio import SimpleFastxRecord
 import regex  # type: ignore
 from typing import Any, Match, Pattern, Tuple
 
@@ -59,7 +59,7 @@ class FastxMatcher(ABCMatcher):
     def __init__(self, pattern: Pattern):
         super(FastxMatcher, self).__init__(pattern)
 
-    def match(self, record: FastxSimpleRecord) -> Tuple[Match, bool]:
+    def match(self, record: SimpleFastxRecord) -> Tuple[Match, bool]:
         name, seq, _ = record
         match = regex.match(self._pattern, seq)
         matched = match is not None

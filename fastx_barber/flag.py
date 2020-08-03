@@ -5,7 +5,7 @@
 
 from abc import ABCMeta, abstractmethod
 from fastx_barber.const import FastxFormats, QFLAG_START
-from fastx_barber.seqio import FastxSimpleRecord
+from fastx_barber.seqio import SimpleFastxRecord
 from typing import Any, Dict, List, Match, Optional, Tuple, Type
 
 """Flag data, contains matched str, start, and end position"""
@@ -127,7 +127,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
         super(FastaFlagExtractor, self).__init__(selected_flags)
 
     def extract_selected(
-        self, record: FastxSimpleRecord, match: Match
+        self, record: SimpleFastxRecord, match: Match
     ) -> Dict[str, FlagData]:
         assert match is not None
         flag_data: Dict[str, FlagData] = {}
@@ -139,7 +139,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
         return flag_data
 
     def extract_all(
-        self, record: FastxSimpleRecord, match: Match
+        self, record: SimpleFastxRecord, match: Match
     ) -> Dict[str, FlagData]:
         flag_data: Dict[str, FlagData] = {}
         for gid in range(len(match.groups())):
@@ -155,8 +155,8 @@ class FastaFlagExtractor(ABCFlagExtractor):
         return (flag[0], (flag[1], match.start(gid + 1), match.end(gid + 1)))
 
     def update(
-        self, record: FastxSimpleRecord, flag_data: Dict[str, FlagData]
-    ) -> FastxSimpleRecord:
+        self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData]
+    ) -> SimpleFastxRecord:
         name, seq, _ = record
         name_bits = name.split(self._comment_space)
         for name, (flag, start, end) in flag_data.items():
@@ -174,7 +174,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
         super(FastqFlagExtractor, self).__init__(selected_flags)
 
     def extract_selected(
-        self, record: FastxSimpleRecord, match: Match
+        self, record: SimpleFastxRecord, match: Match
     ) -> Dict[str, FlagData]:
         assert match is not None
         name, seq, qual = record
@@ -185,7 +185,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
         return flag_data
 
     def extract_all(
-        self, record: FastxSimpleRecord, match: Match
+        self, record: SimpleFastxRecord, match: Match
     ) -> Dict[str, FlagData]:
         assert match is not None
         name, seq, qual = record
@@ -204,8 +204,8 @@ class FastqFlagExtractor(FastaFlagExtractor):
         return flag_data
 
     def update(
-        self, record: FastxSimpleRecord, flag_data: Dict[str, FlagData]
-    ) -> FastxSimpleRecord:
+        self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData]
+    ) -> SimpleFastxRecord:
         _, _, qual = record
         name, seq, _ = super(FastqFlagExtractor, self).update(record, flag_data)
         return (name, seq, qual)

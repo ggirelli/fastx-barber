@@ -7,8 +7,7 @@ import argparse
 from fastx_barber.scripts import common as com
 from fastx_barber.const import logfmt, log_datefmt, FastxFormats
 from fastx_barber.io import ChunkMerger
-from fastx_barber.match import FastxMatcher, FastxSimpleRecord
-from fastx_barber.seqio import FastxChunkedParser, get_fastx_parser, get_fastx_writer
+from fastx_barber.match import FastxMatcher, SimpleFastxRecord
 import joblib  # type: ignore
 import logging
 import regex  # type: ignore
@@ -75,33 +74,27 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def run_chunk(
-    chunk: List[FastxSimpleRecord],
+    chunk: List[SimpleFastxRecord],
     cid: int,
     fmt: FastxFormats,
-    output_path: str,
-    unmatched_output_path: str,
-    compress_level: int,
-    matcher: FastxMatcher,
+    args: argparse.Namespace,
 ) -> Tuple[int, int]:
-    OHC = get_fastx_writer(fmt)(f".tmp.batch{cid}.{output_path}", compress_level)
-    UHC = None
-    if unmatched_output_path is not None:
-        UHC = get_fastx_writer(fmt)(
-            f".tmp.batch{cid}.{unmatched_output_path}", compress_level
-        )
+    OHC = com.get_chunk_handler(cid, fmt, args.output, args.compress_level)
+    assert OHC is not None
+    UHC = com.get_chunk_handler(cid, fmt, args.unmatched_output, args.compress_level)
     foutput = com.get_output_fun(OHC, UHC)
 
-    matched_counter = 0
+    matcher = FastxMatcher(args.regex)
+
     for record in chunk:
         match, matched = matcher.match(record)
-        matched_counter += matched
         foutput[matched](record)
 
     OHC.close()
     if UHC is not None:
         UHC.close()
 
-    return (matched_counter, len(chunk))
+    return (matcher.matched_count, len(chunk))
 
 
 def run(args: argparse.Namespace) -> None:
@@ -109,24 +102,11 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Chunk size: {args.chunk_size}")
     logging.info(f"Pattern: {args.pattern}")
 
-    IH, fmt = get_fastx_parser(args.input)
-    logging.info(f"Input: {args.input}")
-    IH = FastxChunkedParser(IH, args.chunk_size)
-
-    matcher = FastxMatcher(args.regex)
+    fmt, IH = com.get_input_handler(args.input, args.compress_level, args.chunk_size)
 
     logging.info("Matching...")
     output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
-        joblib.delayed(run_chunk)(
-            chunk,
-            cid,
-            fmt,
-            args.output,
-            args.unmatched_output,
-            args.compress_level,
-            matcher,
-        )
-        for chunk, cid in IH
+        joblib.delayed(run_chunk)(chunk, cid, fmt, args,) for chunk, cid in IH
     )
 
     parsed_counter = 0

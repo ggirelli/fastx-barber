@@ -7,8 +7,13 @@ import argparse
 from fastx_barber.const import __version__, logfmt, FastxFormats
 from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag
 from fastx_barber.qual import QualityFilter
-from fastx_barber.seqio import get_fastx_parser, get_fastx_writer
-from fastx_barber.seqio import FastXParser, SimpleFastxWriter
+from fastx_barber.seqio import (
+    get_fastx_parser,
+    get_fastx_writer,
+    FastxChunkedParser,
+    SimpleFastxParser,
+    SimpleFastxWriter,
+)
 import joblib  # type: ignore
 import logging
 import os
@@ -37,49 +42,27 @@ def add_log_file_handler(path: str, logger_name: str = "") -> None:
     logging.info(f"Writing log to: {path}")
 
 
-def get_io_handlers(
-    ipath: str, opath: str, compress_level: int
+def get_input_handler(
+    path: str, compress_level: int, chunk_size: int
 ) -> Tuple[
-    FastxFormats, FastXParser, SimpleFastxWriter,
+    FastxFormats, SimpleFastxParser,
 ]:
-    """Prepare IO handlers.
-
-    Arguments:
-        ipath {str} -- path to input file
-        opath {str} -- path to output file
-        compress_level {int} -- compression level
-    """
-    IH, fmt = get_fastx_parser(ipath)
-    logging.info(f"Input: {ipath}")
-
-    OH = get_fastx_writer(fmt)(opath, compress_level)
-    assert fmt == OH.format, "format mismatch between input and requested output"
-    logging.info(f"Output: {opath}")
-
-    return (fmt, IH, OH)
+    IH, fmt = get_fastx_parser(path)
+    logging.info(f"Input: {path}")
+    IH = FastxChunkedParser(IH, chunk_size)
+    return (fmt, IH)
 
 
-def get_unmatched_handler(
-    fmt: FastxFormats, upath: Optional[str], compress_level: int
+def get_chunk_handler(
+    cid: int, fmt: FastxFormats, path: Optional[str], compress_level: int,
 ) -> Optional[SimpleFastxWriter]:
-    """Prepare output buffer handler for unmatched records.
-
-    Arguments:
-        upath {Optional[str]} -- path to output file for unmatched records
-        compress_level {int} -- compression level
-    """
-    UH: Optional[SimpleFastxWriter]
-    if upath is not None:
-        UH = get_fastx_writer(fmt)(upath, compress_level)
-        assert fmt == UH.format, "format mismatch between input and requested output"
-        logging.info(f"Unmatched output: {upath}")
-    else:
-        UH = None
-    return UH
+    if path is None:
+        return None
+    return get_fastx_writer(fmt)(f".tmp.batch{cid}.{path}", compress_level)
 
 
 def get_output_fun(
-    OH: SimpleFastxWriter, UH: Optional[SimpleFastxWriter]
+    OH: Optional[SimpleFastxWriter], UH: Optional[SimpleFastxWriter]
 ) -> Dict[bool, Callable]:
     """Prepare IO handlers.
 
@@ -87,6 +70,7 @@ def get_output_fun(
         OH {IO} -- output buffer handler
         UH {Optional[SimpleFastxWriter]} -- unmatched output buffer handler
     """
+    assert OH is not None
     if UH is not None:
         return {True: OH.write, False: UH.write}
     else:

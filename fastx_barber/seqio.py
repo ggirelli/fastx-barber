@@ -11,9 +11,9 @@ import gzip
 import os
 from typing import Any, IO, Iterator, List, Optional, Tuple, Type, Union
 
-FastxSimpleRecord = Tuple[str, str, Optional[str]]
+SimpleFastxRecord = Tuple[str, str, Optional[str]]
 
-FastXParser = Union[
+SimpleFastxParser = Union[
     SeqIO.QualityIO.FastqGeneralIterator, SeqIO.FastaIO.SimpleFastaParser
 ]
 
@@ -35,7 +35,7 @@ def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
         return (FastxFormats.NONE, False)
 
 
-def get_fastx_parser(path: str) -> Tuple[FastXParser, FastxFormats]:
+def get_fastx_parser(path: str) -> Tuple[SimpleFastxParser, FastxFormats]:
     """Retrieves appropriate simple parser and associated format (fasta or fastq)."""
     fmt, gzipped = get_fastx_format(path)
     handle: Union[str, IO] = path
@@ -56,14 +56,14 @@ class FastxChunkedParser(object):
     """Parser with chunking capabilities for fasta and fastq files.
 
     Variables:
-        __IH: FastXParser {[type]} -- [description]
+        __IH: SimpleFastxParser {[type]} -- [description]
     """
 
-    __IH: FastXParser
+    __IH: SimpleFastxParser
     __chunk_size: int
     __chunk_counter: int = 0
 
-    def __init__(self, parser: FastXParser, chunk_size: int):
+    def __init__(self, parser: SimpleFastxParser, chunk_size: int):
         super(FastxChunkedParser, self).__init__()
         self.__IH = parser
         assert chunk_size > 0
@@ -77,8 +77,8 @@ class FastxChunkedParser(object):
     def last_chunk_id(self):
         return self.__chunk_counter
 
-    def __next__(self) -> Tuple[List[FastxSimpleRecord], int]:
-        chunk: List[FastxSimpleRecord] = []
+    def __next__(self) -> Tuple[List[SimpleFastxRecord], int]:
+        chunk: List[SimpleFastxRecord] = []
         while len(chunk) < self.__chunk_size:
             try:
                 chunk.append(next(self.__IH))
@@ -90,7 +90,7 @@ class FastxChunkedParser(object):
             self.__chunk_counter += 1
             return (chunk, self.__chunk_counter)
 
-    def __iter__(self) -> Iterator[Tuple[List[FastxSimpleRecord], int]]:
+    def __iter__(self) -> Iterator[Tuple[List[SimpleFastxRecord], int]]:
         return self
 
 
@@ -157,14 +157,14 @@ class SimpleFastxWriter(ABCSimpleWriter):
         return self._fmt
 
     @abstractmethod
-    def write(self, record: FastxSimpleRecord) -> None:
+    def write(self, record: SimpleFastxRecord) -> None:
         """Write record to output buffer
 
         Decorators:
             abstractmethod
 
         Arguments:
-            record {FastxSimpleRecord} -- record to be written
+            record {SimpleFastxRecord} -- record to be written
         """
         pass
 
@@ -174,7 +174,7 @@ class SimpleFastaWriter(SimpleFastxWriter):
         super(SimpleFastaWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTA == self.format
 
-    def write(self, record: FastxSimpleRecord) -> None:
+    def write(self, record: SimpleFastxRecord) -> None:
         self._OH.write(f">{record[0]}\n{record[1]}\n")
 
 
@@ -183,7 +183,7 @@ class SimpleFastqWriter(SimpleFastxWriter):
         super(SimpleFastqWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTQ == self.format
 
-    def write(self, record: FastxSimpleRecord) -> None:
+    def write(self, record: SimpleFastxRecord) -> None:
         self._OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
 
 

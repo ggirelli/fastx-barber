@@ -3,7 +3,6 @@
 @contact: gigi.ga90@gmail.com
 """
 
-import gzip
 import os
 from tqdm import tqdm  # type: ignore
 from typing import Optional, Tuple

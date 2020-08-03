@@ -5,7 +5,7 @@
 
 from abc import ABCMeta, abstractmethod
 from fastx_barber.const import FastxFormats
-from fastx_barber.seqio import FastxSimpleRecord
+from fastx_barber.seqio import SimpleFastxRecord
 import regex  # type: ignore
 from typing import Any, Match, Type
 
@@ -41,7 +41,7 @@ class FastaTrimmer(ABCTrimmer):
         super(FastaTrimmer, self).__init__()
 
     @staticmethod
-    def trim_re(record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
+    def trim_re(record: SimpleFastxRecord, match: Match) -> SimpleFastxRecord:
         assert match is not None
         name, seq, _ = record
         seq = regex.sub(match.re, "", seq)
@@ -53,7 +53,7 @@ class FastqTrimmer(FastaTrimmer):
         super(FastqTrimmer, self).__init__()
 
     @staticmethod
-    def trim_re(record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
+    def trim_re(record: SimpleFastxRecord, match: Match) -> SimpleFastxRecord:
         assert match is not None
         name, seq, qual = record
         assert qual is not None
