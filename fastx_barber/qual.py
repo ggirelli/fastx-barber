@@ -108,7 +108,9 @@ class QualityFilter(QualityIO):
             flag, min_qscore_str, max_perc_str = f.split(",")
             min_qscore = int(min_qscore_str)
             max_perc = float(max_perc_str)
-            filter_dict[flag] = QualityFilter(min_qscore, max_perc, phred_offset)
+            filter_dict[f"{QFLAG_START}{flag}"] = QualityFilter(
+                min_qscore, max_perc, phred_offset
+            )
         return filter_dict
 
 
