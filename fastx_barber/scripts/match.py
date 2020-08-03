@@ -58,6 +58,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
     advanced = com.add_chunk_size_option(advanced)
     advanced = com.add_threads_option(advanced)
+    advanced = com.add_tempdir_option(advanced)
 
     parser.set_defaults(parse=parse_arguments, run=run)
 
@@ -67,6 +68,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.regex = regex.compile(args.pattern)
     args.threads = com.check_threads(args.threads)
+    args = com.set_tempdir(args)
 
     if args.log_file is not None:
         com.add_log_file_handler(args.log_file)
@@ -78,9 +80,13 @@ def run_chunk(
     chunk: List[SimpleFastxRecord], cid: int, args: argparse.Namespace,
 ) -> Tuple[int, int]:
     fmt, _ = get_fastx_format(args.input)
-    OHC = com.get_chunk_handler(cid, fmt, args.output, args.compress_level)
+    OHC = com.get_chunk_handler(
+        cid, fmt, args.output, args.compress_level, args.temp_dir
+    )
     assert OHC is not None
-    UHC = com.get_chunk_handler(cid, fmt, args.unmatched_output, args.compress_level)
+    UHC = com.get_chunk_handler(
+        cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
+    )
     foutput = com.get_output_fun(OHC, UHC)
 
     matcher = FastxMatcher(args.regex)
@@ -116,7 +122,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"{matched_counter}/{parsed_counter} records matched the pattern.")
 
     logging.info("Merging batch output...")
-    merger = ChunkMerger(args.compress_level)
+    merger = ChunkMerger(args.compress_level, args.temp_dir)
     merger.do(args.output, IH.last_chunk_id, "Matched")
     if args.unmatched_output is not None:
         merger.do(args.unmatched_output, IH.last_chunk_id, "Unmatched")

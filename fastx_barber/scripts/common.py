@@ -18,7 +18,16 @@ import joblib  # type: ignore
 import logging
 import os
 import sys
+import tempfile
 from typing import Callable, Dict, Optional, Tuple
+
+
+def set_tempdir(args: argparse.Namespace) -> argparse.Namespace:
+    assert os.path.isdir(args.temp_dir), f"temporary folder not found: {args.temp_dir}"
+    args.temp_dir = tempfile.TemporaryDirectory(
+        prefix="fastx-barber.", dir=args.temp_dir
+    )
+    return args
 
 
 def add_log_file_handler(path: str, logger_name: str = "") -> None:
@@ -54,12 +63,19 @@ def get_input_handler(
 
 
 def get_chunk_handler(
-    cid: int, fmt: FastxFormats, path: Optional[str], compress_level: int,
+    cid: int,
+    fmt: FastxFormats,
+    path: Optional[str],
+    compress_level: int,
+    tempdir: Optional[tempfile.TemporaryDirectory] = None,
 ) -> Optional[SimpleFastxWriter]:
     if path is None:
         return None
+    chunk_path = f".tmp.chunk{cid}.{path}"
+    if tempdir is not None:
+        chunk_path = os.path.join(tempdir.name, os.path.basename(chunk_path))
     assert not os.path.isdir(path)
-    return get_fastx_writer(fmt)(f".tmp.batch{cid}.{path}", compress_level)
+    return get_fastx_writer(fmt)(chunk_path, compress_level)
 
 
 def get_output_fun(
@@ -99,9 +115,13 @@ def setup_qual_filters(
 
 
 def get_qual_filter_handler(
-    fmt: FastxFormats, compress_level: int, cid: int, path: Optional[str] = None
+    cid: int,
+    fmt: FastxFormats,
+    path: Optional[str],
+    compress_level: int,
+    tempdir: Optional[tempfile.TemporaryDirectory] = None,
 ) -> Tuple[Optional[SimpleFastxWriter], Callable]:
-    FH = get_chunk_handler(cid, fmt, path, compress_level)
+    FH = get_chunk_handler(cid, fmt, path, compress_level, tempdir)
     if FH is not None:
         assert fmt == FH.format, "format mismatch between input and requested output"
         return (FH, FH.write)
@@ -175,3 +195,13 @@ def check_threads(threads: int) -> int:
     elif threads <= 0:
         return 1
     return threads
+
+
+def add_tempdir_option(arg_group: argparse._ArgumentGroup) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--temp-dir",
+        type=str,
+        help="""Path to temporary folder.""",
+        default=tempfile.gettempdir(),
+    )
+    return arg_group
