@@ -158,7 +158,9 @@ def run(args: argparse.Namespace) -> None:
 
     parsed_count = matcher.matched_count + matcher.unmatched_count
 
-    logging.info("".join((f"Trimmed {matcher.matched_count}/{parsed_count} records.")))
+    logging.info(f"Trimmed {matcher.matched_count}/{parsed_count} records.")
+    for name, f in quality_flag_filters.items():
+        logging.info(f"{name}-filter: {f.passed}/{f.parsed} records passed.")
 
     OH.close()
     if args.unmatched_output is not None and UH is not None:

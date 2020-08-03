@@ -104,7 +104,7 @@ def setup_qual_filters(
         )
         for name, f in quality_flag_filters.items():
             logging.info(
-                f"'{name}'-filter: min_score={f.min_qscore} & max_perc={f.max_perc}"
+                f"{name}-filter: min_score={f.min_qscore} & max_perc={f.max_perc}"
             )
         filter_fun = apply_filter_flag
     return (quality_flag_filters, filter_fun)
