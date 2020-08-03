@@ -4,14 +4,17 @@
 """
 
 import argparse
-from fastx_barber.scripts import common as com
-from fastx_barber.const import logfmt, log_datefmt
-from fastx_barber.extract import FastqFlagExtractor, get_fastx_flag_extractor
+from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET
+from fastx_barber.flag import FastqFlagExtractor, get_fastx_flag_extractor
 from fastx_barber.match import FastxMatcher
+from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag
+from fastx_barber.qual import QualityFilter
+from fastx_barber.scripts import common as com
 from fastx_barber.trim import get_fastx_trimmer
 import logging
 import regex  # type: ignore
 from tqdm import tqdm  # type: ignore
+from typing import Dict
 
 logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
@@ -66,6 +69,26 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         By default it extracts all flags.""",
     )
     advanced.add_argument(
+        "--filter-qual-flags",
+        type=str,
+        help="""Comma-separated 'flag_name,min_qscore,max_perc' strings, where
+        bases with qscore < min_qscore are considered low quality, and max_perc
+        is the largest allowed fraction of low quality bases. You can specify
+        multiple flag filters by separating them with a space.""",
+    )
+    advanced.add_argument(
+        "--filter-qual-output",
+        type=str,
+        help="""Path to fasta/q file where to write records that do not pass the
+        flag filters. Format must match the input.""",
+    )
+    advanced.add_argument(
+        "--phred-offset",
+        type=str,
+        default=DEFAULT_PHRED_OFFSET,
+        help="""Phred offset for qscore calculation.""",
+    )
+    advanced.add_argument(
         "--no-qual-flags",
         action="store_const",
         dest="qual_flags",
@@ -105,7 +128,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Pattern: {args.pattern}")
     fmt, IH, OH = com.get_io_handlers(args.input, args.output, args.compress_level)
     UH = com.get_unmatched_handler(fmt, args.unmatched_output, args.compress_level)
-    foutput = com.get_output_fun(OH, UH)
+    output_fun = com.get_output_fun(OH, UH)
 
     matcher = FastxMatcher(args.regex)
     trimmer = get_fastx_trimmer(fmt)
@@ -115,13 +138,26 @@ def run(args: argparse.Namespace) -> None:
     if isinstance(flag_extractor, FastqFlagExtractor):
         flag_extractor.extract_qual_flags = args.qual_flags
 
+    quality_flag_filters, filter_fun = com.setup_qual_filters(
+        args.filter_qual_flags, args.phred_offset
+    )
+    FH, filter_output_fun = com.get_qual_filter_handler(
+        fmt, args.filter_qual_output, args.compress_level
+    )
+
     logging.info("Trimming and extracting flags...")
     for record in tqdm(IH):
         match, matched = matcher.match(record)
         if matched:
-            record = flag_extractor.update(record, match)
+            flags = flag_extractor.extract_all(record, match)
+            flags_selected = flag_extractor.apply_selection(flags)
+            record = flag_extractor.update(record, flags_selected)
             record = trimmer.trim_re(record, match)
-        foutput[matched](record)
+            pass_filters = filter_fun(flags, quality_flag_filters)
+            if not pass_filters:
+                filter_output_fun(record)
+                continue
+        output_fun[matched](record)
 
     parsed_count = matcher.matched_count + matcher.unmatched_count
 

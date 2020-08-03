@@ -21,6 +21,7 @@ include = ["CHANGELOG.md", "LICENSE"]
 [tool.poetry.dependencies]
 python = "^3.6"
 biopython = "^1.77"
+numpy = "^1.19.1"
 regex = "^2020.7.14"
 tqdm = "^4.48.0"
 

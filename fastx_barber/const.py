@@ -55,3 +55,7 @@ class FastxExtensions(Enum):
     @classmethod
     def has_value(self, value):
         return any(value in v for v in self._value2member_map_)
+
+
+QFLAG_START = "q"
+DEFAULT_PHRED_OFFSET = 33

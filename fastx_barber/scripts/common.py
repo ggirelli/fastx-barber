@@ -5,12 +5,14 @@
 
 import argparse
 from fastx_barber.const import __version__, logfmt, FastxFormats
+from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag
+from fastx_barber.qual import QualityFilter
 from fastx_barber.seqio import get_fastx_parser, get_fastx_writer
 from fastx_barber.seqio import FastXParser, SimpleFastxWriter
 import logging
 import os
 import sys
-from typing import Callable, Dict, IO, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 
 def add_log_file_handler(path: str, logger_name: str = "") -> None:
@@ -90,6 +92,32 @@ def get_output_fun(
         return {True: OH.write, False: lambda x: None}
 
 
+def setup_qual_filters(
+    filter_qual_flags: str, phred_offset: int
+) -> Tuple[Dict[str, QualityFilter], Callable]:
+    quality_flag_filters: Dict[str, QualityFilter] = {}
+    filter_fun = dummy_apply_filter_flag
+    if filter_qual_flags is not None:
+        quality_flag_filters = QualityFilter.init_flag_filters(
+            filter_qual_flags, phred_offset
+        )
+        filter_fun = apply_filter_flag
+    return (quality_flag_filters, filter_fun)
+
+
+def get_qual_filter_handler(
+    fmt: FastxFormats, compress_level: int, path: Optional[str] = None
+) -> Tuple[Optional[SimpleFastxWriter], Callable]:
+    if path is not None:
+        assert not os.path.isdir(path)
+        FH = get_fastx_writer(fmt)(path, compress_level)
+        assert fmt == FH.format, "format mismatch between input and requested output"
+        logging.info(f"Filter output: {path}")
+        return (FH, FH.write)
+    else:
+        return (None, lambda x: None)
+
+
 def add_version_option(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument(
         "--version", action="version", version=f"{sys.argv[0]} {__version__}"
@@ -103,9 +131,8 @@ def add_unmatched_output_option(
     arg_group.add_argument(
         "--unmatched-output",
         type=str,
-        default=None,
         help="""Path to fasta/q file where to write records that do not match
-        the pattern. Format will match the input.""",
+        the pattern. Format must match the input.""",
     )
     return arg_group
 

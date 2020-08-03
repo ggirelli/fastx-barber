@@ -4,8 +4,8 @@
 """
 
 from abc import ABCMeta, abstractmethod
+from fastx_barber.const import FastxFormats, QFLAG_START
 from fastx_barber.seqio import FastxSimpleRecord
-from fastx_barber.const import FastxFormats
 from typing import Any, Dict, List, Match, Optional, Tuple, Type
 
 """Flag data, contains matched str, start, and end position"""
@@ -84,7 +84,7 @@ class ABCFlagExtractor(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def update(self, record: Any, match: Match) -> Any:
+    def update(self, record: Any, flag_data: Dict[str, FlagData]) -> Any:
         """Update record
 
         Decorators:
@@ -92,12 +92,33 @@ class ABCFlagExtractor(metaclass=ABCMeta):
 
         Arguments:
             record {Any} -- record to update based on flags
-            match {Match} -- results of matching the record to a flag pattern
+            flag_data {Dict[str, FlagData]} -- a dictionary with flag name as key and data as value
 
         Returns:
             Any -- updated record.
         """
         pass
+
+    @abstractmethod
+    def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
+        """Subselects provided flags.
+
+        According to self._selected_flags
+
+        Decorators:
+            abstractmethod
+
+        Arguments:
+            flag_data {Dict[str, FlagData]} -- a dictionary with flag name as key and data as value
+        """
+        if self._selected_flags is None:
+            return flag_data
+        else:
+            selected_flag_data = {}
+            for name in self._selected_flags:
+                if name in flag_data.keys():
+                    selected_flag_data[name] = flag_data[name]
+            return selected_flag_data
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
@@ -132,10 +153,12 @@ class FastaFlagExtractor(ABCFlagExtractor):
             flag = list(match.groupdict().items())[gid]
         return (flag[0], (flag[1], match.start(gid + 1), match.end(gid + 1)))
 
-    def update(self, record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
+    def update(
+        self, record: FastxSimpleRecord, flag_data: Dict[str, FlagData]
+    ) -> FastxSimpleRecord:
         name, seq, _ = record
         name_bits = name.split(self._comment_space)
-        for name, (flag, start, end) in self.extract_selected(record, match).items():
+        for name, (flag, start, end) in flag_data.items():
             name_bits[0] += f"{self._flag_delim}{self._flag_delim}{name}"
             name_bits[0] += f"{self._flag_delim}{flag}"
         name = " ".join(name_bits)
@@ -175,13 +198,15 @@ class FastqFlagExtractor(FastaFlagExtractor):
         self, flag_data: Dict[str, FlagData], qual: str
     ) -> Dict[str, FlagData]:
         for name, (_, start, end) in list(flag_data.items()):
-            flag = (f"q{name}", (qual[slice(start, end)], start, end))
+            flag = (f"{QFLAG_START}{name}", (qual[slice(start, end)], start, end))
             flag_data.update([flag])
         return flag_data
 
-    def update(self, record: FastxSimpleRecord, match: Match) -> FastxSimpleRecord:
+    def update(
+        self, record: FastxSimpleRecord, flag_data: Dict[str, FlagData]
+    ) -> FastxSimpleRecord:
         _, _, qual = record
-        name, seq, _ = super(FastqFlagExtractor, self).update(record, match)
+        name, seq, _ = super(FastqFlagExtractor, self).update(record, flag_data)
         return (name, seq, qual)
 
 
