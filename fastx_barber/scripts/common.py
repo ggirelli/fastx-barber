@@ -58,6 +58,7 @@ def get_chunk_handler(
 ) -> Optional[SimpleFastxWriter]:
     if path is None:
         return None
+    assert not os.path.isdir(path)
     return get_fastx_writer(fmt)(f".tmp.batch{cid}.{path}", compress_level)
 
 
@@ -67,7 +68,7 @@ def get_output_fun(
     """Prepare IO handlers.
 
     Arguments:
-        OH {IO} -- output buffer handler
+        OH {Optional[SimpleFastxWriter]} -- output buffer handler
         UH {Optional[SimpleFastxWriter]} -- unmatched output buffer handler
     """
     assert OH is not None
@@ -78,33 +79,34 @@ def get_output_fun(
 
 
 def setup_qual_filters(
-    filter_qual_flags: str, phred_offset: int
+    filter_qual_flags: str, phred_offset: int, verbose: bool = False
 ) -> Tuple[Dict[str, QualityFilter], Callable]:
-    logging.info(f"PHRED offset: {phred_offset}")
+    if verbose:
+        logging.info(f"PHRED offset: {phred_offset}")
     quality_flag_filters: Dict[str, QualityFilter] = {}
     filter_fun = dummy_apply_filter_flag
     if filter_qual_flags is not None:
         quality_flag_filters = QualityFilter.init_flag_filters(
             filter_qual_flags.split(" "), phred_offset
         )
-        for name, f in quality_flag_filters.items():
-            logging.info(
-                f"{name}-filter: min_score={f.min_qscore} & max_perc={f.max_perc}"
-            )
+        if verbose:
+            for name, f in quality_flag_filters.items():
+                logging.info(
+                    f"{name}-filter: min_score={f.min_qscore} & max_perc={f.max_perc}"
+                )
         filter_fun = apply_filter_flag
     return (quality_flag_filters, filter_fun)
 
 
 def get_qual_filter_handler(
-    fmt: FastxFormats, compress_level: int, path: Optional[str] = None
+    fmt: FastxFormats, compress_level: int, cid: int, path: Optional[str] = None
 ) -> Tuple[Optional[SimpleFastxWriter], Callable]:
-    if path is not None:
-        assert not os.path.isdir(path)
-        FH = get_fastx_writer(fmt)(path, compress_level)
+    FH = get_chunk_handler(cid, fmt, path, compress_level)
+    if FH is not None:
         assert fmt == FH.format, "format mismatch between input and requested output"
         return (FH, FH.write)
     else:
-        return (None, lambda x: None)
+        return (FH, lambda x: None)
 
 
 def add_version_option(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

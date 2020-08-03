@@ -5,16 +5,16 @@
 
 import argparse
 from fastx_barber.scripts import common as com
-from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET, FastxFormats
+from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET
 from fastx_barber.flag import get_fastx_flag_extractor, FastqFlagExtractor
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
-from fastx_barber.seqio import SimpleFastxRecord
+from fastx_barber.seqio import get_fastx_format, SimpleFastxRecord
 from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
 import logging
 import regex  # type: ignore
-from typing import Callable, List
+from typing import List
 
 logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
 
@@ -129,19 +129,16 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def run_chunk(
-    chunk: List[SimpleFastxRecord],
-    cid: int,
-    fmt: FastxFormats,
-    filter_fun: Callable,
-    args: argparse.Namespace,
+    chunk: List[SimpleFastxRecord], cid: int, args: argparse.Namespace,
 ):
+    fmt, _ = get_fastx_format(args.input)
     OHC = com.get_chunk_handler(cid, fmt, args.output, args.compress_level)
     assert OHC is not None
     UHC = com.get_chunk_handler(cid, fmt, args.unmatched_output, args.compress_level)
     foutput = com.get_output_fun(OHC, UHC)
 
     FHC, filter_output_fun = com.get_qual_filter_handler(
-        fmt, args.compress_level, args.filter_qual_output
+        fmt, args.compress_level, cid, args.filter_qual_output
     )
 
     matcher = FastxMatcher(args.regex)
@@ -169,7 +166,7 @@ def run_chunk(
                 filtered_counter += 1
                 filter_output_fun(record)
                 continue
-            foutput[matched](record)
+        foutput[matched](record)
 
     OHC.close()
     if UHC is not None:
@@ -185,9 +182,13 @@ def run(args: argparse.Namespace) -> None:
 
     fmt, IH = com.get_input_handler(args.input, args.compress_level, args.chunk_size)
 
+    quality_flag_filters, filter_fun = com.setup_qual_filters(
+        args.filter_qual_flags, args.phred_offset, verbose=True
+    )
+
     logging.info("Trimming and extracting flags...")
     output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
-        joblib.delayed(run_chunk)(chunk, cid, fmt, args,) for chunk, cid in IH
+        joblib.delayed(run_chunk)(chunk, cid, args,) for chunk, cid in IH
     )
 
     parsed_counter = 0

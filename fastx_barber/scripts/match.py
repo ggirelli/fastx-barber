@@ -5,9 +5,10 @@
 
 import argparse
 from fastx_barber.scripts import common as com
-from fastx_barber.const import logfmt, log_datefmt, FastxFormats
+from fastx_barber.const import logfmt, log_datefmt
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher, SimpleFastxRecord
+from fastx_barber.seqio import get_fastx_format
 import joblib  # type: ignore
 import logging
 import regex  # type: ignore
@@ -74,11 +75,9 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def run_chunk(
-    chunk: List[SimpleFastxRecord],
-    cid: int,
-    fmt: FastxFormats,
-    args: argparse.Namespace,
+    chunk: List[SimpleFastxRecord], cid: int, args: argparse.Namespace,
 ) -> Tuple[int, int]:
+    fmt, _ = get_fastx_format(args.input)
     OHC = com.get_chunk_handler(cid, fmt, args.output, args.compress_level)
     assert OHC is not None
     UHC = com.get_chunk_handler(cid, fmt, args.unmatched_output, args.compress_level)
@@ -106,7 +105,7 @@ def run(args: argparse.Namespace) -> None:
 
     logging.info("Matching...")
     output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
-        joblib.delayed(run_chunk)(chunk, cid, fmt, args,) for chunk, cid in IH
+        joblib.delayed(run_chunk)(chunk, cid, args,) for chunk, cid in IH
     )
 
     parsed_counter = 0
