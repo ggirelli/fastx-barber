@@ -92,7 +92,8 @@ class ABCFlagExtractor(metaclass=ABCMeta):
 
         Arguments:
             record {Any} -- record to update based on flags
-            flag_data {Dict[str, FlagData]} -- a dictionary with flag name as key and data as value
+            flag_data {Dict[str, FlagData]} -- a dictionary with flag name as key
+                                               and data as value
 
         Returns:
             Any -- updated record.
@@ -108,7 +109,8 @@ class ABCFlagExtractor(metaclass=ABCMeta):
             abstractmethod
 
         Arguments:
-            flag_data {Dict[str, FlagData]} -- a dictionary with flag name as key and data as value
+            flag_data {Dict[str, FlagData]} -- a dictionary with flag name as key
+                                               and data as value
         """
         if self._selected_flags is None:
             return flag_data

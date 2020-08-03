@@ -90,7 +90,8 @@ class QualityFilter(QualityIO):
         Arguments:
             qual {str} -- phred string
             min_qscore {int} -- qscore threshold (lower qscores considered low quality)
-            max_perc {float} -- max fraction (inclusive) of low quality bases to pass the filter
+            max_perc {float} -- max fraction (inclusive) of low quality bases
+                                to pass the filter
 
         Returns:
             bool -- whether the quality string passes the filter
@@ -126,7 +127,8 @@ def apply_filter_flag(
     """
     Arguments:
         flag_data {Dict[str, FlagData]} -- dict with flag name as key and data as value
-        filters: {Dict[str, QualityFilter]} -- dict with flag name as key and filter as value
+        filters: {Dict[str, QualityFilter]} -- dict with flag name as key
+                                               and filter as value
 
     Returns:
         bool -- whether the flags pass the filters
