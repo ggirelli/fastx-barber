@@ -104,7 +104,7 @@ class QualityFilter(QualityIO):
     ) -> Dict[str, "QualityFilter"]:
         filter_dict: Dict[str, QualityFilter] = {}
         for f in filters:
-            flag, min_qscore_str, max_perc_str = f.split("")
+            flag, min_qscore_str, max_perc_str = f.split(",")
             min_qscore = int(min_qscore_str)
             max_perc = float(max_perc_str)
             filter_dict[flag] = QualityFilter(min_qscore, max_perc, phred_offset)
