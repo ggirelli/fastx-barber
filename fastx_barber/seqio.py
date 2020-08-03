@@ -124,7 +124,6 @@ class SimpleFastxWriter(ABCSimpleWriter):
 
 
 class SimpleFastaWriter(SimpleFastxWriter):
-
     def __init__(self, path: str, compress_level: int = 6):
         super(SimpleFastaWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTA == self.format
@@ -134,7 +133,6 @@ class SimpleFastaWriter(SimpleFastxWriter):
 
 
 class SimpleFastqWriter(SimpleFastxWriter):
-
     def __init__(self, path: str, compress_level: int = 6):
         super(SimpleFastqWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTQ == self.format

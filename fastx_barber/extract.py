@@ -101,7 +101,6 @@ class ABCFlagExtractor(metaclass=ABCMeta):
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
-
     def __init__(self, selected_flags: Optional[List[str]] = None):
         super(FastaFlagExtractor, self).__init__(selected_flags)
 

@@ -37,7 +37,6 @@ class ABCTrimmer(metaclass=ABCMeta):
 
 
 class FastaTrimmer(ABCTrimmer):
-
     def __init__(self):
         super(FastaTrimmer, self).__init__()
 
@@ -50,7 +49,6 @@ class FastaTrimmer(ABCTrimmer):
 
 
 class FastqTrimmer(FastaTrimmer):
-
     def __init__(self):
         super(FastqTrimmer, self).__init__()
 

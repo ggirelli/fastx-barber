@@ -56,7 +56,6 @@ class ABCMatcher(metaclass=ABCMeta):
 
 
 class FastxMatcher(ABCMatcher):
-
     def __init__(self, pattern: Pattern):
         super(FastxMatcher, self).__init__(pattern)
 
