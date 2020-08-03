@@ -208,6 +208,19 @@ class FastqFlagExtractor(FastaFlagExtractor):
         name, seq, _ = super(FastqFlagExtractor, self).update(record, flag_data)
         return (name, seq, qual)
 
+    def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
+        if self._selected_flags is None:
+            return flag_data
+        else:
+            selected_flag_data = super(FastqFlagExtractor, self).apply_selection(
+                flag_data
+            )
+            for name in self._selected_flags:
+                name = f"{QFLAG_START}{name}"
+                if name in flag_data.keys():
+                    selected_flag_data[name] = flag_data[name]
+            return selected_flag_data
+
 
 def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
     """Retrieves appropriate flag extractor class."""
