@@ -29,7 +29,7 @@ def add_log_file_handler(path: str, logger_name: str = "") -> None:
     assert not os.path.isdir(path)
     log_dir = os.path.dirname(path)
     assert os.path.isdir(log_dir) or "" == log_dir
-    fh = logging.FileHandler(path)
+    fh = logging.FileHandler(path, mode="w+")
     fh.setLevel(logging.INFO)
     fh.setFormatter(logging.Formatter(logfmt))
     logging.getLogger(logger_name).addHandler(fh)
