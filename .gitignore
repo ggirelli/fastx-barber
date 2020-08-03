@@ -9,4 +9,4 @@
 /*.egg-info
 
 poetry.lock
-test/*
+dummy/*
