@@ -100,7 +100,7 @@ class QualityFilter(QualityIO):
 
     @staticmethod
     def init_flag_filters(
-        filters: str, phred_offset: int
+        filters: List[str], phred_offset: int
     ) -> Dict[str, "QualityFilter"]:
         filter_dict: Dict[str, QualityFilter] = {}
         for f in filters:

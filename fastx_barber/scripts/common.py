@@ -99,7 +99,7 @@ def setup_qual_filters(
     filter_fun = dummy_apply_filter_flag
     if filter_qual_flags is not None:
         quality_flag_filters = QualityFilter.init_flag_filters(
-            filter_qual_flags, phred_offset
+            filter_qual_flags.split(" "), phred_offset
         )
         filter_fun = apply_filter_flag
     return (quality_flag_filters, filter_fun)
