@@ -37,8 +37,8 @@ class QualityFilter(QualityIO):
     __min_qscore: int
     __max_perc: float
 
-    __passed: int = 0
-    __parsed: int = 0
+    _passed: int = 0
+    _parsed: int = 0
 
     def __init__(
         self, min_qscore: int, max_perc: float, phred_offset: int = DEFAULT_PHRED_OFFSET
@@ -66,11 +66,11 @@ class QualityFilter(QualityIO):
 
     @property
     def passed(self) -> int:
-        return self.__passed
+        return self._passed
 
     @property
     def parsed(self) -> int:
-        return self.__parsed
+        return self._parsed
 
     def qual_pass_filter(self, qual: str) -> bool:
         """
@@ -81,8 +81,8 @@ class QualityFilter(QualityIO):
             bool -- whether the quality string passes the filter
         """
         has_passed = self.__qual_pass_filter(qual, self.__min_qscore, self.__max_perc)
-        self.__passed += has_passed
-        self.__parsed += 1
+        self._passed += has_passed
+        self._parsed += 1
         return has_passed
 
     def __qual_pass_filter(self, qual: str, min_qscore: int, max_perc: float) -> bool:

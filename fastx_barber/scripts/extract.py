@@ -8,7 +8,7 @@ from fastx_barber.scripts import common as com
 from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
-from fastx_barber.seqio import get_fastx_format, SimpleFastxRecord
+from fastx_barber.seqio import get_fastx_format, SimpleFastxRecord, SimpleFastxWriter
 from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
 import logging
@@ -168,9 +168,9 @@ def run_chunk(
                 continue
         foutput[matched](record)
 
-    OHC.close()
-    if UHC is not None:
-        UHC.close()
+    SimpleFastxWriter.close_handle(OHC)
+    SimpleFastxWriter.close_handle(UHC)
+    SimpleFastxWriter.close_handle(FHC)
 
     return (filtered_counter, matcher.matched_count, len(chunk))
 
@@ -205,7 +205,7 @@ def run(args: argparse.Namespace) -> None:
         )
 
     logging.info("Merging batch output...")
-    merger = ChunkMerger(args.compress_level, args.temp_dir)
+    merger = ChunkMerger(args.temp_dir)
     merger.do(args.output, IH.last_chunk_id, "Matched")
     if args.unmatched_output is not None:
         merger.do(args.unmatched_output, IH.last_chunk_id, "Unmatched")

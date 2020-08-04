@@ -122,7 +122,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"{matched_counter}/{parsed_counter} records matched the pattern.")
 
     logging.info("Merging batch output...")
-    merger = ChunkMerger(args.compress_level, args.temp_dir)
+    merger = ChunkMerger(args.temp_dir)
     merger.do(args.output, IH.last_chunk_id, "Matched")
     if args.unmatched_output is not None:
         merger.do(args.unmatched_output, IH.last_chunk_id, "Unmatched")

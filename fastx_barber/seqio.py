@@ -142,6 +142,11 @@ class ABCSimpleWriter(metaclass=ABCMeta):
         """Close output buffer handle"""
         self._OH.close()
 
+    @staticmethod
+    def close_handle(self):
+        if isinstance(self, ABCSimpleWriter):
+            self.close()
+
 
 class SimpleFastxWriter(ABCSimpleWriter):
 

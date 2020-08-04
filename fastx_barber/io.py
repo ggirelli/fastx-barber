@@ -24,11 +24,9 @@ class ChunkMerger(object):
 
     def __init__(
         self,
-        compress_level: int = 6,
         tempdir: Optional[tempfile.TemporaryDirectory] = None,
     ):
         super(ChunkMerger, self).__init__()
-        self.__compress_level = compress_level
         self._tempdir = tempdir
 
     @property
