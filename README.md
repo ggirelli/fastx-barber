@@ -16,7 +16,8 @@ A Python3.6+ package to trim and extract flags from FASTA  and FASTQ files.
 * Export reads that do not match the provided pattern.
 * Parallelized processing by splitting the fastx file in chunks.
 * Filter reads based on quality score of extracted flags.
-    - Supports Sanger QSCORE definition (not old Solexa/Illumina one), and allows to specify different PHRED offsets.
+    - Supports Sanger QSCORE definition (not old Solexa/Illumina one).
+    - Allows to specify different PHRED offsets.
 
 ## Requirements
 
