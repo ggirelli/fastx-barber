@@ -131,7 +131,9 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
 
 def run_chunk(
-    chunk: List[SimpleFastxRecord], cid: int, args: argparse.Namespace,
+    chunk: List[SimpleFastxRecord],
+    cid: int,
+    args: argparse.Namespace,
 ):
     fmt, _ = get_fastx_format(args.input)
     OHC = com.get_chunk_handler(
@@ -194,7 +196,12 @@ def run(args: argparse.Namespace) -> None:
 
     logging.info("Trimming and extracting flags...")
     output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
-        joblib.delayed(run_chunk)(chunk, cid, args,) for chunk, cid in IH
+        joblib.delayed(run_chunk)(
+            chunk,
+            cid,
+            args,
+        )
+        for chunk, cid in IH
     )
 
     parsed_counter = 0
