@@ -4,7 +4,7 @@
 """
 
 import argparse
-from fastx_barber.const import logfmt, FastxFormats
+from fastx_barber.const import FastxFormats
 from fastx_barber.seqio import (
     get_fastx_parser,
     get_fastx_writer,
@@ -14,6 +14,8 @@ from fastx_barber.seqio import (
 )
 import logging
 import os
+from rich.console import Console
+from rich.logging import RichHandler
 import tempfile
 from typing import Callable, Dict, Optional, Tuple
 
@@ -40,18 +42,16 @@ def add_log_file_handler(path: str, logger_name: str = "") -> None:
     assert not os.path.isdir(path)
     log_dir = os.path.dirname(path)
     assert os.path.isdir(log_dir) or "" == log_dir
-    fh = logging.FileHandler(path, mode="w+")
+    fh = RichHandler(console=Console(file=open(path, mode="w+")), markup=True)
     fh.setLevel(logging.INFO)
-    fh.setFormatter(logging.Formatter(logfmt))
     logging.getLogger(logger_name).addHandler(fh)
-    logging.info(f"Writing log to: {path}")
+    logging.info(f"[bold underline green]Log to[/]\t\t{path}")
 
 
 def get_input_handler(
     path: str, compress_level: int, chunk_size: int
 ) -> Tuple[FastxFormats, SimpleFastxParser]:
     IH, fmt = get_fastx_parser(path)
-    logging.info(f"Input: {path}")
     IH = FastxChunkedParser(IH, chunk_size)
     return (fmt, IH)
 

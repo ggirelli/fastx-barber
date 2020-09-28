@@ -6,8 +6,16 @@
 import argparse
 from fastx_barber.const import __version__
 import joblib  # type: ignore
+import logging
 import sys
 import tempfile
+
+
+def log_args(args: argparse.Namespace) -> None:
+    logging.info(f"[bold underline green]Input[/]\t\t{args.input}")
+    logging.info(f"[bold underline green]Pattern[/]\t\t{args.pattern}")
+    logging.info(f"[bold underline green]Threads[/]\t\t{args.threads}")
+    logging.info(f"[bold underline green]Chunk size[/]\t{args.chunk_size}")
 
 
 def add_version_option(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

@@ -4,7 +4,7 @@
 """
 
 import os
-from tqdm import tqdm  # type: ignore
+from rich.progress import track
 import tempfile
 from typing import Optional, Tuple
 
@@ -39,7 +39,9 @@ class ChunkMerger(object):
 
     def do(self, path: str, last_chunk_id: int, desc: Optional[str] = None) -> None:
         with open(path, "wb") as OH:
-            for cid in tqdm(range(1, last_chunk_id + 1), desc=desc):
+            for cid in track(
+                range(1, last_chunk_id + 1), description=desc, transient=True
+            ):
                 chunk_path = f".tmp.chunk{cid}.{path}"
                 if self._tempdir is not None:
                     chunk_path = os.path.join(self._tempdir.name, chunk_path)

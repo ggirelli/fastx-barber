@@ -7,15 +7,6 @@ from enum import Enum
 
 __version__ = "0.1.0b"
 
-logfmt = "".join(
-    (
-        "%(asctime)s ",
-        "[P%(process)s:%(module)s] ",
-        "%(levelname)s: %(message)s",
-    )
-)
-log_datefmt = "%m/%d/%Y %I:%M:%S"
-
 
 class FastxFormats(Enum):
     """Fastx formats

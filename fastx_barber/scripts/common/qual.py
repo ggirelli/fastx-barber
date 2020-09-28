@@ -18,7 +18,7 @@ def setup_qual_filters(
     filter_qual_flags: str, phred_offset: int, verbose: bool = False
 ) -> Tuple[Dict[str, QualityFilter], Callable]:
     if verbose:
-        logging.info(f"PHRED offset: {phred_offset}")
+        logging.info(f"[bold underline green]PHRED offset[/]\t{phred_offset}")
     quality_flag_filters: Dict[str, QualityFilter] = {}
     filter_fun = dummy_apply_filter_flag
     if filter_qual_flags is not None:

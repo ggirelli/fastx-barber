@@ -4,7 +4,6 @@
 """
 
 import argparse
-from fastx_barber.const import logfmt, log_datefmt
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher, SimpleFastxRecord
 from fastx_barber.scripts.common import argparse as ap
@@ -13,9 +12,14 @@ from fastx_barber.seqio import get_fastx_format
 import joblib  # type: ignore
 import logging
 import regex  # type: ignore
+from rich.logging import RichHandler
 from typing import List, Tuple
 
-logging.basicConfig(level=logging.INFO, format=logfmt, datefmt=log_datefmt)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    handlers=[RichHandler(markup=True, rich_tracebacks=True)],
+)
 
 
 def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
@@ -105,9 +109,7 @@ def run_chunk(
 
 
 def run(args: argparse.Namespace) -> None:
-    logging.info(f"Threads: {args.threads}")
-    logging.info(f"Chunk size: {args.chunk_size}")
-    logging.info(f"Pattern: {args.pattern}")
+    ap.log_args(args)
 
     fmt, IH = scriptio.get_input_handler(
         args.input, args.compress_level, args.chunk_size
