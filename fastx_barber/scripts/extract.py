@@ -115,7 +115,6 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    args.regex = regex.compile(args.pattern)
     assert 1 == len(args.flag_delim)
     args.threads = com.check_threads(args.threads)
     args = com.set_tempdir(args)
@@ -148,7 +147,7 @@ def run_chunk(
         cid, fmt, args.filter_qual_output, args.compress_level, args.temp_dir
     )
 
-    matcher = FastxMatcher(args.regex)
+    matcher = FastxMatcher(regex.compile(args.pattern))
     trimmer = get_fastx_trimmer(fmt)
     flag_extractor = com.get_flag_extractor(fmt, args)
     quality_flag_filters, filter_fun = com.setup_qual_filters(

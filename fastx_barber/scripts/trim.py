@@ -66,7 +66,6 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    args.regex = regex.compile(args.pattern)
     args.threads = com.check_threads(args.threads)
     args = com.set_tempdir(args)
 
@@ -91,7 +90,7 @@ def run_chunk(
     )
     foutput = com.get_output_fun(OHC, UHC)
 
-    matcher = FastxMatcher(args.regex)
+    matcher = FastxMatcher(regex.compile(args.pattern))
     trimmer = get_fastx_trimmer(fmt)
 
     for record in chunk:
