@@ -130,7 +130,15 @@ def run(args: argparse.Namespace) -> None:
     for matched, parsed in output:
         matched_counter += matched
         parsed_counter += parsed
-    logging.info(f"{matched_counter}/{parsed_counter} records matched the pattern.")
+    logging.info(
+        " ".join(
+            (
+                f"{matched_counter}/{parsed_counter}",
+                f"({matched_counter/parsed_counter*100:.2f}%)",
+                "records matched the pattern.",
+            )
+        )
+    )
 
     logging.info("Merging batch output...")
     merger = ChunkMerger(args.temp_dir)

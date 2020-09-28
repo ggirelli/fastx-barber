@@ -40,7 +40,7 @@ class ChunkMerger(object):
     def do(self, path: str, last_chunk_id: int, desc: Optional[str] = None) -> None:
         with open(path, "wb") as OH:
             for cid in track(
-                range(1, last_chunk_id + 1), description=desc, transient=True
+                range(1, last_chunk_id + 1), description=desc, transient=False
             ):
                 chunk_path = f".tmp.chunk{cid}.{path}"
                 if self._tempdir is not None:

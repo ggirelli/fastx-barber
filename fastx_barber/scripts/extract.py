@@ -80,7 +80,8 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help="""Comma-separated 'flag_name,min_qscore,max_perc' strings, where
         bases with qscore < min_qscore are considered low quality, and max_perc
         is the largest allowed fraction of low quality bases. You can specify
-        multiple flag filters by separating them with a space.""",
+        multiple flag filters by separating them with a space (please wrap them in a
+        single set of quotes in this case).""",
     )
     advanced.add_argument(
         "--filter-qual-output",
@@ -211,18 +212,32 @@ def run(args: argparse.Namespace) -> None:
         filtered_counter += filtered
         matched_counter += matched
         parsed_counter += parsed
-    logging.info(f"{matched_counter}/{parsed_counter} records matched the pattern.")
-    if args.filter_qual_output is not None:
+    logging.info(
+        " ".join(
+            (
+                f"{matched_counter}/{parsed_counter}",
+                f"({matched_counter/parsed_counter*100:.2f}%)",
+                "records matched the pattern.",
+            )
+        )
+    )
+    if args.filter_qual_flags is not None:
         logging.info(
-            f"{filtered_counter}/{matched_counter} records passed the quality filters."
+            " ".join(
+                (
+                    f"{(matched_counter-filtered_counter)}/{matched_counter}",
+                    f"({(matched_counter-filtered_counter)/matched_counter*100:.2f}%)",
+                    "records passed the quality filters.",
+                )
+            )
         )
 
     logging.info("Merging batch output...")
     merger = ChunkMerger(args.temp_dir)
-    merger.do(args.output, IH.last_chunk_id, "Matched")
+    merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.unmatched_output is not None:
-        merger.do(args.unmatched_output, IH.last_chunk_id, "Unmatched")
+        merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched records")
     if args.filter_qual_output is not None:
-        merger.do(args.filter_qual_output, IH.last_chunk_id, "Filtered")
+        merger.do(args.filter_qual_output, IH.last_chunk_id, "Writing filtered records")
 
     logging.info("Done. :thumbs_up: :smiley:")

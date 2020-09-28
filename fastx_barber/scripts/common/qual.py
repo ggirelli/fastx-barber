@@ -17,8 +17,6 @@ from typing import Callable, Dict, Optional, Tuple
 def setup_qual_filters(
     filter_qual_flags: str, phred_offset: int, verbose: bool = False
 ) -> Tuple[Dict[str, QualityFilter], Callable]:
-    if verbose:
-        logging.info(f"[bold underline green]PHRED offset[/]\t{phred_offset}")
     quality_flag_filters: Dict[str, QualityFilter] = {}
     filter_fun = dummy_apply_filter_flag
     if filter_qual_flags is not None:
@@ -26,9 +24,16 @@ def setup_qual_filters(
             filter_qual_flags.split(" "), phred_offset
         )
         if verbose:
+            logging.info(f"[bold underline green]PHRED offset[/]\t{phred_offset}")
             for name, f in quality_flag_filters.items():
                 logging.info(
-                    f"{name}-filter: min_score={f.min_qscore} & max_perc={f.max_perc}"
+                    "".join(
+                        (
+                            f"[bold underline green]{name}-filter[/]",
+                            f"\tmin_score={f.min_qscore}",
+                            f"\n\t\tmax_perc={f.max_perc}",
+                        )
+                    )
                 )
         filter_fun = apply_filter_flag
     return (quality_flag_filters, filter_fun)

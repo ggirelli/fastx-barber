@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Parallelization now working on Python 3.6+.
 - Output compression now dependent only on output file extension.
+- Logging proper number of reads passing flag quality filters.
 
 
 ## [0.0.1] - 2020-08-03
