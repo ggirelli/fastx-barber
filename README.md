@@ -6,18 +6,17 @@ A Python3.6+ package to trim and extract flags from FASTA  and FASTQ files.
 
 ## Features
 
-* Supports both FASTA and FASTQ files.
-* Select your reads based on a pattern (regular expression).
-* Trim your reads based on a pattern (regular expression).
-* Extract parts (flags) of reads based on a pattern and store them in the read headers.
-    - Extract the corresponding portions of the quality string too (only for fastq files).
-* All patterns use the `regex` Python package to support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109).
-    - Using fuzzy matching might affect the barber's speed.
-* Export reads that do not match the provided pattern.
-* Parallelized processing by splitting the fastx file in chunks.
-* Filter reads based on quality score of extracted flags.
+* Works on both FASTA and FASTQ files.
+* Selects/Trims reads based on a pattern (regular expression).
+* Extracts parts (flags) of reads based on a pattern, and stores them in the read headers.
+    - Optionally extracts the corresponding portions of the quality string (only for fastq files).
+* Regular expression support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (*fuzzy matching* might affect the barber's speed).
+    * Optionally exports reads that do not match the provided pattern.
+* Optionally filters reads based on quality score of extracted flags (only for fastq files).
     - Supports Sanger QSCORE definition (not old Solexa/Illumina one).
-    - Allows to specify different PHRED offsets.
+    - Supports custom PHRED offset.
+    - Optionally exports reads that do not pass the specified filters.
+* Parallelizes processing by splitting the fastx file in chunks.
 
 ## Requirements
 

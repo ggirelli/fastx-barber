@@ -4,7 +4,7 @@
 """
 
 import argparse
-from fastx_barber.scripts.common import argparse as ap
+from fastx_barber.scripts.common import arguments as ap
 from fastx_barber.scripts.common import io as scriptio
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher

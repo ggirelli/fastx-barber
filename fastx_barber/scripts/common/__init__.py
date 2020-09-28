@@ -3,6 +3,6 @@
 @contact: gigi.ga90@gmail.com
 """
 
-from fastx_barber.scripts.common import argparse, flag, io, qual
+from fastx_barber.scripts.common import arguments, io
 
-__all__ = ["argparse", "flag", "io", "qual"]
+__all__ = ["arguments", "io"]

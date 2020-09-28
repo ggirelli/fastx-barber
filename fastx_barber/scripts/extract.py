@@ -4,19 +4,25 @@
 """
 
 import argparse
-from fastx_barber.const import DEFAULT_PHRED_OFFSET
+from fastx_barber.const import DEFAULT_PHRED_OFFSET, FastxFormats
+from fastx_barber.flag import (
+    get_fastx_flag_extractor,
+    ABCFlagExtractor,
+    FastqFlagExtractor,
+)
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
-from fastx_barber.scripts.common import argparse as ap
+from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag, QualityFilter
+from fastx_barber.scripts.common import arguments as ap
 from fastx_barber.scripts.common import io as scriptio
-from fastx_barber.scripts.common import flag, qual
 from fastx_barber.seqio import get_fastx_format, SimpleFastxRecord, SimpleFastxWriter
 from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
 import logging
 import regex  # type: ignore
 from rich.logging import RichHandler
-from typing import List
+import tempfile
+from typing import Callable, Dict, List, Optional, Tuple
 
 logging.basicConfig(
     level=logging.INFO,
@@ -136,6 +142,55 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
+def setup_qual_filters(
+    filter_qual_flags: str, phred_offset: int, verbose: bool = False
+) -> Tuple[Dict[str, QualityFilter], Callable]:
+    quality_flag_filters: Dict[str, QualityFilter] = {}
+    filter_fun = dummy_apply_filter_flag
+    if filter_qual_flags is not None:
+        quality_flag_filters = QualityFilter.init_flag_filters(
+            filter_qual_flags.split(" "), phred_offset
+        )
+        if verbose:
+            logging.info(f"[bold underline green]PHRED offset[/]\t{phred_offset}")
+            for name, f in quality_flag_filters.items():
+                logging.info(
+                    "".join(
+                        (
+                            f"[bold underline green]{name}-filter[/]",
+                            f"\tmin_score={f.min_qscore}",
+                            f"\n\t\tmax_perc={f.max_perc}",
+                        )
+                    )
+                )
+        filter_fun = apply_filter_flag
+    return (quality_flag_filters, filter_fun)
+
+
+def get_qual_filter_handler(
+    cid: int,
+    fmt: FastxFormats,
+    path: Optional[str],
+    compress_level: int,
+    tempdir: Optional[tempfile.TemporaryDirectory] = None,
+) -> Tuple[Optional[SimpleFastxWriter], Callable]:
+    FH = scriptio.get_chunk_handler(cid, fmt, path, compress_level, tempdir)
+    if FH is not None:
+        assert fmt == FH.format, "format mismatch between input and requested output"
+        return (FH, FH.write)
+    else:
+        return (FH, lambda x: None)
+
+
+def get_flag_extractor(fmt: FastxFormats, args: argparse.Namespace) -> ABCFlagExtractor:
+    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags)
+    flag_extractor.flag_delim = args.flag_delim
+    flag_extractor.comment_space = args.comment_space
+    if isinstance(flag_extractor, FastqFlagExtractor):
+        flag_extractor.extract_qual_flags = args.qual_flags
+    return flag_extractor
+
+
 def run_chunk(
     chunk: List[SimpleFastxRecord],
     cid: int,
@@ -151,14 +206,14 @@ def run_chunk(
     )
     foutput = scriptio.get_output_fun(OHC, UHC)
 
-    FHC, filter_output_fun = qual.get_qual_filter_handler(
+    FHC, filter_output_fun = get_qual_filter_handler(
         cid, fmt, args.filter_qual_output, args.compress_level, args.temp_dir
     )
 
     matcher = FastxMatcher(regex.compile(args.pattern))
     trimmer = get_fastx_trimmer(fmt)
-    flag_extractor = flag.get_flag_extractor(fmt, args)
-    quality_flag_filters, filter_fun = qual.setup_qual_filters(
+    flag_extractor = get_flag_extractor(fmt, args)
+    quality_flag_filters, filter_fun = setup_qual_filters(
         args.filter_qual_flags, args.phred_offset
     )
 
@@ -191,7 +246,7 @@ def run(args: argparse.Namespace) -> None:
         args.input, args.compress_level, args.chunk_size
     )
 
-    quality_flag_filters, filter_fun = qual.setup_qual_filters(
+    quality_flag_filters, filter_fun = setup_qual_filters(
         args.filter_qual_flags, args.phred_offset, verbose=True
     )
 
