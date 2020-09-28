@@ -1,0 +1,88 @@
+"""
+@author: Gabriele Girelli
+@contact: gigi.ga90@gmail.com
+"""
+
+import argparse
+from fastx_barber.const import logfmt, FastxFormats
+from fastx_barber.seqio import (
+    get_fastx_parser,
+    get_fastx_writer,
+    FastxChunkedParser,
+    SimpleFastxParser,
+    SimpleFastxWriter,
+)
+import logging
+import os
+import tempfile
+from typing import Callable, Dict, Optional, Tuple
+
+
+def set_tempdir(args: argparse.Namespace) -> argparse.Namespace:
+    assert os.path.isdir(args.temp_dir), f"temporary folder not found: {args.temp_dir}"
+    args.temp_dir = tempfile.TemporaryDirectory(
+        prefix="fastx-barber.", dir=args.temp_dir
+    )
+    return args
+
+
+def add_log_file_handler(path: str, logger_name: str = "") -> None:
+    """Adds log file handler to logger.
+
+    By defaults, adds the handler to the root logger.
+
+    Arguments:
+        path {str} -- path to output log file
+
+    Keyword Arguments:
+        logger_name {str} -- logger name (default: {""})
+    """
+    assert not os.path.isdir(path)
+    log_dir = os.path.dirname(path)
+    assert os.path.isdir(log_dir) or "" == log_dir
+    fh = logging.FileHandler(path, mode="w+")
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(logging.Formatter(logfmt))
+    logging.getLogger(logger_name).addHandler(fh)
+    logging.info(f"Writing log to: {path}")
+
+
+def get_input_handler(
+    path: str, compress_level: int, chunk_size: int
+) -> Tuple[FastxFormats, SimpleFastxParser]:
+    IH, fmt = get_fastx_parser(path)
+    logging.info(f"Input: {path}")
+    IH = FastxChunkedParser(IH, chunk_size)
+    return (fmt, IH)
+
+
+def get_chunk_handler(
+    cid: int,
+    fmt: FastxFormats,
+    path: Optional[str],
+    compress_level: int,
+    tempdir: Optional[tempfile.TemporaryDirectory] = None,
+) -> Optional[SimpleFastxWriter]:
+    if path is None:
+        return None
+    chunk_path = f".tmp.chunk{cid}.{path}"
+    if tempdir is not None:
+        chunk_path = os.path.join(tempdir.name, os.path.basename(chunk_path))
+    assert not os.path.isdir(path)
+    return get_fastx_writer(fmt)(chunk_path, compress_level)
+
+
+def get_output_fun(
+    OH: Optional[SimpleFastxWriter], UH: Optional[SimpleFastxWriter]
+) -> Dict[bool, Callable]:
+    """Prepare IO handlers.
+
+    Arguments:
+        OH {Optional[SimpleFastxWriter]} -- output buffer handler
+        UH {Optional[SimpleFastxWriter]} -- unmatched output buffer handler
+    """
+    assert OH is not None
+    if UH is not None:
+        return {True: OH.write, False: UH.write}
+    else:
+        return {True: OH.write, False: lambda x: None}

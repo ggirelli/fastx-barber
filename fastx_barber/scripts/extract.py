@@ -4,10 +4,12 @@
 """
 
 import argparse
-from fastx_barber.scripts import common as com
 from fastx_barber.const import logfmt, log_datefmt, DEFAULT_PHRED_OFFSET
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
+from fastx_barber.scripts.common import argparse as ap
+from fastx_barber.scripts.common import io as scriptio
+from fastx_barber.scripts.common import flag, qual
 from fastx_barber.seqio import get_fastx_format, SimpleFastxRecord, SimpleFastxWriter
 from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
@@ -49,10 +51,10 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         Remember to use quotes. Default: '{default_pattern}'""",
     )
 
-    parser = com.add_version_option(parser)
+    parser = ap.add_version_option(parser)
 
     advanced = parser.add_argument_group("advanced arguments")
-    advanced = com.add_unmatched_output_option(advanced)
+    advanced = ap.add_unmatched_output_option(advanced)
     advanced.add_argument(
         "--flag-delim",
         type=str,
@@ -102,12 +104,12 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         default=" ",
         help="""Delimiter for header comments. Defaults to a space.""",
     )
-    advanced = com.add_compress_level_option(advanced)
-    advanced = com.add_log_file_option(advanced)
+    advanced = ap.add_compress_level_option(advanced)
+    advanced = ap.add_log_file_option(advanced)
 
-    advanced = com.add_chunk_size_option(advanced)
-    advanced = com.add_threads_option(advanced)
-    advanced = com.add_tempdir_option(advanced)
+    advanced = ap.add_chunk_size_option(advanced)
+    advanced = ap.add_threads_option(advanced)
+    advanced = ap.add_tempdir_option(advanced)
 
     parser.set_defaults(parse=parse_arguments, run=run)
 
@@ -116,11 +118,11 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     assert 1 == len(args.flag_delim)
-    args.threads = com.check_threads(args.threads)
-    args = com.set_tempdir(args)
+    args.threads = ap.check_threads(args.threads)
+    args = scriptio.set_tempdir(args)
 
     if args.log_file is not None:
-        com.add_log_file_handler(args.log_file)
+        scriptio.add_log_file_handler(args.log_file)
 
     if args.selected_flags is not None:
         args.selected_flags = args.selected_flags.split(",")
@@ -134,23 +136,23 @@ def run_chunk(
     args: argparse.Namespace,
 ):
     fmt, _ = get_fastx_format(args.input)
-    OHC = com.get_chunk_handler(
+    OHC = scriptio.get_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.temp_dir
     )
     assert OHC is not None
-    UHC = com.get_chunk_handler(
+    UHC = scriptio.get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
     )
-    foutput = com.get_output_fun(OHC, UHC)
+    foutput = scriptio.get_output_fun(OHC, UHC)
 
-    FHC, filter_output_fun = com.get_qual_filter_handler(
+    FHC, filter_output_fun = qual.get_qual_filter_handler(
         cid, fmt, args.filter_qual_output, args.compress_level, args.temp_dir
     )
 
     matcher = FastxMatcher(regex.compile(args.pattern))
     trimmer = get_fastx_trimmer(fmt)
-    flag_extractor = com.get_flag_extractor(fmt, args)
-    quality_flag_filters, filter_fun = com.setup_qual_filters(
+    flag_extractor = flag.get_flag_extractor(fmt, args)
+    quality_flag_filters, filter_fun = qual.setup_qual_filters(
         args.filter_qual_flags, args.phred_offset
     )
 
@@ -181,9 +183,11 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Chunk size: {args.chunk_size}")
     logging.info(f"Pattern: {args.pattern}")
 
-    fmt, IH = com.get_input_handler(args.input, args.compress_level, args.chunk_size)
+    fmt, IH = scriptio.get_input_handler(
+        args.input, args.compress_level, args.chunk_size
+    )
 
-    quality_flag_filters, filter_fun = com.setup_qual_filters(
+    quality_flag_filters, filter_fun = qual.setup_qual_filters(
         args.filter_qual_flags, args.phred_offset, verbose=True
     )
 
