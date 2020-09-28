@@ -1,5 +1,11 @@
-biopython==1.77
+biopython==1.78
+colorama==0.4.3
+commonmark==0.9.1
+dataclasses==0.7; python_version >= "3.6" and python_version < "3.7"
 joblib==0.16.0
-numpy==1.19.1
-regex==2020.7.14
-tqdm==4.48.2
+numpy==1.19.2
+pygments==2.7.1
+regex==2020.9.27
+rich==7.1.0
+tqdm==4.50.0
+typing-extensions==3.7.4.3
