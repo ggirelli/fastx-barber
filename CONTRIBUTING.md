@@ -28,7 +28,7 @@ If you would like to see a new feature implemented in `fastx-barber`, or to have
 
 # Style your contributions
 
-We like to have `fastx-barber` code styled with [`black`](https://github.com/psf/black) and checked with `mypy`. `mypy` and `black` conforming checks are automatically ran on all pull requests through GitHub Actions.
+We like to have `fastx-barber` code styled with [`black`](https://github.com/psf/black) and checked with `mypy`. `mypy`, `flake8`, and `black` conforming checks are automatically ran on all pull requests through GitHub Actions.
 
 # Changing dependencies
 
