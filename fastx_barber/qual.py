@@ -163,4 +163,3 @@ def setup_qual_filters(
             log_qual_filters(phred_offset, quality_flag_filters)
         filter_fun = apply_filter_flag
     return (quality_flag_filters, filter_fun)
-

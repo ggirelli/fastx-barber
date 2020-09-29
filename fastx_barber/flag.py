@@ -5,9 +5,72 @@
 
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from fastx_barber.const import FastxFormats, FlagData, FlagStats, QFLAG_START
+from fastx_barber.const import FastxFormats, FlagData, FlagStatsType, QFLAG_START
 from fastx_barber.seqio import SimpleFastxRecord
-from typing import Any, Dict, List, Match, Optional, Tuple, Type
+import logging
+import os
+import pandas as pd  # type: ignore
+import regex as re  # type: ignore
+from rich.progress import track
+from typing import Any, Dict, List, Match, Optional, Pattern, Tuple, Type
+
+
+class FlagStats(object):
+    """docstring for FlagStats"""
+
+    __stats: FlagStatsType
+    _flags_for_stats: Optional[List[str]] = None
+
+    def __init__(self, flags_for_stats: Optional[List[str]] = None):
+        super(FlagStats, self).__init__()
+        self.__stats = defaultdict(lambda: defaultdict(lambda: 0))
+        self._flags_for_stats = flags_for_stats
+
+    def update(self, flags: Dict[str, FlagData]) -> None:
+        if self._flags_for_stats is None:
+            return
+        for flag_name, flag_data in flags.items():
+            if flag_name in self._flags_for_stats:
+                self.__stats[flag_name][flag_data[0]] += 1
+
+    def __getitem__(self, key):
+        return self.__stats[key]
+
+    def __setitem__(self, key, value):
+        self.__stats[key] = value
+
+    def keys(self):
+        return self.__stats.keys()
+
+    def values(self):
+        return self.__stats.values()
+
+    def items(self):
+        return self.__stats.items()
+
+    def export(self, output_path: str, verbose: bool = True) -> None:
+        output_dir = os.path.dirname(output_path)
+        basename = os.path.basename(output_path)
+        if basename.endswith(".gz"):
+            basename = basename.split(".gz")[0]
+        basename = os.path.splitext(basename)[0]
+
+        if verbose:
+            itemized_flags = track(self.items(), description="Exporting flagstats")
+        else:
+            itemized_flags = self.items()
+
+        for flag_name, stats in itemized_flags:
+            df = pd.DataFrame()
+            df["value"] = list(stats.keys())
+            df["counts"] = list(stats.values())
+            df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
+            df.sort_values("counts", ascending=False, ignore_index=True, inplace=True)
+            df.to_csv(
+                os.path.join(output_dir, f"{basename}.{flag_name}.stats.tsv"),
+                sep="\t",
+                index=False,
+            )
 
 
 class ABCFlagBase(metaclass=ABCMeta):
@@ -59,8 +122,7 @@ class ABCFlagExtractor(ABCFlagBase):
     """
 
     _selected_flags: Optional[List[str]] = None
-    _flags_for_stats: Optional[List[str]] = None
-    _flagstats: FlagStats = defaultdict(lambda: defaultdict(lambda: 0))
+    _flagstats: FlagStats
 
     def __init__(
         self,
@@ -68,11 +130,11 @@ class ABCFlagExtractor(ABCFlagBase):
         flags_for_stats: Optional[List[str]] = None,
     ):
         self._selected_flags = selected_flags
-        self._flags_for_stats = flags_for_stats
+        self._flagstats = FlagStats(flags_for_stats)
 
     @property
     def flagstats(self):
-        return self._flagstats.copy()
+        return self._flagstats
 
     @abstractmethod
     def extract_selected(self, record: Any, match: Match) -> Dict[str, FlagData]:
@@ -126,11 +188,7 @@ class ABCFlagExtractor(ABCFlagBase):
         pass
 
     def update_stats(self, flags: Dict[str, FlagData]) -> None:
-        if self._flags_for_stats is None:
-            return
-        for flag_name, flag_data in flags.items():
-            if flag_name in self._flags_for_stats:
-                self._flagstats[flag_name][flag_data[0]] += 1
+        self._flagstats.update(flags)
 
     def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
         """Subselects provided flags.
@@ -284,8 +342,16 @@ class ABCFlagReader(ABCFlagBase):
 
 
 class FastxFlagReader(ABCFlagReader):
-    def __init__(self):
+
+    _flagstats: FlagStats
+
+    def __init__(self, flags_for_stats: Optional[List[str]] = None):
         super(FastxFlagReader, self).__init__()
+        self._flagstats = FlagStats(flags_for_stats)
+
+    @property
+    def flagstats(self):
+        return self._flagstats
 
     def read(self, record: SimpleFastxRecord) -> Optional[Dict[str, FlagData]]:
         header = record[0]
@@ -300,4 +366,45 @@ class FastxFlagReader(ABCFlagReader):
                 continue
             name, value = flag.split(self._flag_delim)[:2]
             flag_data.update([(name, (value, -1, -1))])
+        self._flagstats.update(flag_data)
         return flag_data
+
+
+class FlagRegexes(object):
+
+    _flag_regex: Dict[str, str]
+    _flag_regex_compiled: Dict[str, Pattern]
+
+    def __init__(self, pattern_list: List[str]):
+        super(FlagRegexes, self).__init__()
+        self._flag_regex = {}
+        self.__init(pattern_list)
+        self._flag_regex_compiled = {}
+        self.__compile()
+
+    def __init(self, pattern_list: List[str]) -> Dict[str, str]:
+        self._flag_regex = {}
+        for pattern in pattern_list:
+            if "," not in pattern:
+                continue
+            exploded = pattern.split(",")
+            self._flag_regex[exploded[0]] = ",".join(exploded[1:])
+        return self._flag_regex
+
+    def __compile(self) -> None:
+        for name, regex in self._flag_regex.items():
+            self._flag_regex_compiled[name] = re.compile(regex)
+
+    def log(self) -> None:
+        logging.info("[bold underline red]Flag regex[/]")
+        for name, regex in self._flag_regex.items():
+            logging.info(f"{name}-regex\t{regex}")
+
+    def match(self, flags: Dict[str, FlagData]) -> bool:
+        for name, regex in self._flag_regex_compiled.items():
+            if name not in flags:
+                return False
+            match = re.match(regex, flags[name][0])
+            if match is None:
+                return False
+        return True

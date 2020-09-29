@@ -138,9 +138,7 @@ def get_split_qual_filter_handler(
     split_by: str,
     tempdir: Optional[tempfile.TemporaryDirectory] = None,
 ) -> Tuple[Optional[SimpleSplitFastxWriter], Callable]:
-    FH = get_split_chunk_handler(
-        cid, fmt, path, compress_level, split_by, tempdir
-    )
+    FH = get_split_chunk_handler(cid, fmt, path, compress_level, split_by, tempdir)
     if FH is not None:
         assert fmt == FH.format, "format mismatch between input and requested output"
         return (FH, FH.write)
@@ -156,9 +154,7 @@ def get_handles(
     Optional[SimpleFastxWriter],
     Callable,
 ]:
-    OHC = get_chunk_handler(
-        cid, fmt, args.output, args.compress_level, args.temp_dir
-    )
+    OHC = get_chunk_handler(cid, fmt, args.output, args.compress_level, args.temp_dir)
     assert OHC is not None
     UHC = get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir

@@ -4,14 +4,19 @@
 """
 
 from fastx_barber.scripts import arguments
-from fastx_barber.scripts import extract, flag_filter
+from fastx_barber.scripts import flag, flag_extract
+from fastx_barber.scripts import flag_filter, flag_regex, flag_split, flag_stats
 from fastx_barber.scripts import match
 from fastx_barber.scripts import trim, trim_len, trim_qual, trim_regex
 
 __all__ = [
     "arguments",
-    "extract",
+    "flag",
+    "flag_extract",
     "flag_filter",
+    "flag_regex",
+    "flag_split",
+    "flag_stats",
     "match",
     "trim",
     "trim_len",

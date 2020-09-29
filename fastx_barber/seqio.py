@@ -247,7 +247,6 @@ def get_fastx_writer(fmt: FastxFormats) -> Type[SimpleFastxWriter]:
 
 
 class ABCSimpleSplitWriter(metaclass=ABCMeta):
-    """docstring for ClassName"""
 
     _base_path: str
     _root_path: str
@@ -255,6 +254,7 @@ class ABCSimpleSplitWriter(metaclass=ABCMeta):
     _split_key: str
     _split_by: Set[str]
     _compress_level: int
+    _is_gzipped: bool
 
     def __init__(self, path: str, split_key: str, compress_level: int = 6):
         super(ABCSimpleSplitWriter, self).__init__()
@@ -263,6 +263,7 @@ class ABCSimpleSplitWriter(metaclass=ABCMeta):
         self._basename = os.path.basename(path)
         if self._basename.startswith("."):
             self._basename = self._basename[1:]
+        self._is_gzipped = self._basename.endswith(".gz")
         self._split_key = split_key
         self._split_by = set()
         self._compress_level = compress_level
@@ -283,11 +284,18 @@ class ABCSimpleSplitWriter(metaclass=ABCMeta):
             self._root_path,
             f"{self._split_key}_split.{split_value}.{self._basename}",
         )
-        if self.opened_before(split_value):
-            return open(path, "a+")
+        if self._is_gzipped:
+            if self.opened_before(split_value):
+                return gzip.open(path, "at+")
+            else:
+                self._split_by.add(split_value)
+                return gzip.open(path, "wt+")
         else:
-            self._split_by.add(split_value)
-            return open(path, "w+")
+            if self.opened_before(split_value):
+                return open(path, "a+")
+            else:
+                self._split_by.add(split_value)
+                return open(path, "w+")
 
     @abstractmethod
     def write(self, record: Any, flag_data: Dict[str, FlagData], *args) -> None:

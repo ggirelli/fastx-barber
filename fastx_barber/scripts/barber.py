@@ -35,8 +35,7 @@ FASTX barber tools.
         help="Access the help page for a sub-command with: sub-command -h",
     )
 
-    scripts.extract.init_parser(subparsers)
-    scripts.flag_filter.init_parser(subparsers)
+    scripts.flag.init_parser(subparsers)
     scripts.match.init_parser(subparsers)
     scripts.trim.init_parser(subparsers)
 

@@ -160,3 +160,29 @@ def add_comment_space_option(
         help="""Delimiter for header comments. Defaults to a space.""",
     )
     return arg_group
+
+
+def add_split_by_option(
+    arg_group: argparse._ArgumentGroup,
+) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--split-by",
+        type=str,
+        help="""Flag to be used to split records in separate output files,
+        based on flag value.""",
+    )
+    return arg_group
+
+
+def add_flagstats_option(
+    arg_group: argparse._ArgumentGroup,
+) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--flagstats",
+        type=str,
+        nargs="+",
+        help="""Space-separate names of flags to calculate statistics for. By default
+        this is skipped. Statistics are calculated before any quality filter, on records
+        matching the provided pattern.""",
+    )
+    return arg_group
