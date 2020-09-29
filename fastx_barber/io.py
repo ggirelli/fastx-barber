@@ -3,8 +3,9 @@
 @contact: gigi.ga90@gmail.com
 """
 
+import glob
 import os
-from tqdm import tqdm  # type: ignore
+from rich.progress import track  # type: ignore
 import tempfile
 from typing import Optional, Tuple
 
@@ -21,15 +22,16 @@ def is_gzipped(path: str) -> Tuple[str, str, bool]:
 class ChunkMerger(object):
     _do_remove: bool = True
     _tempdir: Optional[tempfile.TemporaryDirectory]
+    _split_by: Optional[str] = None
 
     def __init__(
         self,
-        compress_level: int = 6,
         tempdir: Optional[tempfile.TemporaryDirectory] = None,
+        split_by: Optional[str] = None,
     ):
         super(ChunkMerger, self).__init__()
-        self.__compress_level = compress_level
         self._tempdir = tempdir
+        self._split_by = split_by
 
     @property
     def do_remove(self) -> bool:
@@ -39,9 +41,13 @@ class ChunkMerger(object):
     def do_remove(self, do_remove: bool) -> None:
         self._do_remove = do_remove
 
-    def do(self, path: str, last_chunk_id: int, desc: Optional[str] = None) -> None:
+    def __merge_simple(
+        self, path: str, last_chunk_id: int, desc: Optional[str] = None
+    ) -> None:
         with open(path, "wb") as OH:
-            for cid in tqdm(range(1, last_chunk_id + 1), desc=desc):
+            for cid in track(
+                range(1, last_chunk_id + 1), description=desc, transient=False
+            ):
                 chunk_path = f".tmp.chunk{cid}.{path}"
                 if self._tempdir is not None:
                     chunk_path = os.path.join(self._tempdir.name, chunk_path)
@@ -51,3 +57,37 @@ class ChunkMerger(object):
                     OH.write(CH.read())
                 if self._do_remove:
                     os.remove(chunk_path)
+
+    def __merge_split(
+        self, path: str, last_chunk_id: int, desc: Optional[str] = None
+    ) -> None:
+        output_dir = os.path.dirname(path)
+        output_base = os.path.basename(path)
+        for cid in track(
+            range(1, last_chunk_id + 1), description=desc, transient=False
+        ):
+            chunk_path = f"{self._split_by}_split.*.tmp.chunk{cid}.{path}"
+            if self._tempdir is not None:
+                chunk_path = os.path.join(self._tempdir.name, chunk_path)
+            flist = glob.glob(chunk_path)
+            for fname in flist:
+                split_value = (
+                    os.path.basename(fname).split("_split.")[1].split(".tmp.chunk")[0]
+                )
+                with open(
+                    os.path.join(
+                        output_dir,
+                        f"{self._split_by}_split.{split_value}.{output_base}",
+                    ),
+                    "ab",
+                ) as OH:
+                    with open(fname, "rb") as CH:
+                        OH.write(CH.read())
+                    if self._do_remove:
+                        os.remove(fname)
+
+    def do(self, path: str, last_chunk_id: int, desc: Optional[str] = None) -> None:
+        if self._split_by is None:
+            self.__merge_simple(path, last_chunk_id, desc)
+        else:
+            self.__merge_split(path, last_chunk_id, desc)

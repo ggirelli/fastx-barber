@@ -10,16 +10,16 @@ import sys
 
 
 def default_parser(*args) -> None:
-    print("fbarber trim -h for usage details.")
+    print("fbarber flag -h for usage details.")
     sys.exit()
 
 
 def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     parser = subparsers.add_parser(
         __name__.split(".")[-1],
-        description="""FASTX trimming tools.""",
+        description="""FASTX flag tools.""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Trim a FASTX file.",
+        help="FASTX flag tools.",
     )
     parser.set_defaults(parse=default_parser)
     parser = ap.add_version_option(parser)
@@ -29,8 +29,10 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help="Access the help page for a sub-command with: sub-command -h",
     )
 
-    scripts.trim_len.init_parser(sub_subparsers)
-    scripts.trim_qual.init_parser(sub_subparsers)
-    scripts.trim_regex.init_parser(sub_subparsers)
+    scripts.flag_extract.init_parser(sub_subparsers)
+    scripts.flag_filter.init_parser(sub_subparsers)
+    scripts.flag_regex.init_parser(sub_subparsers)
+    scripts.flag_split.init_parser(sub_subparsers)
+    scripts.flag_stats.init_parser(sub_subparsers)
 
     return parser

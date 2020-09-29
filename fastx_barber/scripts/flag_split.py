@@ -5,17 +5,16 @@
 
 import argparse
 from fastx_barber import scriptio
-from fastx_barber.const import PATTERN_EXAMPLE
+from fastx_barber.flag import FastxFlagReader
 from fastx_barber.io import ChunkMerger
-from fastx_barber.match import FastxMatcher, SimpleFastxRecord
+from fastx_barber.match import SimpleFastxRecord
+from fastx_barber.scriptio import get_split_chunk_handler
 from fastx_barber.scripts import arguments as ap
-from fastx_barber.seqio import get_fastx_format
 import joblib  # type: ignore
 import logging
-import regex  # type: ignore
 from rich.logging import RichHandler  # type: ignore
 import sys
-from typing import List, Tuple
+from typing import List
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,10 +25,10 @@ logging.basicConfig(
 
 def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     parser = subparsers.add_parser(
-        __name__.split(".")[-1],
-        description="Scan a FASTX file for records matching a regular expression.",
+        "split",
+        description="Split FASTX by flag value.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Scan a FASTX file for records matching a regular expression.",
+        help="Split FASTX by flag value.",
     )
 
     parser.add_argument(
@@ -44,23 +43,18 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         type=str,
         metavar="out.fastx[.gz]",
         help="""Path to fasta/q file where to write
-                        matching records. Format will match the input.""",
-    )
-
-    parser.add_argument(
-        "--pattern",
-        type=str,
-        help=f"""Pattern to match to reads.
-        Remember to use quotes. Example: '{PATTERN_EXAMPLE}'""",
+        matching records. Format will match the input.""",
     )
 
     parser = ap.add_version_option(parser)
 
     advanced = parser.add_argument_group("advanced arguments")
-    advanced = ap.add_unmatched_output_option(advanced)
+    advanced = ap.add_flag_delim_option(advanced)
+    advanced = ap.add_comment_space_option(advanced)
+    advanced = ap.add_split_by_option(advanced)
+
     advanced = ap.add_compress_level_option(advanced)
     advanced = ap.add_log_file_option(advanced)
-
     advanced = ap.add_chunk_size_option(advanced)
     advanced = ap.add_threads_option(advanced)
     advanced = ap.add_tempdir_option(advanced)
@@ -74,9 +68,9 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
 
-    if args.pattern is None:
+    if args.split_by is None:
         logging.info(
-            "No pattern specified (--pattern), nothing to do. :person_shrugging:"
+            "No flag specified (--split-by), nothing to do. :person_shrugging:"
         )
         sys.exit()
 
@@ -90,38 +84,40 @@ def run_chunk(
     chunk: List[SimpleFastxRecord],
     cid: int,
     args: argparse.Namespace,
-) -> Tuple[int, int]:
-    fmt, _ = get_fastx_format(args.input)
-    OHC = scriptio.get_chunk_handler(
-        cid, fmt, args.output, args.compress_level, args.temp_dir
+) -> None:
+    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    OHC = get_split_chunk_handler(
+        cid, fmt, args.output, args.compress_level, args.split_by, args.temp_dir
     )
     assert OHC is not None
-    UHC = scriptio.get_chunk_handler(
-        cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
-    )
-    foutput = scriptio.get_output_fun(OHC, UHC)
 
-    matcher = FastxMatcher(regex.compile(args.pattern))
+    flag_reader = FastxFlagReader()
+    flag_reader.flag_delim = args.flag_delim
+    flag_reader.comment_space = args.comment_space
 
     for record in chunk:
-        match, matched = matcher.match(record)
-        foutput[matched](record)
-
-    OHC.close()
-    if UHC is not None:
-        UHC.close()
-
-    return (matcher.matched_count, len(chunk))
+        flags = flag_reader.read(record)
+        if flags is not None:
+            OHC.write(record, flags)
+        else:
+            logging.warning("encountered record without flags.")
 
 
 def run(args: argparse.Namespace) -> None:
-    ap.log_args(args)
+    logging.info("[bold underline red]General[/]")
+    logging.info(f"Input\t\t{args.input}")
+    logging.info(f"Threads\t\t{args.threads}")
+    logging.info(f"Chunk size\t{args.chunk_size}")
+    logging.info("[bold underline red]Flag extraction[/]")
+    logging.info(f"Flag delim\t'{args.flag_delim}'")
+    logging.info(f"Comment delim\t'{args.comment_space}'")
+    logging.info(f"Split by\t'{args.split_by}'")
 
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Matching...")
-    output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
+    joblib.Parallel(n_jobs=args.threads, verbose=10)(
         joblib.delayed(run_chunk)(
             chunk,
             cid,
@@ -130,25 +126,8 @@ def run(args: argparse.Namespace) -> None:
         for chunk, cid in IH
     )
 
-    parsed_counter = 0
-    matched_counter = 0
-    for matched, parsed in output:
-        matched_counter += matched
-        parsed_counter += parsed
-    logging.info(
-        " ".join(
-            (
-                f"{matched_counter}/{parsed_counter}",
-                f"({matched_counter/parsed_counter*100:.2f}%)",
-                "records matched the pattern.",
-            )
-        )
-    )
-
     logging.info("Merging batch output...")
-    merger = ChunkMerger(args.temp_dir, None)
-    merger.do(args.output, IH.last_chunk_id, "Writing matched")
-    if args.unmatched_output is not None:
-        merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched")
+    merger = ChunkMerger(args.temp_dir, args.split_by)
+    merger.do(args.output, IH.last_chunk_id, "Writing matched records")
 
     logging.info("Done. :thumbs_up: :smiley:")

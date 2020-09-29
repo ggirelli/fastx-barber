@@ -4,17 +4,9 @@
 """
 
 from enum import Enum
+from typing import DefaultDict, Tuple
 
-__version__ = "0.0.1"
-
-logfmt = "".join(
-    (
-        "%(asctime)s ",
-        "[P%(process)s:%(module)s] ",
-        "%(levelname)s: %(message)s",
-    )
-)
-log_datefmt = "%m/%d/%Y %I:%M:%S"
+__version__ = "0.1.0b"
 
 
 class FastxFormats(Enum):
@@ -59,3 +51,9 @@ class FastxExtensions(Enum):
 
 QFLAG_START = "q"
 DEFAULT_PHRED_OFFSET = 33
+
+PATTERN_EXAMPLE = "^(?<UMI>.{8})(?<BC>.{8})(?<CS>GATC){s<2}"
+
+"""Flag data, contains matched str, start, and end position"""
+FlagData = Tuple[str, int, int]
+FlagStatsType = DefaultDict[str, DefaultDict[str, int]]

@@ -3,10 +3,10 @@
 @contact: gigi.ga90@gmail.com
 """
 
-from fastx_barber.const import DEFAULT_PHRED_OFFSET, QFLAG_START
-from fastx_barber.flag import FlagData
+from fastx_barber.const import DEFAULT_PHRED_OFFSET, FlagData, QFLAG_START
+import logging
 import numpy as np  # type: ignore
-from typing import Dict, List
+from typing import Callable, Dict, List, Tuple
 
 
 class QualityIO(object):
@@ -37,8 +37,8 @@ class QualityFilter(QualityIO):
     __min_qscore: int
     __max_perc: float
 
-    __passed: int = 0
-    __parsed: int = 0
+    _passed: int = 0
+    _parsed: int = 0
 
     def __init__(
         self, min_qscore: int, max_perc: float, phred_offset: int = DEFAULT_PHRED_OFFSET
@@ -66,11 +66,11 @@ class QualityFilter(QualityIO):
 
     @property
     def passed(self) -> int:
-        return self.__passed
+        return self._passed
 
     @property
     def parsed(self) -> int:
-        return self.__parsed
+        return self._parsed
 
     def qual_pass_filter(self, qual: str) -> bool:
         """
@@ -81,8 +81,8 @@ class QualityFilter(QualityIO):
             bool -- whether the quality string passes the filter
         """
         has_passed = self.__qual_pass_filter(qual, self.__min_qscore, self.__max_perc)
-        self.__passed += has_passed
-        self.__parsed += 1
+        self._passed += has_passed
+        self._parsed += 1
         return has_passed
 
     def __qual_pass_filter(self, qual: str, min_qscore: int, max_perc: float) -> bool:
@@ -139,3 +139,27 @@ def apply_filter_flag(
         if not filters[flag].qual_pass_filter(qual):
             return False
     return True
+
+
+def log_qual_filters(
+    phred_offset: int, quality_flag_filters: Dict[str, QualityFilter]
+) -> None:
+    logging.info("[bold underline red]Quality filters[/]")
+    logging.info(f"PHRED offset\t{phred_offset}")
+    for name, f in quality_flag_filters.items():
+        logging.info(f"{name}-filter\tmin_score={f.min_qscore} & max_perc={f.max_perc}")
+
+
+def setup_qual_filters(
+    filter_qual_flags: List[str], phred_offset: int, verbose: bool = False
+) -> Tuple[Dict[str, QualityFilter], Callable]:
+    quality_flag_filters: Dict[str, QualityFilter] = {}
+    filter_fun = dummy_apply_filter_flag
+    if filter_qual_flags is not None:
+        quality_flag_filters = QualityFilter.init_flag_filters(
+            filter_qual_flags, phred_offset
+        )
+        if verbose:
+            log_qual_filters(phred_offset, quality_flag_filters)
+        filter_fun = apply_filter_flag
+    return (quality_flag_filters, filter_fun)

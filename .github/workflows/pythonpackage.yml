@@ -37,7 +37,8 @@ jobs:
     - uses: dschep/install-poetry-action@v1.3
     - name: Install package with poetry
       run: poetry install
-    - uses: lgeiger/black-action@v1.0.1
+    - name: "Running black"
+      uses: lgeiger/black-action@v1.0.1
       with:
         args: ". --check"
     - name: Lint with flake8
