@@ -145,4 +145,4 @@ def run(args: argparse.Namespace) -> None:
     if args.unmatched_output is not None:
         merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched")
 
-    logging.info("Done.")
+    logging.info("Done. :thumbs_up: :smiley:")

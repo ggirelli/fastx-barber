@@ -185,4 +185,4 @@ def run(args: argparse.Namespace) -> None:
     merger = ChunkMerger(args.temp_dir, None)
     merger.do(args.output, IH.last_chunk_id, "Writing trimmed records")
 
-    logging.info("Done.")
+    logging.info("Done. :thumbs_up: :smiley:")
