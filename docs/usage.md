@@ -1,5 +1,22 @@
 # Usage
 
+<!-- MarkdownTOC -->
+
+- [Match](#match)
+- [Trim](#trim)
+    - [Trim by length](#trim-by-length)
+    - [Trim by quality](#trim-by-quality)
+    - [Trim by regular expression](#trim-by-regular-expression)
+- [Flags](#flags)
+    - [Extract flags](#extract-flags)
+    - [After flag extraction](#after-flag-extraction)
+        - [Filter by flag quality](#filter-by-flag-quality)
+        - [Match flags with regular expressions](#match-flags-with-regular-expressions)
+        - [Split by flag value](#split-by-flag-value)
+        - [Calculate flag value frequency](#calculate-flag-value-frequency)
+
+<!-- /MarkdownTOC -->
+
 ## Match
 
 ```bash
