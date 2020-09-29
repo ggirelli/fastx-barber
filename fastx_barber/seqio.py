@@ -286,10 +286,10 @@ class ABCSimpleSplitWriter(metaclass=ABCMeta):
         )
         if self._is_gzipped:
             if self.opened_before(split_value):
-                return gzip.open(path, "at+")
+                return gzip.open(path, "at+", compresslevel=self._compress_level)
             else:
                 self._split_by.add(split_value)
-                return gzip.open(path, "wt+")
+                return gzip.open(path, "wt+", compresslevel=self._compress_level)
         else:
             if self.opened_before(split_value):
                 return open(path, "a+")

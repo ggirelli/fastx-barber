@@ -19,7 +19,7 @@ from fastx_barber.trim import FastqTrimmer
 import joblib  # type: ignore
 import logging
 import numpy as np  # type: ignore
-from rich.logging import RichHandler
+from rich.logging import RichHandler  # type: ignore
 import sys
 from typing import List, Tuple
 

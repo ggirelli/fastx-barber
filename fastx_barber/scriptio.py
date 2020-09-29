@@ -16,8 +16,8 @@ from fastx_barber.seqio import (
 )
 import logging
 import os
-from rich.console import Console
-from rich.logging import RichHandler
+from rich.console import Console  # type: ignore
+from rich.logging import RichHandler  # type: ignore
 import tempfile
 from typing import Callable, Dict, Optional, Tuple, Union
 

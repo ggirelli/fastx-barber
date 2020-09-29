@@ -10,7 +10,7 @@ from fastx_barber.match import SimpleFastxRecord
 from fastx_barber.scripts import arguments as ap
 import joblib  # type: ignore
 import logging
-from rich.logging import RichHandler
+from rich.logging import RichHandler  # type: ignore
 import sys
 from typing import List
 

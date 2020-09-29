@@ -14,7 +14,7 @@ from fastx_barber.scripts import arguments as ap
 from fastx_barber.seqio import SimpleFastxWriter
 import joblib  # type: ignore
 import logging
-from rich.logging import RichHandler
+from rich.logging import RichHandler  # type: ignore
 import sys
 from typing import List, Tuple
 

@@ -11,7 +11,7 @@ import logging
 import os
 import pandas as pd  # type: ignore
 import regex as re  # type: ignore
-from rich.progress import track
+from rich.progress import track  # type: ignore
 from typing import Any, Dict, List, Match, Optional, Pattern, Tuple, Type
 
 

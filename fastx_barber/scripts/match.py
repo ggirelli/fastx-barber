@@ -13,7 +13,7 @@ from fastx_barber.seqio import get_fastx_format
 import joblib  # type: ignore
 import logging
 import regex  # type: ignore
-from rich.logging import RichHandler
+from rich.logging import RichHandler  # type: ignore
 import sys
 from typing import List, Tuple
 

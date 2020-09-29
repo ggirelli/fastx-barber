@@ -27,7 +27,7 @@ from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
 import logging
 import regex as re  # type: ignore
-from rich.logging import RichHandler
+from rich.logging import RichHandler  # type: ignore
 import sys
 from typing import Dict, List, Tuple, Union
 

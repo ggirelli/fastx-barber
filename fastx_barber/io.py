@@ -5,7 +5,7 @@
 
 import glob
 import os
-from rich.progress import track
+from rich.progress import track  # type: ignore
 import tempfile
 from typing import Optional, Tuple
 
