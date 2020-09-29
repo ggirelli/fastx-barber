@@ -4,8 +4,10 @@
 """
 
 import argparse
+from collections import defaultdict
 from fastx_barber.const import DEFAULT_PHRED_OFFSET, FastxFormats
 from fastx_barber.flag import (
+    FlagStats,
     get_fastx_flag_extractor,
     ABCFlagExtractor,
     FastqFlagExtractor,
@@ -19,8 +21,11 @@ from fastx_barber.seqio import get_fastx_format, SimpleFastxRecord, SimpleFastxW
 from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
 import logging
+import os
+import pandas as pd  # type: ignore
 import regex  # type: ignore
 from rich.logging import RichHandler
+from rich.progress import track
 import tempfile
 from typing import Callable, Dict, List, Optional, Tuple
 
@@ -77,17 +82,25 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     advanced.add_argument(
         "--selected-flags",
         type=str,
-        help="""Comma-separate names of flags to be extracted.
+        nargs="+",
+        help="""Space-separate names of flags to be extracted.
         By default it extracts all flags.""",
+    )
+    advanced.add_argument(
+        "--flagstats",
+        type=str,
+        nargs="+",
+        help="""Space-separate names of flags to calculate statistics for.
+        By default this is skipped.""",
     )
     advanced.add_argument(
         "--filter-qual-flags",
         type=str,
-        help="""Comma-separated 'flag_name,min_qscore,max_perc' strings, where
+        nargs="+",
+        help="""Space-separated 'flag_name,min_qscore,max_perc' strings, where
         bases with qscore < min_qscore are considered low quality, and max_perc
-        is the largest allowed fraction of low quality bases. You can specify
-        multiple flag filters by separating them with a space (please wrap them in a
-        single set of quotes in this case).""",
+        is the largest allowed fraction of low quality bases. I.e., you can specify
+        multiple flag filters by separating them with a space.""",
     )
     advanced.add_argument(
         "--filter-qual-output",
@@ -136,13 +149,11 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)
 
-    if args.selected_flags is not None:
-        args.selected_flags = args.selected_flags.split(",")
-
     ap.log_args(args)
     logging.info("[bold underline red]Flag extraction[/]")
     if args.selected_flags is not None:
         logging.info(f"Selected flags\t{args.selected_flags}")
+    logging.info(f"Flag stats\t{args.flagstats}")
     logging.info(f"Flag delim\t'{args.flag_delim}'")
     logging.info(f"Comment delim\t'{args.comment_space}'")
     logging.info(f"Quality flags\t{args.qual_flags}")
@@ -166,7 +177,7 @@ def setup_qual_filters(
     filter_fun = dummy_apply_filter_flag
     if filter_qual_flags is not None:
         quality_flag_filters = QualityFilter.init_flag_filters(
-            filter_qual_flags.split(" "), phred_offset
+            filter_qual_flags, phred_offset
         )
         if verbose:
             log_qual_filters(phred_offset, quality_flag_filters)
@@ -190,7 +201,7 @@ def get_qual_filter_handler(
 
 
 def get_flag_extractor(fmt: FastxFormats, args: argparse.Namespace) -> ABCFlagExtractor:
-    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags)
+    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags, args.flagstats)
     flag_extractor.flag_delim = args.flag_delim
     flag_extractor.comment_space = args.comment_space
     if isinstance(flag_extractor, FastqFlagExtractor):
@@ -198,11 +209,14 @@ def get_flag_extractor(fmt: FastxFormats, args: argparse.Namespace) -> ABCFlagEx
     return flag_extractor
 
 
+ChunkDetails = Tuple[int, int, int, FlagStats]
+
+
 def run_chunk(
     chunk: List[SimpleFastxRecord],
     cid: int,
     args: argparse.Namespace,
-):
+) -> ChunkDetails:
     fmt, _ = get_fastx_format(args.input)
     OHC = scriptio.get_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.temp_dir
@@ -229,6 +243,7 @@ def run_chunk(
         match, matched = matcher.match(record)
         if matched:
             flags = flag_extractor.extract_all(record, match)
+            flag_extractor.update_stats(flags)
             flags_selected = flag_extractor.apply_selection(flags)
             record = flag_extractor.update(record, flags_selected)
             record = trimmer.trim_re(record, match)
@@ -243,7 +258,47 @@ def run_chunk(
     SimpleFastxWriter.close_handle(UHC)
     SimpleFastxWriter.close_handle(FHC)
 
-    return (filtered_counter, matcher.matched_count, len(chunk))
+    return (
+        filtered_counter,
+        matcher.matched_count,
+        len(chunk),
+        flag_extractor.flagstats,
+    )
+
+
+def merge_chunk_details(chunk_details: ChunkDetails) -> ChunkDetails:
+    parsed_counter = 0
+    matched_counter = 0
+    filtered_counter = 0
+    flagstats: FlagStats = defaultdict(lambda: defaultdict(lambda: 0))
+    for filtered, matched, parsed, stats in chunk_details:
+        filtered_counter += filtered
+        matched_counter += matched
+        parsed_counter += parsed
+        for flag_name, data in stats.items():
+            for k, v in data.items():
+                flagstats[flag_name][k] += v
+
+    return (parsed_counter, matched_counter, filtered_counter, flagstats)
+
+
+def export_flagstats(flagstats: FlagStats, output_path: str) -> None:
+    output_dir = os.path.dirname(output_path)
+    basename = os.path.basename(output_path)
+    if basename.endswith(".gz"):
+        basename = basename.split(".gz")[0]
+    basename = os.path.splitext(basename)[0]
+    for flag_name, stats in track(flagstats.items(), description="Exporting flagstats"):
+        df = pd.DataFrame()
+        df["value"] = list(stats.keys())
+        df["counts"] = list(stats.values())
+        df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
+        df.sort_values("perc", ascending=False, ignore_index=True, inplace=True)
+        df.to_csv(
+            os.path.join(output_dir, f"{basename}.{flag_name}.stats.tsv"),
+            sep="\t",
+            index=False,
+        )
 
 
 def run(args: argparse.Namespace) -> None:
@@ -257,7 +312,7 @@ def run(args: argparse.Namespace) -> None:
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming and extracting flags...")
-    output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
+    chunk_details = joblib.Parallel(n_jobs=args.threads, verbose=10)(
         joblib.delayed(run_chunk)(
             chunk,
             cid,
@@ -265,33 +320,26 @@ def run(args: argparse.Namespace) -> None:
         )
         for chunk, cid in IH
     )
+    logging.info("Merging subprocesses details...")
+    n_parsed, n_matched, n_filtered, flagstats = merge_chunk_details(chunk_details)
 
-    parsed_counter = 0
-    matched_counter = 0
-    filtered_counter = 0
-    for filtered, matched, parsed in output:
-        filtered_counter += filtered
-        matched_counter += matched
-        parsed_counter += parsed
     logging.info(
-        " ".join(
-            (
-                f"{matched_counter}/{parsed_counter}",
-                f"({matched_counter/parsed_counter*100:.2f}%)",
-                "records matched the pattern.",
-            )
-        )
+        f"{n_matched}/{n_parsed} ({n_matched/n_parsed*100:.2f}%) "
+        + "records matched the pattern.",
     )
     if args.filter_qual_flags is not None:
         logging.info(
             " ".join(
                 (
-                    f"{(matched_counter-filtered_counter)}/{matched_counter}",
-                    f"({(matched_counter-filtered_counter)/matched_counter*100:.2f}%)",
+                    f"{(n_matched-n_filtered)}/{n_matched}",
+                    f"({(n_matched-n_filtered)/n_matched*100:.2f}%)",
                     "records passed the quality filters.",
                 )
             )
         )
+
+    if args.flagstats is not None:
+        export_flagstats(flagstats, args.output)
 
     logging.info("Merging batch output...")
     merger = ChunkMerger(args.temp_dir)

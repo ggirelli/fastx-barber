@@ -4,12 +4,14 @@
 """
 
 from abc import ABCMeta, abstractmethod
+from collections import defaultdict
 from fastx_barber.const import FastxFormats, QFLAG_START
 from fastx_barber.seqio import SimpleFastxRecord
-from typing import Any, Dict, List, Match, Optional, Tuple, Type
+from typing import Any, DefaultDict, Dict, List, Match, Optional, Tuple, Type
 
 """Flag data, contains matched str, start, and end position"""
 FlagData = Tuple[str, int, int]
+FlagStats = DefaultDict[str, DefaultDict[str, int]]
 
 
 class ABCFlagExtractor(metaclass=ABCMeta):
@@ -27,9 +29,16 @@ class ABCFlagExtractor(metaclass=ABCMeta):
     _flag_delim: str = "~"
     _comment_space: str = " "
     _selected_flags: Optional[List[str]] = None
+    _flags_for_stats: Optional[List[str]] = None
+    _flagstats: FlagStats = defaultdict(lambda: defaultdict(lambda: 0))
 
-    def __init__(self, selected_flags: Optional[List[str]] = None):
+    def __init__(
+        self,
+        selected_flags: Optional[List[str]] = None,
+        flags_for_stats: Optional[List[str]] = None,
+    ):
         self._selected_flags = selected_flags
+        self._flags_for_stats = flags_for_stats
 
     @property
     def flag_delim(self):
@@ -48,6 +57,10 @@ class ABCFlagExtractor(metaclass=ABCMeta):
     def comment_space(self, comment_space: str):
         assert 1 == len(comment_space)
         self._comment_space = comment_space
+
+    @property
+    def flagstats(self):
+        return self._flagstats.copy()
 
     @abstractmethod
     def extract_selected(self, record: Any, match: Match) -> Dict[str, FlagData]:
@@ -100,6 +113,15 @@ class ABCFlagExtractor(metaclass=ABCMeta):
         """
         pass
 
+    def update_stats(self, flags: Optional[Dict[str, FlagData]] = None) -> None:
+        if self._flags_for_stats is None:
+            return
+        if flags is None:
+            flags = self.extract_all()
+        for flag_name, flag_data in flags.items():
+            if flag_name in self._flags_for_stats:
+                self._flagstats[flag_name][flag_data[0]] += 1
+
     def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
         """Subselects provided flags.
 
@@ -123,8 +145,12 @@ class ABCFlagExtractor(metaclass=ABCMeta):
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
-    def __init__(self, selected_flags: Optional[List[str]] = None):
-        super(FastaFlagExtractor, self).__init__(selected_flags)
+    def __init__(
+        self,
+        selected_flags: Optional[List[str]] = None,
+        flags_for_stats: Optional[List[str]] = None,
+    ):
+        super(FastaFlagExtractor, self).__init__(selected_flags, flags_for_stats)
 
     def extract_selected(
         self, record: SimpleFastxRecord, match: Match
@@ -170,8 +196,12 @@ class FastqFlagExtractor(FastaFlagExtractor):
 
     extract_qual_flags: bool = True
 
-    def __init__(self, selected_flags: Optional[List[str]] = None):
-        super(FastqFlagExtractor, self).__init__(selected_flags)
+    def __init__(
+        self,
+        selected_flags: Optional[List[str]] = None,
+        flags_for_stats: Optional[List[str]] = None,
+    ):
+        super(FastqFlagExtractor, self).__init__(selected_flags, flags_for_stats)
 
     def extract_selected(
         self, record: SimpleFastxRecord, match: Match
