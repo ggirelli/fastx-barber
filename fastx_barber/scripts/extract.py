@@ -90,8 +90,9 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "--flagstats",
         type=str,
         nargs="+",
-        help="""Space-separate names of flags to calculate statistics for.
-        By default this is skipped.""",
+        help="""Space-separate names of flags to calculate statistics for. By default
+        this is skipped. Statistics are calculated before any quality filter, on records
+        matching the provided pattern.""",
     )
     advanced.add_argument(
         "--filter-qual-flags",
