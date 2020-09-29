@@ -7,6 +7,7 @@ import argparse
 from collections import defaultdict
 from fastx_barber.const import DEFAULT_PHRED_OFFSET, FastxFormats
 from fastx_barber.flag import (
+    FlagData,
     FlagStats,
     get_fastx_flag_extractor,
     ABCFlagExtractor,
@@ -14,10 +15,19 @@ from fastx_barber.flag import (
 )
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
-from fastx_barber.qual import dummy_apply_filter_flag, apply_filter_flag, QualityFilter
 from fastx_barber.scripts.common import arguments as ap
 from fastx_barber.scripts.common import io as scriptio
-from fastx_barber.seqio import get_fastx_format, SimpleFastxRecord, SimpleFastxWriter
+from fastx_barber.scripts.common.qual import (
+    setup_qual_filters,
+    get_qual_filter_handler,
+    get_split_qual_filter_handler,
+)
+from fastx_barber.seqio import (
+    get_fastx_format,
+    SimpleFastxRecord,
+    SimpleFastxWriter,
+    SimpleSplitFastxWriter,
+)
 from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
 import logging
@@ -26,8 +36,7 @@ import pandas as pd  # type: ignore
 import regex  # type: ignore
 from rich.logging import RichHandler
 from rich.progress import track
-import tempfile
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 logging.basicConfig(
     level=logging.INFO,
@@ -93,6 +102,12 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help="""Space-separate names of flags to calculate statistics for. By default
         this is skipped. Statistics are calculated before any quality filter, on records
         matching the provided pattern.""",
+    )
+    advanced.add_argument(
+        "--split-by",
+        type=str,
+        help="""Flag to be used to split records in separate output files,
+        based on flag value.""",
     )
     advanced.add_argument(
         "--filter-qual-flags",
@@ -162,45 +177,6 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
-def log_qual_filters(
-    phred_offset: int, quality_flag_filters: Dict[str, QualityFilter]
-) -> None:
-    logging.info("[bold underline red]Quality filters[/]")
-    logging.info(f"PHRED offset\t{phred_offset}")
-    for name, f in quality_flag_filters.items():
-        logging.info(f"{name}-filter\tmin_score={f.min_qscore} & max_perc={f.max_perc}")
-
-
-def setup_qual_filters(
-    filter_qual_flags: str, phred_offset: int, verbose: bool = False
-) -> Tuple[Dict[str, QualityFilter], Callable]:
-    quality_flag_filters: Dict[str, QualityFilter] = {}
-    filter_fun = dummy_apply_filter_flag
-    if filter_qual_flags is not None:
-        quality_flag_filters = QualityFilter.init_flag_filters(
-            filter_qual_flags, phred_offset
-        )
-        if verbose:
-            log_qual_filters(phred_offset, quality_flag_filters)
-        filter_fun = apply_filter_flag
-    return (quality_flag_filters, filter_fun)
-
-
-def get_qual_filter_handler(
-    cid: int,
-    fmt: FastxFormats,
-    path: Optional[str],
-    compress_level: int,
-    tempdir: Optional[tempfile.TemporaryDirectory] = None,
-) -> Tuple[Optional[SimpleFastxWriter], Callable]:
-    FH = scriptio.get_chunk_handler(cid, fmt, path, compress_level, tempdir)
-    if FH is not None:
-        assert fmt == FH.format, "format mismatch between input and requested output"
-        return (FH, FH.write)
-    else:
-        return (FH, lambda x: None)
-
-
 def get_flag_extractor(fmt: FastxFormats, args: argparse.Namespace) -> ABCFlagExtractor:
     flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags, args.flagstats)
     flag_extractor.flag_delim = args.flag_delim
@@ -213,12 +189,14 @@ def get_flag_extractor(fmt: FastxFormats, args: argparse.Namespace) -> ABCFlagEx
 ChunkDetails = Tuple[int, int, int, FlagStats]
 
 
-def run_chunk(
-    chunk: List[SimpleFastxRecord],
-    cid: int,
-    args: argparse.Namespace,
-) -> ChunkDetails:
-    fmt, _ = get_fastx_format(args.input)
+def get_handles(
+    fmt: FastxFormats, cid: int, args: argparse.Namespace
+) -> Tuple[
+    Optional[SimpleFastxWriter],
+    Optional[SimpleFastxWriter],
+    Optional[SimpleFastxWriter],
+    Callable,
+]:
     OHC = scriptio.get_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.temp_dir
     )
@@ -226,11 +204,55 @@ def run_chunk(
     UHC = scriptio.get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
     )
-    foutput = scriptio.get_output_fun(OHC, UHC)
-
     FHC, filter_output_fun = get_qual_filter_handler(
-        cid, fmt, args.filter_qual_output, args.compress_level, args.temp_dir
+        cid,
+        fmt,
+        args.filter_qual_output,
+        args.compress_level,
+        args.temp_dir,
     )
+    return (OHC, UHC, FHC, filter_output_fun)
+
+
+def get_split_handles(
+    fmt: FastxFormats, cid: int, args: argparse.Namespace
+) -> Tuple[
+    Optional[SimpleSplitFastxWriter],
+    Optional[SimpleFastxWriter],
+    Optional[SimpleSplitFastxWriter],
+    Callable,
+]:
+    OHC = scriptio.get_split_chunk_handler(
+        cid, fmt, args.output, args.compress_level, args.split_by, args.temp_dir
+    )
+    assert OHC is not None
+    UHC = scriptio.get_chunk_handler(
+        cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
+    )
+    FHC, filter_output_fun = get_split_qual_filter_handler(
+        cid,
+        fmt,
+        args.filter_qual_output,
+        args.compress_level,
+        args.split_by,
+        args.temp_dir,
+    )
+    return (OHC, UHC, FHC, filter_output_fun)
+
+
+def run_chunk(
+    chunk: List[SimpleFastxRecord],
+    cid: int,
+    args: argparse.Namespace,
+) -> ChunkDetails:
+    fmt, _ = get_fastx_format(args.input)
+    OHC: Union[SimpleFastxWriter, SimpleSplitFastxWriter, None]
+    FHC: Union[SimpleFastxWriter, SimpleSplitFastxWriter, None]
+    if args.split_by is None:
+        OHC, UHC, FHC, filter_output_fun = get_handles(fmt, cid, args)
+    else:
+        OHC, UHC, FHC, filter_output_fun = get_split_handles(fmt, cid, args)
+    foutput = scriptio.get_output_fun(OHC, UHC)
 
     matcher = FastxMatcher(regex.compile(args.pattern))
     trimmer = get_fastx_trimmer(fmt)
@@ -241,6 +263,7 @@ def run_chunk(
 
     filtered_counter = 0
     for record in chunk:
+        flags: Dict[str, FlagData] = {}
         match, matched = matcher.match(record)
         if matched:
             flags = flag_extractor.extract_all(record, match)
@@ -251,9 +274,9 @@ def run_chunk(
             pass_filters = filter_fun(flags, quality_flag_filters)
             if not pass_filters:
                 filtered_counter += 1
-                filter_output_fun(record)
+                filter_output_fun(record, flags)
                 continue
-        foutput[matched](record)
+        foutput[matched](record, flags)
 
     SimpleFastxWriter.close_handle(OHC)
     SimpleFastxWriter.close_handle(UHC)
@@ -267,7 +290,7 @@ def run_chunk(
     )
 
 
-def merge_chunk_details(chunk_details: ChunkDetails) -> ChunkDetails:
+def merge_chunk_details(chunk_details: List[ChunkDetails]) -> ChunkDetails:
     parsed_counter = 0
     matched_counter = 0
     filtered_counter = 0
@@ -343,10 +366,11 @@ def run(args: argparse.Namespace) -> None:
         export_flagstats(flagstats, args.output)
 
     logging.info("Merging batch output...")
-    merger = ChunkMerger(args.temp_dir)
-    merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.unmatched_output is not None:
+        merger = ChunkMerger(None, args.temp_dir)
         merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched records")
+    merger = ChunkMerger(args.split_by, args.temp_dir)
+    merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.filter_qual_output is not None:
         merger.do(args.filter_qual_output, IH.last_chunk_id, "Writing filtered records")
 

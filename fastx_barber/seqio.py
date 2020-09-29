@@ -5,11 +5,12 @@
 
 from abc import ABCMeta, abstractmethod
 from Bio import SeqIO  # type: ignore
+from fastx_barber.const import FlagData
 from fastx_barber.io import is_gzipped
 from fastx_barber.const import FastxFormats, FastxExtensions
 import gzip
 import os
-from typing import Any, IO, Iterator, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, IO, Iterator, List, Optional, Set, Tuple, Type, Union
 
 SimpleFastxRecord = Tuple[str, str, Optional[str]]
 
@@ -127,7 +128,7 @@ class ABCSimpleWriter(metaclass=ABCMeta):
         return self._OH.name
 
     @abstractmethod
-    def write(self, record: Any) -> None:
+    def write(self, record: Any, *args) -> None:
         """Write record to output buffer
 
         Decorators:
@@ -162,7 +163,7 @@ class SimpleFastxWriter(ABCSimpleWriter):
         return self._fmt
 
     @abstractmethod
-    def write(self, record: SimpleFastxRecord) -> None:
+    def write(self, record: SimpleFastxRecord, *args) -> None:
         """Write record to output buffer
 
         Decorators:
@@ -179,7 +180,7 @@ class SimpleFastaWriter(SimpleFastxWriter):
         super(SimpleFastaWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTA == self.format
 
-    def write(self, record: SimpleFastxRecord) -> None:
+    def write(self, record: SimpleFastxRecord, *args) -> None:
         self._OH.write(f">{record[0]}\n{record[1]}\n")
 
 
@@ -188,7 +189,7 @@ class SimpleFastqWriter(SimpleFastxWriter):
         super(SimpleFastqWriter, self).__init__(path, compress_level)
         assert FastxFormats.FASTQ == self.format
 
-    def write(self, record: SimpleFastxRecord) -> None:
+    def write(self, record: SimpleFastxRecord, *args) -> None:
         self._OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
 
 
@@ -199,3 +200,133 @@ def get_fastx_writer(fmt: FastxFormats) -> Type[SimpleFastxWriter]:
     elif FastxFormats.FASTQ == fmt:
         return SimpleFastqWriter
     return SimpleFastxWriter
+
+
+class ABCSimpleSplitWriter(metaclass=ABCMeta):
+    """docstring for ClassName"""
+
+    _base_path: str
+    _root_path: str
+    _basename: str
+    _split_key: str
+    _split_by: Set[str]
+    _compress_level: int
+
+    def __init__(self, path: str, split_key: str, compress_level: int = 6):
+        super(ABCSimpleSplitWriter, self).__init__()
+        self._base_path = path
+        self._root_path = os.path.dirname(path)
+        self._basename = os.path.basename(path)
+        if self._basename.startswith("."):
+            self._basename = self._basename[1:]
+        self._split_key = split_key
+        self._split_by = set()
+        self._compress_level = compress_level
+
+    @property
+    def split_key(self):
+        return self._split_key
+
+    @property
+    def split_by(self):
+        return self._split_by
+
+    def opened_before(self, split_value: str) -> bool:
+        return split_value in self._split_by
+
+    def open(self, split_value: str) -> IO:
+        path = os.path.join(
+            self._root_path,
+            f"{self._split_key}_split.{split_value}.{self._basename}",
+        )
+        if self.opened_before(split_value):
+            return open(path, "a+")
+        else:
+            self._split_by.add(split_value)
+            return open(path, "w+")
+
+    @abstractmethod
+    def write(self, record: Any, flag_data: Dict[str, FlagData], *args) -> None:
+        """Write record to output buffer
+
+        Decorators:
+            abstractmethod
+
+        Arguments:
+            record {Any} -- record to be written
+            flag_data {Dict[str, FlagData]} -- flag data for splitting
+        """
+        pass
+
+    def close(self):
+        pass
+
+
+class SimpleSplitFastxWriter(ABCSimpleSplitWriter):
+
+    _fmt: FastxFormats
+
+    def __init__(self, path: str, split_key: str, compress_level: int = 6):
+        super(SimpleSplitFastxWriter, self).__init__(path, split_key, compress_level)
+        self._fmt, _ = get_fastx_format(path)
+        assert self._fmt in FastxFormats
+
+    @property
+    def format(self) -> FastxFormats:
+        return self._fmt
+
+    @abstractmethod
+    def write(
+        self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData], *args
+    ) -> None:
+        """Write record to output buffer
+
+        Decorators:
+            abstractmethod
+
+        Arguments:
+            record {SimpleFastxRecord} -- record to be written
+            flag_data {Dict[str, FlagData]} -- flag data for splitting
+        """
+        pass
+
+
+class SimpleSplitFastaWriter(SimpleSplitFastxWriter):
+    def __init__(self, path: str, split_key: str, compress_level: int = 6):
+        super(SimpleSplitFastaWriter, self).__init__(path, split_key, compress_level)
+        assert FastxFormats.FASTA == self.format
+
+    def write(
+        self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData], *args
+    ) -> None:
+        assert (
+            self._split_key in flag_data
+        ), f"Cannot split by flag '{self._split_key}'. Flag not found."
+        OH = self.open(flag_data[self._split_key][0])
+        OH.write(f">{record[0]}\n{record[1]}\n")
+        OH.close()
+
+
+class SimpleSplitFastqWriter(SimpleSplitFastxWriter):
+    def __init__(self, path: str, split_key: str, compress_level: int = 6):
+        super(SimpleSplitFastqWriter, self).__init__(path, split_key, compress_level)
+        assert FastxFormats.FASTQ == self.format
+
+    def write(
+        self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData], *args
+    ) -> None:
+        assert (
+            self._split_key in flag_data
+        ), f"Cannot split by flag '{self._split_key}'. Flag not found."
+        OH = self.open(flag_data[self._split_key][0])
+        OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
+        OH.close()
+
+
+def get_split_fastx_writer(fmt: FastxFormats) -> Type[SimpleSplitFastxWriter]:
+    """Retrieves appropriate simple writer class."""
+    if FastxFormats.FASTA == fmt:
+        return SimpleSplitFastaWriter
+    elif FastxFormats.FASTQ == fmt:
+        return SimpleSplitFastqWriter
+    return SimpleSplitFastxWriter

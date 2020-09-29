@@ -4,6 +4,7 @@
 """
 
 from enum import Enum
+from typing import DefaultDict, Tuple
 
 __version__ = "0.1.0b"
 
@@ -50,3 +51,7 @@ class FastxExtensions(Enum):
 
 QFLAG_START = "q"
 DEFAULT_PHRED_OFFSET = 33
+
+"""Flag data, contains matched str, start, and end position"""
+FlagData = Tuple[str, int, int]
+FlagStats = DefaultDict[str, DefaultDict[str, int]]

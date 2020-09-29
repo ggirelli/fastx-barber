@@ -5,13 +5,9 @@
 
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from fastx_barber.const import FastxFormats, QFLAG_START
+from fastx_barber.const import FastxFormats, FlagData, FlagStats, QFLAG_START
 from fastx_barber.seqio import SimpleFastxRecord
-from typing import Any, DefaultDict, Dict, List, Match, Optional, Tuple, Type
-
-"""Flag data, contains matched str, start, and end position"""
-FlagData = Tuple[str, int, int]
-FlagStats = DefaultDict[str, DefaultDict[str, int]]
+from typing import Any, Dict, List, Match, Optional, Tuple, Type
 
 
 class ABCFlagExtractor(metaclass=ABCMeta):
@@ -113,11 +109,9 @@ class ABCFlagExtractor(metaclass=ABCMeta):
         """
         pass
 
-    def update_stats(self, flags: Optional[Dict[str, FlagData]] = None) -> None:
+    def update_stats(self, flags: Dict[str, FlagData]) -> None:
         if self._flags_for_stats is None:
             return
-        if flags is None:
-            flags = self.extract_all()
         for flag_name, flag_data in flags.items():
             if flag_name in self._flags_for_stats:
                 self._flagstats[flag_name][flag_data[0]] += 1

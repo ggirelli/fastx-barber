@@ -8,16 +8,18 @@ from fastx_barber.const import FastxFormats
 from fastx_barber.seqio import (
     get_fastx_parser,
     get_fastx_writer,
+    get_split_fastx_writer,
     FastxChunkedParser,
     SimpleFastxParser,
     SimpleFastxWriter,
+    SimpleSplitFastxWriter,
 )
 import logging
 import os
 from rich.console import Console
 from rich.logging import RichHandler
 import tempfile
-from typing import Callable, Dict, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple, Union
 
 
 def set_tempdir(args: argparse.Namespace) -> argparse.Namespace:
@@ -56,6 +58,17 @@ def get_input_handler(
     return (fmt, IH)
 
 
+def get_chunk_tmp_path(
+    cid: int,
+    path: str,
+    tempdir: Optional[tempfile.TemporaryDirectory] = None,
+) -> str:
+    chunk_path = f".tmp.chunk{cid}.{path}"
+    if tempdir is not None:
+        chunk_path = os.path.join(tempdir.name, os.path.basename(chunk_path))
+    return chunk_path
+
+
 def get_chunk_handler(
     cid: int,
     fmt: FastxFormats,
@@ -65,15 +78,29 @@ def get_chunk_handler(
 ) -> Optional[SimpleFastxWriter]:
     if path is None:
         return None
-    chunk_path = f".tmp.chunk{cid}.{path}"
-    if tempdir is not None:
-        chunk_path = os.path.join(tempdir.name, os.path.basename(chunk_path))
+    chunk_path = get_chunk_tmp_path(cid, path, tempdir)
     assert not os.path.isdir(path)
     return get_fastx_writer(fmt)(chunk_path, compress_level)
 
 
+def get_split_chunk_handler(
+    cid: int,
+    fmt: FastxFormats,
+    path: Optional[str],
+    compress_level: int,
+    split_by: str,
+    tempdir: Optional[tempfile.TemporaryDirectory] = None,
+) -> Optional[SimpleSplitFastxWriter]:
+    if path is None:
+        return None
+    chunk_path = get_chunk_tmp_path(cid, path, tempdir)
+    assert not os.path.isdir(path)
+    return get_split_fastx_writer(fmt)(chunk_path, split_by, compress_level)
+
+
 def get_output_fun(
-    OH: Optional[SimpleFastxWriter], UH: Optional[SimpleFastxWriter]
+    OH: Union[SimpleFastxWriter, SimpleSplitFastxWriter, None],
+    UH: Optional[SimpleFastxWriter],
 ) -> Dict[bool, Callable]:
     """Prepare IO handlers.
 
@@ -85,4 +112,4 @@ def get_output_fun(
     if UH is not None:
         return {True: OH.write, False: UH.write}
     else:
-        return {True: OH.write, False: lambda x: None}
+        return {True: OH.write, False: lambda *x: None}
