@@ -5,9 +5,9 @@ A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
 ## Features
 
 * Works on both FASTA and FASTQ files.
-* Selects reads based on a pattern (regex).
-* Trims reads by pattern (regex), length, or quality (base-wise).
-* Extracts parts (flags) of reads based on a pattern, and stores them in the read headers.
+* [Selects](usage#match) reads based on a pattern (regex).
+* [Trims](usage#trim) reads [by pattern](usage#trim-by-regular-expression) (regex), [length](usage#trim-by-length), or single-base [quality](usage#trim-by-quality).
+* [Extracts](usage#extract#flags) parts ([flags](usage#flags)) of reads based on a pattern, and stores them in the read headers.
     - Optionally extracts the corresponding portions of the quality string (only for fastq files).
     - Optionally filters based on quality score of extracted flags (only for fastq files).
         + Supports Sanger QSCORE definition (not old Solexa/Illumina one).
@@ -15,8 +15,8 @@ A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
         + Optionally exports reads that do not pass the specified filters.
     - Optionally split output based on flag value.
     - Optionally calculates the frequency of each value of a set of flags (flagstats).
-    - Filtering by flag quality, splitting by flag value, and flag value frequency features are available also as separate scripts to be applied to files with previously extracted flags.
-* Filters a FASTX file with extracted flags by applying patterns to different flags.
+    - [Filtering by flag quality](usage#filter-by-flag-quality), [splitting by flag value](usage#split-by-flag-value), and [flag value frequency](usage#calculate-flag-value-frequency) are all features available also as separate scripts. This allows to perform these operations on files with previously extracted flags.
+* [Filters a FASTX file with extracted flags by applying patterns to different flags](usage#match-flags-with-regular-expressions).
 * Regular expression support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (*fuzzy matching* might affect the barber's speed).
     * Optionally exports reads that do not match the provided pattern(s).
 * Parallelizes processing by splitting the fastx file in chunks.
