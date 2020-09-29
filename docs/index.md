@@ -11,8 +11,8 @@
 
 ---
 
-[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558) ![](https://img.shields.io/librariesio/github/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/license/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/release/ggirelli/fastx-barber.svg?style=flat)  
-![](https://img.shields.io/github/release-date/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/languages/code-size/ggirelli/fastx-barber.svg?style=flat)  
+[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558) ![](https://img.shields.io/librariesio/github/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/license/ggirelli/fastx-barber.svg?style=flat)  
+![](https://img.shields.io/github/release/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/release-date/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/languages/code-size/ggirelli/fastx-barber.svg?style=flat)  
 ![](https://img.shields.io/github/watchers/ggirelli/fastx-barber.svg?label=Watch&style=social) ![](https://img.shields.io/github/stars/ggirelli/fastx-barber.svg?style=social)
 
 A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
