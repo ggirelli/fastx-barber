@@ -26,8 +26,8 @@ class ChunkMerger(object):
 
     def __init__(
         self,
-        split_by: Optional[str] = None,
         tempdir: Optional[tempfile.TemporaryDirectory] = None,
+        split_by: Optional[str] = None,
     ):
         super(ChunkMerger, self).__init__()
         self._tempdir = tempdir

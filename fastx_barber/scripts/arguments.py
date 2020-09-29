@@ -4,7 +4,7 @@
 """
 
 import argparse
-from fastx_barber.const import __version__
+from fastx_barber.const import __version__, DEFAULT_PHRED_OFFSET
 import joblib  # type: ignore
 import logging
 import sys
@@ -95,3 +95,15 @@ def check_threads(threads: int) -> int:
     elif threads <= 0:
         return 1
     return threads
+
+
+def add_phred_offset_option(
+    arg_group: argparse._ArgumentGroup,
+) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--phred-offset",
+        type=str,
+        default=DEFAULT_PHRED_OFFSET,
+        help="""Phred offset for qscore calculation.""",
+    )
+    return arg_group

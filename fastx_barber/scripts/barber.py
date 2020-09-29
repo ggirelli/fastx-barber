@@ -5,6 +5,7 @@
 
 import argparse
 from fastx_barber.const import __version__
+from fastx_barber.scripts import arguments as ap
 from fastx_barber import scripts
 import sys
 
@@ -27,9 +28,7 @@ FASTX barber tools.
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.set_defaults(parse=default_parser)
-    parser.add_argument(
-        "--version", action="version", version=f"{sys.argv[0]} {__version__}"
-    )
+    parser = ap.add_version_option(parser)
 
     subparsers = parser.add_subparsers(
         title="sub-commands",

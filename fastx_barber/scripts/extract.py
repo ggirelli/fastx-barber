@@ -6,7 +6,7 @@
 import argparse
 from collections import defaultdict
 from fastx_barber import scriptio
-from fastx_barber.const import DEFAULT_PHRED_OFFSET, FastxFormats
+from fastx_barber.const import DEFAULT_PATTERN, FastxFormats
 from fastx_barber.flag import (
     FlagData,
     FlagStats,
@@ -48,9 +48,9 @@ logging.basicConfig(
 def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     parser = subparsers.add_parser(
         __name__.split(".")[-1],
-        description="Extract flags from adapter and trim FASTX file.",
+        description="Extract flags and trim the records of a FASTX file.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Extract flags from adapter and trim a FASTX file.",
+        help="Extract flags and trim the records of a FASTX file.",
     )
 
     parser.add_argument(
@@ -67,13 +67,12 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
                         trimmed records. Format will match the input.""",
     )
 
-    default_pattern = "^(?<UMI>.{8})(?<BC>CATCACGC){s<2}(?<CS>GATC){s<2}"
     parser.add_argument(
         "--pattern",
         type=str,
-        default=default_pattern,
+        default=DEFAULT_PATTERN,
         help=f"""Pattern to match to reads and extract flagged groups.
-        Remember to use quotes. Default: '{default_pattern}'""",
+        Remember to use quotes. Default: '{DEFAULT_PATTERN}'""",
     )
 
     parser = ap.add_version_option(parser)
@@ -124,12 +123,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help="""Path to fasta/q file where to write records that do not pass the
         flag filters. Format must match the input.""",
     )
-    advanced.add_argument(
-        "--phred-offset",
-        type=str,
-        default=DEFAULT_PHRED_OFFSET,
-        help="""Phred offset for qscore calculation.""",
-    )
+    advanced = ap.add_phred_offset_option(advanced)
     advanced.add_argument(
         "--no-qual-flags",
         action="store_const",
@@ -326,9 +320,7 @@ def export_flagstats(flagstats: FlagStats, output_path: str) -> None:
 
 
 def run(args: argparse.Namespace) -> None:
-    fmt, IH = scriptio.get_input_handler(
-        args.input, args.compress_level, args.chunk_size
-    )
+    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     quality_flag_filters, filter_fun = setup_qual_filters(
         args.filter_qual_flags, args.phred_offset, verbose=True
@@ -367,9 +359,9 @@ def run(args: argparse.Namespace) -> None:
 
     logging.info("Merging batch output...")
     if args.unmatched_output is not None:
-        merger = ChunkMerger(None, args.temp_dir)
+        merger = ChunkMerger(args.temp_dir, None)
         merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched records")
-    merger = ChunkMerger(args.split_by, args.temp_dir)
+    merger = ChunkMerger(args.temp_dir, args.split_by)
     merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.filter_qual_output is not None:
         merger.do(args.filter_qual_output, IH.last_chunk_id, "Writing filtered records")

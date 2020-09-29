@@ -51,7 +51,7 @@ def add_log_file_handler(path: str, logger_name: str = "") -> None:
 
 
 def get_input_handler(
-    path: str, compress_level: int, chunk_size: int
+    path: str, chunk_size: int
 ) -> Tuple[FastxFormats, SimpleFastxParser]:
     IH, fmt = get_fastx_parser(path)
     IH = FastxChunkedParser(IH, chunk_size)
