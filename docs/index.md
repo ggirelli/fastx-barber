@@ -7,7 +7,7 @@ A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
 * Works on both FASTA and FASTQ files.
 * [Selects](usage#match) reads based on a pattern (regex).
 * [Trims](usage#trim) reads [by pattern](usage#trim-by-regular-expression) (regex), [length](usage#trim-by-length), or single-base [quality](usage#trim-by-quality).
-* [Extracts](usage#extract#flags) parts ([flags](usage#flags)) of reads based on a pattern, and stores them in the read headers.
+* [Extracts](usage#extract-flags) parts ([flags](usage#flags)) of reads based on a pattern, and stores them in the read headers.
     - Optionally extracts the corresponding portions of the quality string (only for fastq files).
     - Optionally filters based on quality score of extracted flags (only for fastq files).
         + Supports Sanger QSCORE definition (not old Solexa/Illumina one).
