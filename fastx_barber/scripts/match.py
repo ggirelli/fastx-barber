@@ -115,6 +115,7 @@ def run(args: argparse.Namespace) -> None:
         args.input, args.compress_level, args.chunk_size
     )
 
+    logging.info("[bold underline red]Running[/]")
     logging.info("Matching...")
     output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
         joblib.delayed(run_chunk)(

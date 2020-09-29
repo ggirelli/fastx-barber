@@ -139,7 +139,24 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     if args.selected_flags is not None:
         args.selected_flags = args.selected_flags.split(",")
 
+    ap.log_args(args)
+    logging.info("[bold underline red]Flag extraction[/]")
+    if args.selected_flags is not None:
+        logging.info(f"Selected flags\t{args.selected_flags}")
+    logging.info(f"Flag delim\t'{args.flag_delim}'")
+    logging.info(f"Comment delim\t'{args.comment_space}'")
+    logging.info(f"Quality flags\t{args.qual_flags}")
+
     return args
+
+
+def log_qual_filters(
+    phred_offset: int, quality_flag_filters: Dict[str, QualityFilter]
+) -> None:
+    logging.info("[bold underline red]Quality filters[/]")
+    logging.info(f"PHRED offset\t{phred_offset}")
+    for name, f in quality_flag_filters.items():
+        logging.info(f"{name}-filter\tmin_score={f.min_qscore} & max_perc={f.max_perc}")
 
 
 def setup_qual_filters(
@@ -152,17 +169,7 @@ def setup_qual_filters(
             filter_qual_flags.split(" "), phred_offset
         )
         if verbose:
-            logging.info(f"[bold underline green]PHRED offset[/]\t{phred_offset}")
-            for name, f in quality_flag_filters.items():
-                logging.info(
-                    "".join(
-                        (
-                            f"[bold underline green]{name}-filter[/]",
-                            f"\tmin_score={f.min_qscore}",
-                            f"\n\t\tmax_perc={f.max_perc}",
-                        )
-                    )
-                )
+            log_qual_filters(phred_offset, quality_flag_filters)
         filter_fun = apply_filter_flag
     return (quality_flag_filters, filter_fun)
 
@@ -240,8 +247,6 @@ def run_chunk(
 
 
 def run(args: argparse.Namespace) -> None:
-    ap.log_args(args)
-
     fmt, IH = scriptio.get_input_handler(
         args.input, args.compress_level, args.chunk_size
     )
@@ -250,6 +255,7 @@ def run(args: argparse.Namespace) -> None:
         args.filter_qual_flags, args.phred_offset, verbose=True
     )
 
+    logging.info("[bold underline red]Running[/]")
     logging.info("Trimming and extracting flags...")
     output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
         joblib.delayed(run_chunk)(
