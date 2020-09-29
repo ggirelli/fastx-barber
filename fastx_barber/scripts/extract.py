@@ -5,6 +5,7 @@
 
 import argparse
 from collections import defaultdict
+from fastx_barber import scriptio
 from fastx_barber.const import DEFAULT_PHRED_OFFSET, FastxFormats
 from fastx_barber.flag import (
     FlagData,
@@ -15,13 +16,12 @@ from fastx_barber.flag import (
 )
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
-from fastx_barber.scripts.common import arguments as ap
-from fastx_barber.scripts.common import io as scriptio
-from fastx_barber.scripts.common.qual import (
+from fastx_barber.qual import (
     setup_qual_filters,
     get_qual_filter_handler,
     get_split_qual_filter_handler,
 )
+from fastx_barber.scripts import arguments as ap
 from fastx_barber.seqio import (
     get_fastx_format,
     SimpleFastxRecord,

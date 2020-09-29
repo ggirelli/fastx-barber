@@ -4,10 +4,10 @@
 """
 
 import argparse
-from fastx_barber.scripts.common import arguments as ap
-from fastx_barber.scripts.common import io as scriptio
+from fastx_barber import scriptio
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
+from fastx_barber.scripts import arguments as ap
 from fastx_barber.seqio import SimpleFastxRecord, get_fastx_format
 from fastx_barber.trim import get_fastx_trimmer
 import joblib  # type: ignore
