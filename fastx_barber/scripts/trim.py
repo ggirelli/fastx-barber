@@ -6,6 +6,12 @@
 import argparse
 from fastx_barber import scripts
 from fastx_barber.scripts import arguments as ap
+import sys
+
+
+def default_parser(*args) -> None:
+    print("fbarber trim -h for usage details.")
+    sys.exit()
 
 
 def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
@@ -13,8 +19,9 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         __name__.split(".")[-1],
         description="""FASTX trimming tools.""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        help="Trim a FASTX file."
+        help="Trim a FASTX file.",
     )
+    parser.set_defaults(parse=default_parser)
     parser = ap.add_version_option(parser)
 
     sub_subparsers = parser.add_subparsers(

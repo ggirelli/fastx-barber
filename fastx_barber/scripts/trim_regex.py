@@ -5,7 +5,7 @@
 
 import argparse
 from fastx_barber import scriptio
-from fastx_barber.const import DEFAULT_PATTERN
+from fastx_barber.const import PATTERN_EXAMPLE
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
 from fastx_barber.scripts import arguments as ap
@@ -15,6 +15,7 @@ import joblib  # type: ignore
 import logging
 import regex  # type: ignore
 from rich.logging import RichHandler
+import sys
 from typing import List
 
 logging.basicConfig(
@@ -49,9 +50,8 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     parser.add_argument(
         "--pattern",
         type=str,
-        default=DEFAULT_PATTERN,
         help=f"""Pattern to match to reads and trim.
-        Remember to use quotes. Default: '{DEFAULT_PATTERN}'""",
+        Remember to use quotes. Example: '{PATTERN_EXAMPLE}'""",
     )
 
     parser = ap.add_version_option(parser)
@@ -73,6 +73,12 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
+
+    if args.pattern is None:
+        logging.info(
+            "No pattern specified (--pattern), nothing to do. :person_shrugging:"
+        )
+        sys.exit()
 
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)

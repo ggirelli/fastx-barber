@@ -91,7 +91,8 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 
     if 0 == args.qscore:
         logging.info(
-            "Trimming QSCORE threshold equal to 0. Nothing to do. :person_shrugging:"
+            "Trimming QSCORE threshold (-q) equal to 0. "
+            + "Nothing to do. :person_shrugging:"
         )
         sys.exit()
 
