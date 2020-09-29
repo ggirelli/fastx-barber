@@ -6,7 +6,7 @@
 
 A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
 
-## Features
+## Features (in short)
 
 * Works on both FASTA and FASTQ files.
 * Selects reads based on a pattern (regex).
@@ -15,7 +15,7 @@ A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
 * Regular expression support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (*fuzzy matching* might affect the barber's speed).
 * Parallelizes processing by splitting the fastx file in chunks.
 
-For more features, check out our [docs](https://ggirelli.github.io/fastx-barber/)!
+For more available features, check out our [docs](https://ggirelli.github.io/fastx-barber/)!
 
 ## Requirements
 

@@ -15,7 +15,7 @@ A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
         + Optionally exports reads that do not pass the specified filters.
     - Optionally split output based on flag value.
     - Optionally calculates the frequency of each value of a set of flags (flagstats).
-    - [Filtering by flag quality](usage#filter-by-flag-quality), [splitting by flag value](usage#split-by-flag-value), and [flag value frequency](usage#calculate-flag-value-frequency) are all features available also as separate scripts. This allows to perform these operations on files with previously extracted flags.
+    - [Filtering by flag quality](usage#filter-by-flag-quality), [splitting by flag value](usage#split-by-flag-value), and [calculating flag value frequency](usage#calculate-flag-value-frequency) are all features available also as separate scripts. This allows to perform these operations on files with previously extracted flags.
 * [Filters a FASTX file with extracted flags by applying patterns to different flags](usage#match-flags-with-regular-expressions).
 * Regular expression support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (*fuzzy matching* might affect the barber's speed).
     * Optionally exports reads that do not match the provided pattern(s).
