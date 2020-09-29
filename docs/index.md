@@ -40,7 +40,7 @@ Run:
 * `fbarber match` to select reads based on a pattern (regular expression).
 * `fbarber trim` to trim your reads.
 
-Add `-h` to see the full help page of a command!
+Add `-h` to see the full help page of a command or visit the [usage page](usage)!
 
 ## Contributing
 
