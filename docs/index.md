@@ -11,13 +11,15 @@
 
 ---
 
-[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558)
+[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558) ![](https://img.shields.io/librariesio/github/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/license/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/release/ggirelli/fastx-barber.svg?style=flat)  
+![](https://img.shields.io/github/release-date/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/languages/code-size/ggirelli/fastx-barber.svg?style=flat)  
+![](https://img.shields.io/github/watchers/ggirelli/fastx-barber.svg?label=Watch&style=social) ![](https://img.shields.io/github/stars/ggirelli/fastx-barber.svg?style=social)
 
 A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
 
 ## Requirements
 
-`fastx-barber` has been tested with Python 3.6.1, 3.7, and 3.8. We recommend installing it using `pipx` (see [below](https://github.com/ggirelli/fastx-barber#install)) to avoid dependency conflicts with other packages. The packages it depends on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies). We use [`poetry`](https://github.com/python-poetry/poetry) to handle our dependencies.
+`fastx-barber` has been tested with Python 3.6.1, 3.7, and 3.8. We recommend installing it using `pipx` (see [below](#install)) to avoid dependency conflicts with other packages. The packages it depends on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies). We use [`poetry`](https://github.com/python-poetry/poetry) to handle our dependencies.
 
 ## Install
 
