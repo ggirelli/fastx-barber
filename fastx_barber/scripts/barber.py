@@ -36,6 +36,7 @@ FASTX barber tools.
     )
 
     scripts.extract.init_parser(subparsers)
+    scripts.filter.init_parser(subparsers)
     scripts.match.init_parser(subparsers)
     scripts.trim.init_parser(subparsers)
 
