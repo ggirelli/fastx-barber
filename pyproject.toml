@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastx-barber"
-version = "0.1.0b"
+version = "0.1.0"
 description = "FASTX trimming tools"
 authors = ["Gabriele Girelli <gigi.ga90@gmail.com>"]
 license = "MIT"
