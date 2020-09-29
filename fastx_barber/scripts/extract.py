@@ -294,7 +294,7 @@ def export_flagstats(flagstats: FlagStats, output_path: str) -> None:
         df["value"] = list(stats.keys())
         df["counts"] = list(stats.values())
         df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
-        df.sort_values("perc", ascending=False, ignore_index=True, inplace=True)
+        df.sort_values("counts", ascending=False, ignore_index=True, inplace=True)
         df.to_csv(
             os.path.join(output_dir, f"{basename}.{flag_name}.stats.tsv"),
             sep="\t",
