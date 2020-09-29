@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - `--split-by` option to split output by flag during flag extraction.
+- `flag_filter` script to apply quality filters after flag extraction.
 
 ### Changed
 - Using rich for richer logging.

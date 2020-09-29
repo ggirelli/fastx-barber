@@ -3,17 +3,10 @@
 @contact: gigi.ga90@gmail.com
 """
 
-from fastx_barber import scriptio
-from fastx_barber.const import DEFAULT_PHRED_OFFSET, FastxFormats, QFLAG_START
-from fastx_barber.flag import FlagData
-from fastx_barber.seqio import (
-    SimpleFastxWriter,
-    SimpleSplitFastxWriter,
-)
+from fastx_barber.const import DEFAULT_PHRED_OFFSET, FlagData, QFLAG_START
 import logging
 import numpy as np  # type: ignore
-import tempfile
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Tuple
 
 
 class QualityIO(object):
@@ -171,35 +164,3 @@ def setup_qual_filters(
         filter_fun = apply_filter_flag
     return (quality_flag_filters, filter_fun)
 
-
-def get_qual_filter_handler(
-    cid: int,
-    fmt: FastxFormats,
-    path: Optional[str],
-    compress_level: int,
-    tempdir: Optional[tempfile.TemporaryDirectory] = None,
-) -> Tuple[Optional[SimpleFastxWriter], Callable]:
-    FH = scriptio.get_chunk_handler(cid, fmt, path, compress_level, tempdir)
-    if FH is not None:
-        assert fmt == FH.format, "format mismatch between input and requested output"
-        return (FH, FH.write)
-    else:
-        return (FH, lambda *x: None)
-
-
-def get_split_qual_filter_handler(
-    cid: int,
-    fmt: FastxFormats,
-    path: Optional[str],
-    compress_level: int,
-    split_by: str,
-    tempdir: Optional[tempfile.TemporaryDirectory] = None,
-) -> Tuple[Optional[SimpleSplitFastxWriter], Callable]:
-    FH = scriptio.get_split_chunk_handler(
-        cid, fmt, path, compress_level, split_by, tempdir
-    )
-    if FH is not None:
-        assert fmt == FH.format, "format mismatch between input and requested output"
-        return (FH, FH.write)
-    else:
-        return (FH, lambda *x: None)

@@ -6,21 +6,16 @@
 import argparse
 from collections import defaultdict
 from fastx_barber import scriptio
-from fastx_barber.const import DEFAULT_PATTERN, FastxFormats
+from fastx_barber.const import DEFAULT_PATTERN, FastxFormats, FlagData, FlagStats
 from fastx_barber.flag import (
-    FlagData,
-    FlagStats,
     get_fastx_flag_extractor,
     ABCFlagExtractor,
     FastqFlagExtractor,
 )
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
-from fastx_barber.qual import (
-    setup_qual_filters,
-    get_qual_filter_handler,
-    get_split_qual_filter_handler,
-)
+from fastx_barber.qual import setup_qual_filters
+from fastx_barber.scriptio import get_handles, get_split_handles
 from fastx_barber.scripts import arguments as ap
 from fastx_barber.seqio import (
     get_fastx_format,
@@ -36,7 +31,7 @@ import pandas as pd  # type: ignore
 import regex  # type: ignore
 from rich.logging import RichHandler
 from rich.progress import track
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 logging.basicConfig(
     level=logging.INFO,
@@ -79,14 +74,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
     advanced = parser.add_argument_group("advanced arguments")
     advanced = ap.add_unmatched_output_option(advanced)
-    advanced.add_argument(
-        "--flag-delim",
-        type=str,
-        default="~",
-        help="""Delimiter for flags. Used twice for flag separation and once
-        for key-value pairs. It should be a single character. Default: '~'.
-        Example: header~~flag1key~flag1value~~flag2key~flag2value""",
-    )
+    advanced = ap.add_flag_delim_option(advanced)
     advanced.add_argument(
         "--selected-flags",
         type=str,
@@ -108,21 +96,8 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help="""Flag to be used to split records in separate output files,
         based on flag value.""",
     )
-    advanced.add_argument(
-        "--filter-qual-flags",
-        type=str,
-        nargs="+",
-        help="""Space-separated 'flag_name,min_qscore,max_perc' strings, where
-        bases with qscore < min_qscore are considered low quality, and max_perc
-        is the largest allowed fraction of low quality bases. I.e., you can specify
-        multiple flag filters by separating them with a space.""",
-    )
-    advanced.add_argument(
-        "--filter-qual-output",
-        type=str,
-        help="""Path to fasta/q file where to write records that do not pass the
-        flag filters. Format must match the input.""",
-    )
+    advanced = ap.add_filter_qual_flags_option(advanced)
+    advanced = ap.add_filter_qual_output_option(advanced)
     advanced = ap.add_phred_offset_option(advanced)
     advanced.add_argument(
         "--no-qual-flags",
@@ -133,12 +108,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help="""Do not extract quality flags
         (when running on a fastq file).""",
     )
-    advanced.add_argument(
-        "--comment-space",
-        type=str,
-        default=" ",
-        help="""Delimiter for header comments. Defaults to a space.""",
-    )
+    advanced = ap.add_comment_space_option(advanced)
     advanced = ap.add_compress_level_option(advanced)
     advanced = ap.add_log_file_option(advanced)
 
@@ -181,57 +151,6 @@ def get_flag_extractor(fmt: FastxFormats, args: argparse.Namespace) -> ABCFlagEx
 
 
 ChunkDetails = Tuple[int, int, int, FlagStats]
-
-
-def get_handles(
-    fmt: FastxFormats, cid: int, args: argparse.Namespace
-) -> Tuple[
-    Optional[SimpleFastxWriter],
-    Optional[SimpleFastxWriter],
-    Optional[SimpleFastxWriter],
-    Callable,
-]:
-    OHC = scriptio.get_chunk_handler(
-        cid, fmt, args.output, args.compress_level, args.temp_dir
-    )
-    assert OHC is not None
-    UHC = scriptio.get_chunk_handler(
-        cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
-    )
-    FHC, filter_output_fun = get_qual_filter_handler(
-        cid,
-        fmt,
-        args.filter_qual_output,
-        args.compress_level,
-        args.temp_dir,
-    )
-    return (OHC, UHC, FHC, filter_output_fun)
-
-
-def get_split_handles(
-    fmt: FastxFormats, cid: int, args: argparse.Namespace
-) -> Tuple[
-    Optional[SimpleSplitFastxWriter],
-    Optional[SimpleFastxWriter],
-    Optional[SimpleSplitFastxWriter],
-    Callable,
-]:
-    OHC = scriptio.get_split_chunk_handler(
-        cid, fmt, args.output, args.compress_level, args.split_by, args.temp_dir
-    )
-    assert OHC is not None
-    UHC = scriptio.get_chunk_handler(
-        cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
-    )
-    FHC, filter_output_fun = get_split_qual_filter_handler(
-        cid,
-        fmt,
-        args.filter_qual_output,
-        args.compress_level,
-        args.split_by,
-        args.temp_dir,
-    )
-    return (OHC, UHC, FHC, filter_output_fun)
 
 
 def run_chunk(
@@ -296,7 +215,6 @@ def merge_chunk_details(chunk_details: List[ChunkDetails]) -> ChunkDetails:
         for flag_name, data in stats.items():
             for k, v in data.items():
                 flagstats[flag_name][k] += v
-
     return (parsed_counter, matched_counter, filtered_counter, flagstats)
 
 

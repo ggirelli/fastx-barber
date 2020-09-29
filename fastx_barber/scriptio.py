@@ -113,3 +113,87 @@ def get_output_fun(
         return {True: OH.write, False: UH.write}
     else:
         return {True: OH.write, False: lambda *x: None}
+
+
+def get_qual_filter_handler(
+    cid: int,
+    fmt: FastxFormats,
+    path: Optional[str],
+    compress_level: int,
+    tempdir: Optional[tempfile.TemporaryDirectory] = None,
+) -> Tuple[Optional[SimpleFastxWriter], Callable]:
+    FH = get_chunk_handler(cid, fmt, path, compress_level, tempdir)
+    if FH is not None:
+        assert fmt == FH.format, "format mismatch between input and requested output"
+        return (FH, FH.write)
+    else:
+        return (FH, lambda *x: None)
+
+
+def get_split_qual_filter_handler(
+    cid: int,
+    fmt: FastxFormats,
+    path: Optional[str],
+    compress_level: int,
+    split_by: str,
+    tempdir: Optional[tempfile.TemporaryDirectory] = None,
+) -> Tuple[Optional[SimpleSplitFastxWriter], Callable]:
+    FH = get_split_chunk_handler(
+        cid, fmt, path, compress_level, split_by, tempdir
+    )
+    if FH is not None:
+        assert fmt == FH.format, "format mismatch between input and requested output"
+        return (FH, FH.write)
+    else:
+        return (FH, lambda *x: None)
+
+
+def get_handles(
+    fmt: FastxFormats, cid: int, args: argparse.Namespace
+) -> Tuple[
+    Optional[SimpleFastxWriter],
+    Optional[SimpleFastxWriter],
+    Optional[SimpleFastxWriter],
+    Callable,
+]:
+    OHC = get_chunk_handler(
+        cid, fmt, args.output, args.compress_level, args.temp_dir
+    )
+    assert OHC is not None
+    UHC = get_chunk_handler(
+        cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
+    )
+    FHC, filter_output_fun = get_qual_filter_handler(
+        cid,
+        fmt,
+        args.filter_qual_output,
+        args.compress_level,
+        args.temp_dir,
+    )
+    return (OHC, UHC, FHC, filter_output_fun)
+
+
+def get_split_handles(
+    fmt: FastxFormats, cid: int, args: argparse.Namespace
+) -> Tuple[
+    Optional[SimpleSplitFastxWriter],
+    Optional[SimpleFastxWriter],
+    Optional[SimpleSplitFastxWriter],
+    Callable,
+]:
+    OHC = get_split_chunk_handler(
+        cid, fmt, args.output, args.compress_level, args.split_by, args.temp_dir
+    )
+    assert OHC is not None
+    UHC = get_chunk_handler(
+        cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
+    )
+    FHC, filter_output_fun = get_split_qual_filter_handler(
+        cid,
+        fmt,
+        args.filter_qual_output,
+        args.compress_level,
+        args.split_by,
+        args.temp_dir,
+    )
+    return (OHC, UHC, FHC, filter_output_fun)

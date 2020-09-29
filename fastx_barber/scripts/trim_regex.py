@@ -118,7 +118,7 @@ def run(args: argparse.Namespace) -> None:
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming...")
-    output = joblib.Parallel(n_jobs=args.threads, verbose=10)(
+    chunk_details = joblib.Parallel(n_jobs=args.threads, verbose=10)(
         joblib.delayed(run_chunk)(
             chunk,
             cid,
@@ -129,7 +129,7 @@ def run(args: argparse.Namespace) -> None:
 
     parsed_counter = 0
     matched_counter = 0
-    for matched, parsed in output:
+    for matched, parsed in chunk_details:
         matched_counter += matched
         parsed_counter += parsed
     logging.info(

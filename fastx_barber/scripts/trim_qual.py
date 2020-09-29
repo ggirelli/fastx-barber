@@ -90,7 +90,9 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args = scriptio.set_tempdir(args)
 
     if 0 == args.qscore:
-        logging.info("Trimming QSCORE threshold equal to 0. Nothing to do.")
+        logging.info(
+            "Trimming QSCORE threshold equal to 0. Nothing to do. :person_shrugging:"
+        )
         sys.exit()
 
     if args.log_file is not None:

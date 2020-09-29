@@ -107,3 +107,56 @@ def add_phred_offset_option(
         help="""Phred offset for qscore calculation.""",
     )
     return arg_group
+
+
+def add_flag_delim_option(
+    arg_group: argparse._ArgumentGroup,
+) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--flag-delim",
+        type=str,
+        default="~",
+        help="""Delimiter for flags. Used twice for flag separation and once
+        for key-value pairs. It should be a single character. Default: '~'.
+        Example: header~~flag1key~flag1value~~flag2key~flag2value""",
+    )
+    return arg_group
+
+
+def add_filter_qual_flags_option(
+    arg_group: argparse._ArgumentGroup,
+) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--filter-qual-flags",
+        type=str,
+        nargs="+",
+        help="""Space-separated 'flag_name,min_qscore,max_perc' strings, where
+        bases with qscore < min_qscore are considered low quality, and max_perc
+        is the largest allowed fraction of low quality bases. I.e., you can specify
+        multiple flag filters by separating them with a space.""",
+    )
+    return arg_group
+
+
+def add_filter_qual_output_option(
+    arg_group: argparse._ArgumentGroup,
+) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--filter-qual-output",
+        type=str,
+        help="""Path to fasta/q file where to write records that do not pass the
+        flag filters. Format must match the input.""",
+    )
+    return arg_group
+
+
+def add_comment_space_option(
+    arg_group: argparse._ArgumentGroup,
+) -> argparse._ArgumentGroup:
+    arg_group.add_argument(
+        "--comment-space",
+        type=str,
+        default=" ",
+        help="""Delimiter for header comments. Defaults to a space.""",
+    )
+    return arg_group
