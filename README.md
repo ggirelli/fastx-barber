@@ -1,7 +1,7 @@
 # fastx-barber
 
 [![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558) ![](https://img.shields.io/librariesio/github/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/license/ggirelli/fastx-barber.svg?style=flat)  
-![](https://github.com/ggirelli/fastx-barber/workflows/Python%20package/badge.svg?branch=master&event=push) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fastx-barber) ![PyPI - Format](https://img.shields.io/pypi/format/fastx-barber) ![PyPI - Status](https://img.shields.io/pypi/status/fastx-barber)  
+![](https://github.com/ggirelli/fastx-barber/workflows/Python%20package/badge.svg?branch=main&event=push) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fastx-barber) ![PyPI - Format](https://img.shields.io/pypi/format/fastx-barber) ![PyPI - Status](https://img.shields.io/pypi/status/fastx-barber)  
 ![](https://img.shields.io/github/release/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/release-date/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/languages/code-size/ggirelli/fastx-barber.svg?style=flat)  
 ![](https://img.shields.io/github/watchers/ggirelli/fastx-barber.svg?label=Watch&style=social) ![](https://img.shields.io/github/stars/ggirelli/fastx-barber.svg?style=social)
 
@@ -43,7 +43,7 @@ Add `-h` to see the full help page of a command!
 
 ## Contributing
 
-We welcome any contributions to `fastx-barber`. In short, we use [`black`](https://github.com/psf/black) to standardize code format. Any code change also needs to pass `mypy` checks. For more details, please refer to our [contribution guidelines](https://github.com/ggirelli/fastx-barber/blob/master/CONTRIBUTING.md) if this is your first time contributing! Also, check out our [code of conduct](https://github.com/ggirelli/fastx-barber/blob/master/CODE_OF_CONDUCT.md).
+We welcome any contributions to `fastx-barber`. In short, we use [`black`](https://github.com/psf/black) to standardize code format. Any code change also needs to pass `mypy` checks. For more details, please refer to our [contribution guidelines](https://github.com/ggirelli/fastx-barber/blob/main/CONTRIBUTING.md) if this is your first time contributing! Also, check out our [code of conduct](https://github.com/ggirelli/fastx-barber/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 

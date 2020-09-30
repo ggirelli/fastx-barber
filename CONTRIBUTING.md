@@ -6,7 +6,7 @@ Hi there, and thank you for considering contributing to `fastx-barber` to help u
 
 # Ground Rules
 
-To see what kinds of behavior are acceptable when contributing to `fastx-barber`, please refer to our [code of conduct](https://github.com/ggirelli/fastx-barber/blob/master/CODE_OF_CONDUCT.md).
+To see what kinds of behavior are acceptable when contributing to `fastx-barber`, please refer to our [code of conduct](https://github.com/ggirelli/fastx-barber/blob/main/CODE_OF_CONDUCT.md).
 
 # Getting started
 
@@ -16,7 +16,7 @@ Please, note that any contributions you make will be under the MIT Software Lice
 
 ## How to submit a contribution
 
-To process code change, we follow the [Github Flow](https://guides.github.com/introduction/flow/index.html). All code changes to our `master` branch happen through pull requests from the `dev` branch. We actively welcome your pull requests to the `dev` branch!
+To process code change, we follow the [Github Flow](https://guides.github.com/introduction/flow/index.html). All code changes to our `main` branch happen through pull requests from the `dev` branch. We actively welcome your pull requests to the `dev` branch!
 
 ## How to report a bug
 
