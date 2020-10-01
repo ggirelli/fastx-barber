@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Fixed
 - Empty output when output path is not in current working directory.
+- Bug that caused log to crash script when extracting pattern matched no reads.
 
 ## [0.1.0]
 ### Added
