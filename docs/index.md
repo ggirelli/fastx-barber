@@ -1,11 +1,11 @@
 <!-- MarkdownTOC -->
 
-- Requirements
-- Install
-- Features
-- Usage
-- Contributing
-- License
+- [Requirements](#requirements)
+- [Install](#install)
+- [Features](#features)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
 <!-- /MarkdownTOC -->
 
