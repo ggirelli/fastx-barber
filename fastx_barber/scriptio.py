@@ -63,7 +63,7 @@ def get_chunk_tmp_path(
     path: str,
     tempdir: Optional[tempfile.TemporaryDirectory] = None,
 ) -> str:
-    chunk_path = f".tmp.chunk{cid}.{path}"
+    chunk_path = f".tmp.chunk{cid}.{os.path.basename(path)}"
     if tempdir is not None:
         chunk_path = os.path.join(tempdir.name, os.path.basename(chunk_path))
     return chunk_path
