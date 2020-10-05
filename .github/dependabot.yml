@@ -9,7 +9,8 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
-    assignees: "ggirelli"
+    assignees:
+      - "ggirelli"
     labels:
       - "dependencies"
     target-branch:
