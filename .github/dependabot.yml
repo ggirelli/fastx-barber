@@ -11,5 +11,6 @@ updates:
       interval: "daily"
     assignees: "ggirelli"
     labels:
-      "dependencies"
-    target-branch: "dev"
+      - "dependencies"
+    target-branch:
+      - "dev"
