@@ -13,5 +13,4 @@ updates:
       - "ggirelli"
     labels:
       - "dependencies"
-    target-branch:
-      - "dev"
+    target-branch: "dev"
