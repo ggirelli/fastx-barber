@@ -48,7 +48,7 @@ class ChunkMerger(object):
             for cid in track(
                 range(1, last_chunk_id + 1), description=desc, transient=False
             ):
-                chunk_path = f".tmp.chunk{cid}.{path}"
+                chunk_path = f".tmp.chunk{cid}.{os.path.basename(path)}"
                 if self._tempdir is not None:
                     chunk_path = os.path.join(self._tempdir.name, chunk_path)
                 if not os.path.isfile(chunk_path):
@@ -66,7 +66,7 @@ class ChunkMerger(object):
         for cid in track(
             range(1, last_chunk_id + 1), description=desc, transient=False
         ):
-            chunk_path = f"{self._split_by}_split.*.tmp.chunk{cid}.{path}"
+            chunk_path = f"{self._split_by}_split.*.tmp.chunk{cid}.{output_base}"
             if self._tempdir is not None:
                 chunk_path = os.path.join(self._tempdir.name, chunk_path)
             flist = glob.glob(chunk_path)
