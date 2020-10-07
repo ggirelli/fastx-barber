@@ -223,7 +223,7 @@ For all `fbarber` commands, the format (fasta/q) of the input **must** match the
 
 ### QSCORE
 
-`fbarber` uses the latest standard QSCORE definition of `QSCORE = -10 log10(Pe)`, were `Pe` is the error probability of a base. The QSCORE is read from the quality string of a FASTQ file and using a certain PHRED offset (`--phref-offest`). The default PHRED offset is 33, following the latest standards (`chr(Q+33)`). As the barber uses the `biopython` package for quality calculation, we remind the user to [their documentation](https://biopython.org/docs/1.75/api/Bio.SeqIO.QualityIO.html), which provides a nice historical overview of the topic.
+`fbarber` uses the latest standard QSCORE definition of `QSCORE = -10 log10(Pe)`, were `Pe` is the error probability of a base. The QSCORE is read from the quality string of a FASTQ file using a certain PHRED offset (`--phref-offest`). The default PHRED offset is 33, following the latest Illumina standards (`chr(Q+33)`). As the barber uses the `biopython` package for quality calculation, we direct the user to [their documentation](https://biopython.org/docs/1.75/api/Bio.SeqIO.QualityIO.html), which provides a nice historical overview of the topic.
 
 ### Logging
 
