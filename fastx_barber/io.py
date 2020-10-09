@@ -10,6 +10,17 @@ import tempfile
 from typing import Optional, Tuple
 
 
+DTEMP_PREFIX = "fbarber_tmp."
+
+
+def check_tmp_dir(path: Optional[str] = None) -> str:
+    if path is not None:
+        assert os.path.isdir(path)
+    else:
+        path = tempfile.mkdtemp(prefix=DTEMP_PREFIX)
+    return path
+
+
 def is_gzipped(path: str) -> Tuple[str, str, bool]:
     """
     Returns:
