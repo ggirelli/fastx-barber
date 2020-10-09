@@ -40,7 +40,7 @@ class ABCMatcher(metaclass=ABCMeta):
         return self._unmatched_count
 
     @abstractmethod
-    def match(self, record: Any) -> Tuple[Match, bool]:
+    def do(self, record: Any) -> Tuple[Match, bool]:
         """Match a record with the provided pattern
 
         Decorators:
@@ -59,7 +59,7 @@ class FastxMatcher(ABCMatcher):
     def __init__(self, pattern: Pattern):
         super(FastxMatcher, self).__init__(pattern)
 
-    def match(self, record: SimpleFastxRecord) -> Tuple[Match, bool]:
+    def do(self, record: SimpleFastxRecord) -> Tuple[Match, bool]:
         name, seq, _ = record
         match = re.match(self._pattern, seq)
         matched = match is not None

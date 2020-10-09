@@ -170,7 +170,7 @@ def run_chunk(
     filtered_counter = 0
     for record in chunk:
         flags: Dict[str, FlagData] = {}
-        match, matched = matcher.match(record)
+        match, matched = matcher.do(record)
         if matched:
             flags = flag_extractor.extract_all(record, match)
             flag_extractor.update_stats(flags)

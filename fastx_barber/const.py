@@ -57,3 +57,10 @@ PATTERN_EXAMPLE = "^(?<UMI>.{8})(?<BC>.{8})(?<CS>GATC){s<2}"
 """Flag data, contains matched str, start, and end position"""
 FlagData = Tuple[str, int, int]
 FlagStatsType = DefaultDict[str, DefaultDict[str, int]]
+
+# Unit tests related stuff
+UT_FLAG_NAME = "fake"
+UT_RECORD_SEQ_LEN = 200
+UT_N_RECORDS = 100
+UT_CHUNK_SIZE = 8
+UT_FLAG_PATTERN = f"^(?<{UT_FLAG_NAME}>.{{8}})"

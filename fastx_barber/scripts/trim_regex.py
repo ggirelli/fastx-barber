@@ -105,7 +105,7 @@ def run_chunk(
     trimmer = get_fastx_trimmer(fmt)
 
     for record in chunk:
-        match, matched = matcher.match(record)
+        match, matched = matcher.do(record)
         if matched:
             record = trimmer.trim_re(record, match)
         foutput[matched](record)

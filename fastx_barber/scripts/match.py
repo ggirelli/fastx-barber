@@ -104,7 +104,7 @@ def run_chunk(
     matcher = FastxMatcher(regex.compile(args.pattern))
 
     for record in chunk:
-        match, matched = matcher.match(record)
+        match, matched = matcher.do(record)
         foutput[matched](record)
 
     OHC.close()

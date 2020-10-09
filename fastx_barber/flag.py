@@ -16,7 +16,6 @@ from typing import Any, Dict, List, Match, Optional, Pattern, Tuple, Type
 
 
 class FlagStats(object):
-    """docstring for FlagStats"""
 
     __stats: FlagStatsType
     _flags_for_stats: Optional[List[str]] = None
@@ -63,7 +62,6 @@ class FlagStats(object):
         if basename.endswith(".gz"):
             basename = basename.split(".gz")[0]
         basename = os.path.splitext(basename)[0]
-
         if verbose:
             flag_keys = track(self.keys(), description="Exporting flagstats")
         else:
