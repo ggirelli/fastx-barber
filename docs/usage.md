@@ -9,13 +9,24 @@
   - [Trim by regular expression](#trim-by-regular-expression)
 - [Flags](#flags)
   - [Extract flags](#extract-flags)
+    - [Flag extraction example](#flag-extraction-example)
+    - [Extracting quality flags \(default\)](#extracting-quality-flags-default)
   - [After flag extraction](#after-flag-extraction)
     - [Filter by flag quality](#filter-by-flag-quality)
     - [Match flags with regular expressions](#match-flags-with-regular-expressions)
     - [Split by flag value](#split-by-flag-value)
     - [Calculate flag value frequency](#calculate-flag-value-frequency)
+- [General](#general)
+  - [Output](#output)
+  - [Regular expressions](#regular-expressions)
+  - [QSCORE](#qscore)
+  - [Logging](#logging)
+  - [Parallelization](#parallelization)
 
 <!-- /MarkdownTOC -->
+
+To access the features provided by the `fastx-barber` suite, use the `fbarber` keyword.  
+Running `fbarber -h` provides helpful details on how to run the commands.
 
 ## Match
 
@@ -26,11 +37,11 @@ usage: fbarber match [-h] [--pattern PATTERN] [--version] [--unmatched-output UN
                      in.fastx[.gz] out.fastx[.gz]
 ```
 
-Lorem ipsum dolor sit amet, consectetur adipisicing, elit. Id ab, quod repellendus, autem obcaecati illo alias, ipsam vel asperiores iure dicta voluptatem nostrum suscipit, doloremque dolores tenetur omnis recusandae repudiandae!
+The `match` command allows to subselect reads from a fastx file based on a regular expression (`--pattern`, see [regular expressions](#regular-expression) for more details). Only reads matching the regex are written to the output file. It is possible to export reads that do not match the pattern through the `--unmatched-output` option. This script can be parallelized; for more details see [Parallelization](#parallelization).
 
 ## Trim
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+Trimming is a common operation which is generally used either to remove non-genomic (e.g., prefix, linker) read portions, or to remove terminal low-quality bases, before alignment to a reference genome. The `trim` command provides access to different tools with this aim.
 
 ### Trim by length
 
@@ -41,7 +52,7 @@ usage: fbarber trim length [-h] [-l LENGTH] [-s {3,5}] [--version] [--compress-l
                            in.fastx[.gz] out.fastx[.gz]
 ```
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+The `trim length` option allows to trim a given number (` -l`) of bases from either side (`-s`) of the reads (5': left; 3': right). This script can be parallelized; for more details see [Parallelization](#parallelization).
 
 ### Trim by quality
 
@@ -52,7 +63,7 @@ usage: fbarber trim quality [-h] [-q QSCORE] [-s {3,5}] [--version] [--phred-off
                             in.fastq[.gz] out.fastq[.gz]
 ```
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+The `trim quality` command allows to remove all consecutive bases with a QSCORE (`-q`) below a certain threshold, from either (`-s`) side of the reads (5': left; 3': right). For more details on the QSCORE, see [QSCORE](#qscore). This script can be parallelized; for more details see [Parallelization](#parallelization).
 
 ### Trim by regular expression
 
@@ -63,11 +74,11 @@ usage: fbarber trim regex [-h] [--pattern PATTERN] [--version] [--unmatched-outp
                           in.fastx[.gz] out.fastx[.gz]
 ```
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+The `trim regex` command tries to match a regex (`--pattern`, see [regular expressions](#regular-expression) for more details) to the reads, and then removes the portion that matched. If a read does not match the pattern, it is not written in the output; the `--unmatched-output` command can be used to export unmatched reads to a separate file instead. This script can be parallelized; for more details see [Parallelization](#parallelization).
 
 ## Flags
 
-Lorem ipsum dolor sit amet, consectetur, adipisicing elit. Voluptate consectetur adipisci maxime ducimus voluptatem vero illo recusandae accusamus dolores rerum nemo similique vel amet, quidem possimus eligendi veniam quae officia.
+The `flag` command can be used to access tools to extract portions of the reads (flags) and store them in the read headers, filter them, match them to a regex, calculate statistics, or split reads besed on their value. These operations can be either performed simultaneously at time of flag extraction (see [extract flags](#extract-flags) below) or on a file with previously extracted flags (see [after flag extraction](#after-flag-extraction)).
 
 ### Extract flags
 
@@ -84,11 +95,63 @@ usage: fbarber flag extract [-h] [--pattern PATTERN] [--version] [--unmatched-ou
                             in.fastx[.gz] out.fastx[.gz]
 ```
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+The `flag extract` command matches a regular expression (`--pattern`, see [regular expressions](#regular-expression) for more details) to a read. Flags can be specified in the pattern as *groups* using regular expression syntax, e.g., `^(?<umi>.{8})(?<bc>AGTCTAGA){s<2}` specifies a flag called "umi" consisting of 8 consecutive characters from the left terminal of the reads, and a second flag called "bc" with value "ACTCTAGA" allowing for up to 1 substitution (or mismatch).
+
+By default, the part of the reads matching the pattern is trimmed, and all flags specified in the pattern are extracted (i.e., saved in the header). It is possible to extract only a subset of the flags by using the `--selected-flags` option. Moreover, use the `--unmatched-output` option to write to a separate file any read not matching the pattern.
+
+When extracting flags, it is possible to simultaneously perform a number of operations that can also be performed <u>after</u> flag extraction:
+
+* Use the `--flagstats` option to calculate the frequency of flag values. See [calculate flag value frequency](#calculate-flag-value-frequency) for more details.
+* Use the `--filter-qual-flags` to filter reads by quality. To output reads that do <u>not</u> pass the specified filter(s), use the `--filter-qual-output` option. See [filter by flag quality](#filter-by-flag-quality) for more details.
+* Split reads to different files based on the value of a flag by using the `--split-by` option. See [split by flag value](#split-by-flag-value) for more details.
+
+This script can be parallelized; for more details see [Parallelization](#parallelization).
+
+#### Flag extraction example
+
+Flags are appended to the initial part of each read header, identified after removing any header comments. The `--comment-space` value (defaulting to a white space) is used to identify and remove header comments. The `--flag-delim` character (defaulting to a tilde `~`) is used to separate flags and key/value flag pairs. For example, applying the default values and the above pattern to the read below,
+
+```
+>Read_1 header_comment1 header_comment2
+ACTGGACTAGTCTAGAGTATCGATCAGTCAGTCGATCG
+```
+
+would generate the following result:
+
+```
+>Read_1~~umi~ACTGGACT~~bc~AGTATAGA header_comment1 header_comment2
+GTATCGATCAGTCAGTCGATCG
+```
+
+#### Extracting quality flags (default)
+
+When running `flag extract` on a fastq file, the portion of quality string corresponging to each flag is also stored in the header. The quality string is saved as a separate flag by appending a "q" prefix at the beginning of the flag name.
+
+To avoid extracting quality flags from fastq files, please use the `--no-qual-flags` option.
+
+The previous example applied on a fastq file,
+
+```
+>Read_1 header_comment1 header_comment2
+ACTGGACTAGTCTAGAGTATCGATCAGTCAGTCGATCG
++
+AAA/AAAAAEAAAA//AAAAAAAAAAAAAAAAAAAAAA
+```
+
+would generate the following result:
+
+```
+>Read_1~~umi~ACTGGACT~~qumi~AAA/AAAA~~bc~AGTATAGA~qbc~AEAAAA// header_comment1 header_comment2
+GTATCGATCAGTCAGTCGATCG
++
+AAAAAAAAAAAAAAAAAAAAAA
+```
+
+**IMPORTANT: as this approach is prone to flag name conflicts, it will change with `v0.2.0`. Follow [issue #38](https://github.com/ggirelli/fastx-barber/issues/38) for more updates. In the meantime, please refrain from using flags that start with the lettwr "q".**
 
 ### After flag extraction
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+As aforementioned, a number of actions can be performed either at the time of flag extraction (simultaneously), or on files with previously extracted flags. When running these commands after flag extraction, it is crucial to use the appropriate `--flag-delim` (default "~") and `--comment-space` (default " ") to properly read the flags.
 
 #### Filter by flag quality
 
@@ -101,7 +164,12 @@ usage: fbarber flag filter [-h] [--version] [--flag-delim FLAG_DELIM] [--comment
                            in.fastx[.gz] out.fastx[.gz]
 ```
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+The `flag filter` command applies a set of filter(s) to one or more previously extracted flags. For each flag to be filtered, it is possible to specify a minimum QSCORE threshold and a maximum allowed fraction (percentage of bases) with QSCORE below the threshold. Specifically, the filters can be set as space-separated strings in the format `flag_name,min_QSCORE,max_fraction`.
+
+Any read with at least a flag with more bases below the QSCORE threshold than allowed is discarded. To export reads that do <u>not</u> pass a filter, use the `--filter-qual-output` option.
+
+For more details on the QSCORE, see [QSCORE](#qscore). This script can be parallelized; for more details see [Parallelization](#parallelization).
+
 
 #### Match flags with regular expressions
 
@@ -114,7 +182,11 @@ usage: fbarber flag regex [-h] [--pattern PATTERN [PATTERN ...]] [--version]
                           in.fastx[.gz] out.fastx[.gz]
 ```
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+The `flag regex` command tries to match one or more flags to regular expressions. Any read with at least a non-matching flag, or were a specified flag is not present is not written to the output. To export these reads to a separate file, use the `--unmatched-output` option.
+
+Regular expressions can be specified as space-separated strings in the format `"flag_name,regex"`. We recommend wrapping each string in quotes.
+
+This script can be parallelized; for more details see [Parallelization](#parallelization).
 
 #### Split by flag value
 
@@ -125,7 +197,7 @@ usage: fbarber flag split [-h] [--version] [--flag-delim FLAG_DELIM] [--comment-
                           in.fastx[.gz] out.fastx[.gz]
 ```
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+The `flag split` command allows to split reads to separate files based on the value of a specific flag (`--split-by`). This script can be parallelized; for more details see [Parallelization](#parallelization).
 
 #### Calculate flag value frequency
 
@@ -137,4 +209,30 @@ usage: fbarber flag stats [-h] [--version] [--flag-delim FLAG_DELIM] [--comment-
                           in.fastx[.gz]
 ```
 
-Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Veritatis eaque modi ipsam sit laudantium consequatur accusamus voluptatibus aut suscipit! Autem iste minima laborum, quam magni doloribus consequatur eligendi asperiores sed!
+The `flag stats` command allows to calculate the frequency of the value of one or more flags (`--flagstats`). This script can be parallelized; for more details see [Parallelization](#parallelization).
+
+## General
+
+### Output
+
+For all `fbarber` commands, the format (fasta/q) of the input **must** match the output. The barber automatically detects from the output extension if the output should be compressed (expects a `.gz` suffix) using the specified compression level (`--compress-level`, defaults to 6).
+
+### Regular expressions
+
+`fbarber` uses the [`regex`](https://pypi.org/project/regex/) python package to compile, match, and generally manage regular expression. Thus, the barber supports *fuzzy* matching, where a number of allowed deletions/insertions/substitutions can be specified (NOTE: *fuzzy* matching might slow execution as it takes longer times to compute). Fore more details on the *fuzzy* matching syntax, please check the [`regex`](https://pypi.org/project/regex/) package documentation.
+
+### QSCORE
+
+`fbarber` uses the latest standard QSCORE definition of `QSCORE = -10 log10(Pe)`, were `Pe` is the error probability of a base. The QSCORE is read from the quality string of a FASTQ file using a certain PHRED offset (`--phref-offest`). The default PHRED offset is 33, following the latest Illumina standards (`chr(Q+33)`). As the barber uses the `biopython` package for quality calculation, we direct the user to [their documentation](https://biopython.org/docs/1.75/api/Bio.SeqIO.QualityIO.html), which provides a nice historical overview of the topic.
+
+### Logging
+
+By default, script log is written to the terminal (`stdout`). To save the output to a file we recommend using the `--log-file` option.
+
+### Parallelization
+
+Parallelization is achieved (using `joblib`) by splitting the input file in chunks, which are then concurrently processed on separate threads. Finally, the output of each chunk is merged into the final output by retaining the initial order.
+
+It is possible to specify the number of reads per chunk, and the number of concurrent threadsm using the `--chunk-size` and `--threads` options, respectively. Input file chunks and single chunk output files are stored in a temporary directory, which can be changed using the `--temp-dir` option.
+
+As the I/O operations represent the bottleneck in most operations, especially on solid-state drives and particularly when running on one read at a time, this approach can speed execution up when the chunks are large enough to be spread over multiple threads. Subprocesses are instantiated at execution start, and overhead time is proportional to the number of threads.
