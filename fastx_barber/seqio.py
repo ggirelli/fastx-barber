@@ -44,6 +44,8 @@ def get_fastx_parser(path: str) -> Tuple[SimpleFastxParser, FastxFormats]:
     handle: Union[str, IO] = path
     if gzipped:
         handle = gzip.open(path, "rt")
+    else:
+        handle = open(path, "rt")
     assert fmt in FastxFormats
     if FastxFormats.FASTA == fmt:
         parser = SeqIO.FastaIO.SimpleFastaParser(handle)
@@ -94,48 +96,6 @@ class FastxChunkedParser(object):
             return (chunk, self.__chunk_counter)
 
     def __iter__(self) -> Iterator[Tuple[List[SimpleFastxRecord], int]]:
-        return self
-
-
-class FastqChunkedParser(object):
-    """Parser with chunking capabilities for fastq files.
-
-    Variables:
-        __IH: SimpleFastqParser {[type]} -- [description]
-    """
-
-    __IH: SeqIO.FastaIO.SimpleFastaParser
-    __chunk_size: int
-    __chunk_counter: int = 0
-
-    def __init__(self, parser: SeqIO.FastaIO.SimpleFastaParser, chunk_size: int):
-        super(FastqChunkedParser, self).__init__()
-        self.__IH = parser
-        assert chunk_size > 0
-        self.__chunk_size = chunk_size
-
-    @property
-    def chunk_size(self):
-        return self.__chunk_size
-
-    @property
-    def last_chunk_id(self):
-        return self.__chunk_counter
-
-    def __next__(self) -> Tuple[List[SimpleFastqRecord], int]:
-        chunk: List[SimpleFastqRecord] = []
-        while len(chunk) < self.__chunk_size:
-            try:
-                chunk.append(next(self.__IH))
-            except StopIteration:
-                break
-        if 0 == len(chunk):
-            raise StopIteration
-        else:
-            self.__chunk_counter += 1
-            return (chunk, self.__chunk_counter)
-
-    def __iter__(self) -> Iterator[Tuple[List[SimpleFastqRecord], int]]:
         return self
 
 

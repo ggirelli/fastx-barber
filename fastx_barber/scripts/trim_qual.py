@@ -10,7 +10,7 @@ from fastx_barber.io import ChunkMerger
 from fastx_barber.qual import QualityIO
 from fastx_barber.scripts import arguments as ap
 from fastx_barber.seqio import (
-    FastqChunkedParser,
+    FastxChunkedParser,
     get_fastx_format,
     get_fastx_parser,
     SimpleFastqRecord,
@@ -140,7 +140,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Chunk size\t{args.chunk_size}")
 
     IH, fmt = get_fastx_parser(args.input)
-    IH = FastqChunkedParser(IH, args.chunk_size)
+    IH = FastxChunkedParser(IH, args.chunk_size)
 
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
     assert FastxFormats.FASTQ == fmt, "Trimming by quality requires a fastq file."
