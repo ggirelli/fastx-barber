@@ -1,5 +1,5 @@
 biopython==1.78
-colorama==0.4.3
+colorama==0.4.4
 commonmark==0.9.1
 dataclasses==0.7; python_version >= "3.6" and python_version < "3.7"
 joblib==0.16.0
