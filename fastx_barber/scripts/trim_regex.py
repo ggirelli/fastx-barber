@@ -43,15 +43,15 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "output",
         type=str,
         metavar="out.fastx[.gz]",
-        help="""Path to fasta/q file where to write
-                        trimmed records. Format will match the input.""",
+        help="Path to fasta/q file where to write trimmed records. "
+        + "Format will match the input.",
     )
 
     parser.add_argument(
         "--pattern",
         type=str,
-        help=f"""Pattern to match to reads and trim.
-        Remember to use quotes. Example: '{PATTERN_EXAMPLE}'""",
+        help="Pattern to match to reads and trim. "
+        + f"Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
 
     parser = ap.add_version_option(parser)

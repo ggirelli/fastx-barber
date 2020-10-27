@@ -33,8 +33,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "input",
         type=str,
         metavar="in.fastx[.gz]",
-        help="""Path to the fasta/q file
-                        to scan for matches.""",
+        help="Path to the fasta/q file to scan for matches.",
     )
 
     parser = ap.add_version_option(parser)

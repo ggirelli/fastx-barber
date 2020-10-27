@@ -35,23 +35,22 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "input",
         type=str,
         metavar="in.fastx[.gz]",
-        help="""Path to the fasta/q file
-                        to scan for matches.""",
+        help="Path to the fasta/q file to scan for matches.",
     )
     parser.add_argument(
         "output",
         type=str,
         metavar="out.fastx[.gz]",
-        help="""Path to fasta/q file where to write
-        matching records. Format will match the input.""",
+        help="Path to fasta/q file where to write matching records. "
+        + "Format will match the input.",
     )
 
     parser.add_argument(
         "--pattern",
         type=str,
         nargs="+",
-        help="""Space-separated 'flag_name,pattern' strings.
-        Please wrap each string in quotes.""",
+        help="Space-separated 'flag_name,pattern' strings. "
+        + "Please wrap each string in quotes.",
     )
 
     parser = ap.add_version_option(parser)

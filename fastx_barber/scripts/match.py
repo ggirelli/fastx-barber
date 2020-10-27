@@ -36,22 +36,21 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "input",
         type=str,
         metavar="in.fastx[.gz]",
-        help="""Path to the fasta/q file
-                        to scan for matches.""",
+        help="""Path to the fasta/q file to scan for matches.""",
     )
     parser.add_argument(
         "output",
         type=str,
         metavar="out.fastx[.gz]",
-        help="""Path to fasta/q file where to write
-                        matching records. Format will match the input.""",
+        help="Path to fasta/q file where to write matching records. "
+        + "Format will match the input.",
     )
 
     parser.add_argument(
         "--pattern",
         type=str,
-        help=f"""Pattern to match to reads.
-        Remember to use quotes. Example: '{PATTERN_EXAMPLE}'""",
+        help="Pattern to match to reads. Remember to use quotes. "
+        + f"Example: '{PATTERN_EXAMPLE}'",
     )
 
     parser = ap.add_version_option(parser)
