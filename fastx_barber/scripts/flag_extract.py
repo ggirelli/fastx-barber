@@ -137,7 +137,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
 ChunkDetails = Tuple[int, int, int, FlagStats]
 
 
-def fchunk(
+def run_chunk(
     chunk: List[SimpleFastxRecord],
     cid: int,
     args: argparse.Namespace,
@@ -219,7 +219,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming and extracting flags...")
     chunk_details = joblib.Parallel(n_jobs=args.threads, verbose=10)(
-        joblib.delayed(fchunk)(chunk, cid, args) for chunk, cid in IH
+        joblib.delayed(run_chunk)(chunk, cid, args) for chunk, cid in IH
     )
     logging.info("Merging subprocesses details...")
     n_parsed, n_matched, n_filtered, flagstats = merge_chunk_details(chunk_details)
