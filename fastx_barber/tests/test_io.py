@@ -20,6 +20,18 @@ def test_is_gzipped():
     assert not io.is_gzipped("test.txt")[2]
 
 
+def test_splitext():
+    base, ext = io.splitext("/root/test.txt")
+    assert "/root/test" == base
+    assert ".txt" == ext
+    base, ext = io.splitext("/root/test.txt.gz")
+    assert "/root/test" == base
+    assert ".txt.gz" == ext
+    base, ext = io.splitext("/root/test.txt.gz.gz")
+    assert "/root/test" == base
+    assert ".txt.gz.gz" == ext
+
+
 def test_ChunkMerger():
     TD = tempfile.TemporaryDirectory()
 

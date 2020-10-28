@@ -27,8 +27,6 @@ def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
         Tuple[FastxFormats, bool] -- fastx file format and gzipped status
     """
     base, ext, gzipped = is_gzipped(path)
-    if gzipped:
-        base, ext = os.path.splitext(base)
     assert FastxExtensions.has_value(ext), f"Unrecognized extension '{ext}'."
     if ext in FastxExtensions.FASTA.value:
         return (FastxFormats.FASTA, gzipped)

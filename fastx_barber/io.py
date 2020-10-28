@@ -21,13 +21,25 @@ def check_tmp_dir(path: Optional[str] = None) -> str:
     return path
 
 
+def splitext(path: str) -> Tuple[str, str]:
+    base, ext = os.path.splitext(path)
+    ext_final = ext
+    while ".gz" == ext:
+        base, ext = os.path.splitext(base)
+        ext_final = ext + ext_final
+    return (base, ext_final)
+
+
 def is_gzipped(path: str) -> Tuple[str, str, bool]:
     """
     Returns:
         Tuple[str, str, bool] -- basename, extension, gzipped status
     """
-    base, ext = os.path.splitext(path)
-    return (base, ext, ".gz" == ext)
+    base, ext = splitext(path)
+    gzipped = ext.endswith(".gz")
+    if gzipped:
+        ext = ".".join(ext.split(".")[:-1])
+    return (base, ext, gzipped)
 
 
 class ChunkMerger(object):
