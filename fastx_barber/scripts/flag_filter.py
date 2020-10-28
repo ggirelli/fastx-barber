@@ -5,6 +5,7 @@
 
 import argparse
 from fastx_barber import scriptio
+from fastx_barber.exception import enable_rich_assert
 from fastx_barber.flag import FastxFlagReader
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import SimpleFastxRecord
@@ -67,6 +68,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     return parser
 
 
+@enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
@@ -118,6 +120,7 @@ def run_chunk(
     return (filtered_counter, unfiltered_counter)
 
 
+@enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     logging.info("[bold underline red]General[/]")
     logging.info(f"Input\t\t{args.input}")

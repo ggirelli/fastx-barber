@@ -6,6 +6,7 @@
 import argparse
 from fastx_barber import scriptio
 from fastx_barber.const import PATTERN_EXAMPLE, FastxFormats, FlagData
+from fastx_barber.exception import enable_rich_assert
 from fastx_barber.flag import (
     ABCFlagExtractor,
     FastqFlagExtractor,
@@ -105,6 +106,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     return parser
 
 
+@enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     assert 1 == len(args.flag_delim)
     args.threads = ap.check_threads(args.threads)
@@ -210,6 +212,7 @@ def merge_chunk_details(chunk_details: List[ChunkDetails]) -> ChunkDetails:
     return (parsed_counter, matched_counter, filtered_counter, flagstats)
 
 
+@enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
