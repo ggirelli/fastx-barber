@@ -12,40 +12,31 @@ from typing import Any, Dict, Iterator, List, Match, Optional, Pattern, Tuple, U
 class ANPMatch(object):
     __pattern: str
     __match: str
-    __span: Tuple[int, int]
+    __spans: List[Tuple[int, int]]
     __groups: List[str]
     __names: List[str]
-    __starts: List[int]
-    __ends: List[int]
     __groupdict: Dict[str, str]
 
     def __init__(
         self,
         match: str,
         span: Tuple[int, int],
-        groups: Dict[str, Tuple[int, int]],
+        groups: List[Tuple[str, Tuple[int, int]]],
         pattern: str,
     ):
         super(ANPMatch, self).__init__()
-        assert len(match) == span[1] - span[0]
         self.__pattern = pattern
         self.__match = match
-        self.__span = span
-
-        group_span = 0
-        self.__groups = [match]
-        self.__starts = [0]
-        self.__ends = [len(match)]
+        self.__spans = [span]
+        self.__groups = [self.__match]
         self.__names = [""]
-        self.__groupdict = {}
-        for name, (start, end) in sorted(groups.items(), key=lambda x: x[1][0]):
-            self.__groups.append(match[start:end])
-            self.__starts.append(start)
-            self.__ends.append(end)
+        self.__populate_groups(groups)
+
+    def __populate_groups(self, groups: List[Tuple[str, Tuple[int, int]]]):
+        for name, span in groups:
             self.__names.append(name)
-            self.__groupdict[name] = match[start:end]
-            group_span += end - start
-        assert group_span == len(match)
+            self.__spans.append(span)
+            self.__groups.append(self.__match[span[0] : span[1]])
 
     @property
     def lastindex(self) -> int:
@@ -66,7 +57,7 @@ class ANPMatch(object):
     def group(self, i: Optional[int]) -> str:
         if i is None:
             i = 0
-        if i >= len(self.__starts):
+        if i >= len(self.__spans):
             raise IndexError("no such group")
         return self.__groups[i]
 
@@ -76,31 +67,31 @@ class ANPMatch(object):
     def start(self, i: Optional[int]) -> int:
         if i is None:
             i = 0
-        if i >= len(self.__starts):
+        if i >= len(self.__spans):
             raise IndexError("no such group")
-        return self.__starts[i]
+        return self.__spans[i][0]
 
     def end(self, i: Optional[int]) -> int:
         if i is None:
             i = 0
-        if i >= len(self.__ends):
+        if i >= len(self.__spans):
             raise IndexError("no such group")
-        return self.__ends[i]
+        return self.__spans[i][1]
 
     def groupdict(self) -> Dict[str, str]:
-        return self.__groupdict.copy()
+        return dict(zip(self.__names[1:], self.__groups[1:]))
 
 
 class AlphaNumericPattern(object):
     _pattern: str
     _length: int
-    _groups: Dict[str, Tuple[int, int]]
+    _groups: List[Tuple[str, Tuple[int, int]]]
 
     def __init__(self, pattern: str):
         super(AlphaNumericPattern, self).__init__()
         self._pattern = pattern
         self._groups = self.parse(pattern)
-        self._length = sum([e - s for s, e in self._groups.values()])
+        self._length = sum([e - s for n, (s, e) in self._groups])
 
     def match(self, query: str) -> Optional[ANPMatch]:
         if len(query) < self._length:
@@ -122,7 +113,7 @@ class AlphaNumericPattern(object):
         return pattern
 
     @staticmethod
-    def parse(pattern: str) -> Dict[str, Tuple[int, int]]:
+    def parse(pattern: str) -> List[Tuple[str, Tuple[int, int]]]:
         assert pattern.isalnum()
         pattern = AlphaNumericPattern.remove_leading_digits(pattern)
         pattern = AlphaNumericPattern.remove_trailing_alphas(pattern)
@@ -144,13 +135,12 @@ class AlphaNumericPattern(object):
                 group_len += c
         groups[group_name] = (position, position + int(group_len))
 
-        return groups
+        return sorted(groups.items(), key=lambda x: x[1][0])
 
     @staticmethod
     def to_regex(pattern: str) -> str:
-        flag_pattern = AlphaNumericPattern.parse(pattern)
         pattern_re = "^"
-        for name, (start, end) in flag_pattern.items():
+        for name, (start, end) in AlphaNumericPattern.parse(pattern):
             pattern_re += "(?<{name}>.{{end-start}})"
         return pattern_re
 
