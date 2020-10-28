@@ -6,17 +6,17 @@
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from fastx_barber.const import FastxFormats, FlagData, FlagStatsType, QFLAG_START
+from fastx_barber.match import ANPMatch
 from fastx_barber.seqio import SimpleFastxRecord
 import logging
 import os
 import pandas as pd  # type: ignore
 import regex as re  # type: ignore
 from rich.progress import track  # type: ignore
-from typing import Any, Dict, List, Match, Optional, Pattern, Tuple, Type
+from typing import Any, Dict, List, Match, Optional, Pattern, Tuple, Type, Union
 
 
 class FlagStats(object):
-    """docstring for FlagStats"""
 
     __stats: FlagStatsType
     _flags_for_stats: Optional[List[str]] = None
@@ -48,25 +48,28 @@ class FlagStats(object):
     def items(self):
         return self.__stats.items()
 
+    def get_dataframe(self, flag_name: str) -> pd.DataFrame:
+        stats = self.__stats[flag_name]
+        df = pd.DataFrame()
+        df["value"] = list(stats.keys())
+        df["counts"] = list(stats.values())
+        df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
+        df.sort_values("counts", ascending=False, ignore_index=True, inplace=True)
+        return df
+
     def export(self, output_path: str, verbose: bool = True) -> None:
         output_dir = os.path.dirname(output_path)
         basename = os.path.basename(output_path)
         if basename.endswith(".gz"):
             basename = basename.split(".gz")[0]
         basename = os.path.splitext(basename)[0]
-
         if verbose:
-            itemized_flags = track(self.items(), description="Exporting flagstats")
+            flag_keys = track(self.keys(), description="Exporting flagstats")
         else:
-            itemized_flags = self.items()
+            flag_keys = self.keys()
 
-        for flag_name, stats in itemized_flags:
-            df = pd.DataFrame()
-            df["value"] = list(stats.keys())
-            df["counts"] = list(stats.values())
-            df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
-            df.sort_values("counts", ascending=False, ignore_index=True, inplace=True)
-            df.to_csv(
+        for flag_name, stats in flag_keys:
+            self.get_dataframe(flag_name).to_csv(
                 os.path.join(output_dir, f"{basename}.{flag_name}.stats.tsv"),
                 sep="\t",
                 index=False,
@@ -137,7 +140,9 @@ class ABCFlagExtractor(ABCFlagBase):
         return self._flagstats
 
     @abstractmethod
-    def extract_selected(self, record: Any, match: Match) -> Dict[str, FlagData]:
+    def extract_selected(
+        self, record: Any, match: Union[ANPMatch, Match, None]
+    ) -> Dict[str, FlagData]:
         """Extract selected flags
 
         Flags are selected according to self._selected_flags
@@ -155,7 +160,9 @@ class ABCFlagExtractor(ABCFlagBase):
         pass
 
     @abstractmethod
-    def extract_all(self, record: Any, match: Match) -> Dict[str, FlagData]:
+    def extract_all(
+        self, record: Any, match: Union[ANPMatch, Match, None]
+    ) -> Dict[str, FlagData]:
         """Extract all flags
 
         Decorators:
@@ -221,7 +228,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
         super(FastaFlagExtractor, self).__init__(selected_flags, flags_for_stats)
 
     def extract_selected(
-        self, record: SimpleFastxRecord, match: Match
+        self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
         assert match is not None
         flag_data: Dict[str, FlagData] = {}
@@ -233,8 +240,10 @@ class FastaFlagExtractor(ABCFlagExtractor):
         return flag_data
 
     def extract_all(
-        self, record: SimpleFastxRecord, match: Match
+        self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
+        if match is None:
+            return {}
         flag_data: Dict[str, FlagData] = {}
         for gid in range(len(match.groups())):
             flag = self.__extract_single_flag(match, gid)
@@ -242,7 +251,10 @@ class FastaFlagExtractor(ABCFlagExtractor):
         return flag_data
 
     def __extract_single_flag(
-        self, match: Match, gid: int, flag: Optional[Tuple[str, str]] = None
+        self,
+        match: Union[ANPMatch, Match],
+        gid: int,
+        flag: Optional[Tuple[str, str]] = None,
     ) -> Tuple[str, FlagData]:
         if flag is None:
             flag = list(match.groupdict().items())[gid]
@@ -272,7 +284,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
         super(FastqFlagExtractor, self).__init__(selected_flags, flags_for_stats)
 
     def extract_selected(
-        self, record: SimpleFastxRecord, match: Match
+        self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
         assert match is not None
         name, seq, qual = record
@@ -283,7 +295,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
         return flag_data
 
     def extract_all(
-        self, record: SimpleFastxRecord, match: Match
+        self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
         assert match is not None
         name, seq, qual = record

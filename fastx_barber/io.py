@@ -10,13 +10,36 @@ import tempfile
 from typing import Optional, Tuple
 
 
+DTEMP_PREFIX = "fbarber_tmp."
+
+
+def check_tmp_dir(path: Optional[str] = None) -> str:
+    if path is not None:
+        assert os.path.isdir(path)
+    else:
+        path = tempfile.mkdtemp(prefix=DTEMP_PREFIX)
+    return path
+
+
+def splitext(path: str) -> Tuple[str, str]:
+    base, ext = os.path.splitext(path)
+    ext_final = ext
+    while ".gz" == ext:
+        base, ext = os.path.splitext(base)
+        ext_final = ext + ext_final
+    return (base, ext_final)
+
+
 def is_gzipped(path: str) -> Tuple[str, str, bool]:
     """
     Returns:
         Tuple[str, str, bool] -- basename, extension, gzipped status
     """
-    base, ext = os.path.splitext(path)
-    return (base, ext, ".gz" == ext)
+    base, ext = splitext(path)
+    gzipped = ext.endswith(".gz")
+    if gzipped:
+        ext = ".".join(ext.split(".")[:-1])
+    return (base, ext, gzipped)
 
 
 class ChunkMerger(object):
@@ -48,7 +71,7 @@ class ChunkMerger(object):
             for cid in track(
                 range(1, last_chunk_id + 1), description=desc, transient=False
             ):
-                chunk_path = f".tmp.chunk{cid}.{path}"
+                chunk_path = f".tmp.chunk{cid}.{os.path.basename(path)}"
                 if self._tempdir is not None:
                     chunk_path = os.path.join(self._tempdir.name, chunk_path)
                 if not os.path.isfile(chunk_path):
@@ -66,7 +89,7 @@ class ChunkMerger(object):
         for cid in track(
             range(1, last_chunk_id + 1), description=desc, transient=False
         ):
-            chunk_path = f"{self._split_by}_split.*.tmp.chunk{cid}.{path}"
+            chunk_path = f"{self._split_by}_split.*.tmp.chunk{cid}.{output_base}"
             if self._tempdir is not None:
                 chunk_path = os.path.join(self._tempdir.name, chunk_path)
             flist = glob.glob(chunk_path)

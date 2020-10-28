@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.1.1]
+### Added
+- `find_seq` option to locate needle sequence from FASTX files.
+- Unit tests.
+- `BedWriter` class for BED file output.
+- Option for `--simple-pattern` in flag extraction.
+
+### Changed
+- Script assert errors now reported through `rich` logging.
+
+### Fixed
+- Empty output when output path is not in current working directory.
+- Bug that caused log to crash script when extracting pattern matched no reads.
+
 ## [0.1.0]
 ### Added
 - `--split-by` option to split output by flag during flag extraction.
@@ -30,6 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.0.1] - 2020-08-03
 
-[Unreleased]: https://github.com/ggirelli/fastx-barber  
-[0.1.0]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.1.0
-[0.0.1]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.0.1
+[Unreleased]: https://github.com/ggirelli/fastx-barber/tree/dev  
+[0.1.1]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.1.1  
+[0.1.0]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.1.0  
+[0.0.1]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.0.1  

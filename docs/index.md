@@ -1,11 +1,11 @@
 <!-- MarkdownTOC -->
 
-- Requirements
-- Install
-- Features
-- Usage
-- Contributing
-- License
+- [Requirements](#requirements)
+- [Install](#install)
+- [Features](#features)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
 <!-- /MarkdownTOC -->
 
@@ -31,7 +31,7 @@ We recommend installing `fastx-barber` using [`pipx`](https://github.com/pipxpro
 * Works on both FASTA and FASTQ files.
 * [Selects](usage#match) reads based on a pattern (regex).
 * [Trims](usage#trim) reads [by pattern](usage#trim-by-regular-expression) (regex), [length](usage#trim-by-length), or single-base [quality](usage#trim-by-quality).
-* [Extracts](usage#extract-flags) parts ([flags](usage#flags)) of reads based on a pattern, and stores them in the read headers.
+* [Extracts](usage#extract-flags) parts ([flags](usage#flags)) of reads based on a pattern (either a regular expression or a simple alfanumeric pattern in the format `AAA111BBB222`, where `AAA` and `BBB` are flag name and `111` and `222` are flag lengths), and stores them in the read headers.
     - Optionally extracts the corresponding portions of the quality string (only for fastq files).
     - Optionally filters based on quality score of extracted flags (only for fastq files).
         + Supports Sanger QSCORE definition (not old Solexa/Illumina one).
@@ -41,6 +41,7 @@ We recommend installing `fastx-barber` using [`pipx`](https://github.com/pipxpro
     - Optionally calculates the frequency of each value of a set of flags (flagstats).
     - [Filtering by flag quality](usage#filter-by-flag-quality), [splitting by flag value](usage#split-by-flag-value), and [calculating flag value frequency](usage#calculate-flag-value-frequency) are all features available also as separate scripts. This allows to perform these operations on files with previously extracted flags.
 * [Filters a FASTX file with extracted flags by applying patterns to different flags](usage#match-flags-with-regular-expressions).
+* [Generates BED file with the locations of a substring](usage#find-sequence) in FASTX records.
 * Regular expression support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (*fuzzy matching* might affect the barber's speed).
     * Optionally exports reads that do not match the provided pattern(s).
 * Parallelizes processing by splitting the fastx file in chunks.

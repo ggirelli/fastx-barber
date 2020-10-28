@@ -5,6 +5,7 @@
 
 import argparse
 from fastx_barber import scriptio
+from fastx_barber.exception import enable_rich_assert
 from fastx_barber.const import PATTERN_EXAMPLE
 from fastx_barber.io import ChunkMerger
 from fastx_barber.match import FastxMatcher
@@ -43,15 +44,15 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "output",
         type=str,
         metavar="out.fastx[.gz]",
-        help="""Path to fasta/q file where to write
-                        trimmed records. Format will match the input.""",
+        help="Path to fasta/q file where to write trimmed records. "
+        + "Format will match the input.",
     )
 
     parser.add_argument(
         "--pattern",
         type=str,
-        help=f"""Pattern to match to reads and trim.
-        Remember to use quotes. Example: '{PATTERN_EXAMPLE}'""",
+        help="Pattern to match to reads and trim. "
+        + f"Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
 
     parser = ap.add_version_option(parser)
@@ -70,6 +71,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     return parser
 
 
+@enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
@@ -79,6 +81,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
             "No pattern specified (--pattern), nothing to do. :person_shrugging:"
         )
         sys.exit()
+    args.pattern = regex.compile(args.pattern)
 
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)
@@ -101,11 +104,11 @@ def run_chunk(
     )
     foutput = scriptio.get_output_fun(OHC, UHC)
 
-    matcher = FastxMatcher(regex.compile(args.pattern))
+    matcher = FastxMatcher(args.pattern)
     trimmer = get_fastx_trimmer(fmt)
 
     for record in chunk:
-        match, matched = matcher.match(record)
+        match, matched = matcher.do(record)
         if matched:
             record = trimmer.trim_re(record, match)
         foutput[matched](record)
@@ -117,6 +120,7 @@ def run_chunk(
     return (matcher.matched_count, len(chunk))
 
 
+@enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     ap.log_args(args)
 

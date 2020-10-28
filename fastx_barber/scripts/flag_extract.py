@@ -5,15 +5,15 @@
 
 import argparse
 from fastx_barber import scriptio
-from fastx_barber.const import PATTERN_EXAMPLE, FastxFormats, FlagData
+from fastx_barber.const import PATTERN_EXAMPLE, FlagData
+from fastx_barber.exception import enable_rich_assert
 from fastx_barber.flag import (
-    ABCFlagExtractor,
     FastqFlagExtractor,
     FlagStats,
     get_fastx_flag_extractor,
 )
 from fastx_barber.io import ChunkMerger
-from fastx_barber.match import FastxMatcher
+from fastx_barber.match import AlphaNumericPattern, FastxMatcher
 from fastx_barber.qual import setup_qual_filters
 from fastx_barber.scriptio import get_handles, get_split_handles
 from fastx_barber.scripts import arguments as ap
@@ -56,15 +56,15 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "output",
         type=str,
         metavar="out.fastx[.gz]",
-        help="""Path to fasta/q file where to write
-                        trimmed records. Format will match the input.""",
+        help="Path to fasta/q file where to write trimmed records. "
+        + "Format will match the input.",
     )
 
     parser.add_argument(
         "--pattern",
         type=str,
-        help=f"""Pattern to match to reads and extract flagged groups.
-        Remember to use quotes. Example: '{PATTERN_EXAMPLE}'""",
+        help="Pattern to match to reads and extract flagged groups. "
+        + f"Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
 
     parser = ap.add_version_option(parser)
@@ -76,8 +76,8 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "--selected-flags",
         type=str,
         nargs="+",
-        help="""Space-separated names of flags to be extracted.
-        By default it extracts all flags.""",
+        help="Space-separated names of flags to be extracted. "
+        + "By default it extracts all flags.",
     )
     advanced = ap.add_flagstats_option(advanced)
     advanced = ap.add_split_by_option(advanced)
@@ -90,8 +90,15 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         dest="qual_flags",
         const=False,
         default=True,
-        help="""Do not extract quality flags
-        (when running on a fastq file).""",
+        help="Do not extract quality flags (when running on a fastq file).",
+    )
+    advanced.add_argument(
+        "--simple-pattern",
+        action="store_const",
+        dest="simple_pattern",
+        const=True,
+        default=False,
+        help="Parse pattern as 'simple' (alphanumeric) pattern.",
     )
     advanced = ap.add_comment_space_option(advanced)
     advanced = ap.add_compress_level_option(advanced)
@@ -106,6 +113,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     return parser
 
 
+@enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     assert 1 == len(args.flag_delim)
     args.threads = ap.check_threads(args.threads)
@@ -116,6 +124,12 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
             "No pattern specified (--pattern), nothing to do. :person_shrugging:"
         )
         sys.exit()
+
+    args.pattern = (
+        AlphaNumericPattern(args.pattern)
+        if args.simple_pattern
+        else re.compile(args.pattern)
+    )
 
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)
@@ -134,15 +148,6 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
-def get_flag_extractor(fmt: FastxFormats, args: argparse.Namespace) -> ABCFlagExtractor:
-    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags, args.flagstats)
-    flag_extractor.flag_delim = args.flag_delim
-    flag_extractor.comment_space = args.comment_space
-    if isinstance(flag_extractor, FastqFlagExtractor):
-        flag_extractor.extract_qual_flags = args.qual_flags
-    return flag_extractor
-
-
 ChunkDetails = Tuple[int, int, int, FlagStats]
 
 
@@ -154,23 +159,29 @@ def run_chunk(
     fmt, _ = get_fastx_format(args.input)
     OHC: Union[SimpleFastxWriter, SimpleSplitFastxWriter, None]
     FHC: Union[SimpleFastxWriter, SimpleSplitFastxWriter, None]
-    if args.split_by is None:
-        OHC, UHC, FHC, filter_output_fun = get_handles(fmt, cid, args)
-    else:
-        OHC, UHC, FHC, filter_output_fun = get_split_handles(fmt, cid, args)
+    OHC, UHC, FHC, filter_output_fun = (
+        get_handles(fmt, cid, args)
+        if args.split_by is None
+        else get_split_handles(fmt, cid, args)
+    )
     foutput = scriptio.get_output_fun(OHC, UHC)
 
-    matcher = FastxMatcher(re.compile(args.pattern))
+    matcher = FastxMatcher(args.pattern)
     trimmer = get_fastx_trimmer(fmt)
-    flag_extractor = get_flag_extractor(fmt, args)
     quality_flag_filters, filter_fun = setup_qual_filters(
         args.filter_qual_flags, args.phred_offset
     )
 
+    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags, args.flagstats)
+    flag_extractor.flag_delim = args.flag_delim
+    flag_extractor.comment_space = args.comment_space
+    if isinstance(flag_extractor, FastqFlagExtractor):
+        flag_extractor.extract_qual_flags = args.qual_flags
+
     filtered_counter = 0
     for record in chunk:
         flags: Dict[str, FlagData] = {}
-        match, matched = matcher.match(record)
+        match, matched = matcher.do(record)
         if matched:
             flags = flag_extractor.extract_all(record, match)
             flag_extractor.update_stats(flags)
@@ -211,6 +222,7 @@ def merge_chunk_details(chunk_details: List[ChunkDetails]) -> ChunkDetails:
     return (parsed_counter, matched_counter, filtered_counter, flagstats)
 
 
+@enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
@@ -221,12 +233,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming and extracting flags...")
     chunk_details = joblib.Parallel(n_jobs=args.threads, verbose=10)(
-        joblib.delayed(run_chunk)(
-            chunk,
-            cid,
-            args,
-        )
-        for chunk, cid in IH
+        joblib.delayed(run_chunk)(chunk, cid, args) for chunk, cid in IH
     )
     logging.info("Merging subprocesses details...")
     n_parsed, n_matched, n_filtered, flagstats = merge_chunk_details(chunk_details)
@@ -235,7 +242,7 @@ def run(args: argparse.Namespace) -> None:
         f"{n_matched}/{n_parsed} ({n_matched/n_parsed*100:.2f}%) "
         + "records matched the pattern.",
     )
-    if args.filter_qual_flags is not None:
+    if args.filter_qual_flags is not None and 0 != n_matched:
         logging.info(
             " ".join(
                 (

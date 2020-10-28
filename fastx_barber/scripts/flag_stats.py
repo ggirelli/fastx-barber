@@ -5,6 +5,7 @@
 
 import argparse
 from fastx_barber import scriptio
+from fastx_barber.exception import enable_rich_assert
 from fastx_barber.flag import FastxFlagReader, FlagStats
 from fastx_barber.match import SimpleFastxRecord
 from fastx_barber.scripts import arguments as ap
@@ -33,8 +34,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "input",
         type=str,
         metavar="in.fastx[.gz]",
-        help="""Path to the fasta/q file
-                        to scan for matches.""",
+        help="Path to the fasta/q file to scan for matches.",
     )
 
     parser = ap.add_version_option(parser)
@@ -55,6 +55,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     return parser
 
 
+@enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
@@ -97,6 +98,7 @@ def merge_flagstats(chunk_details: List[FlagStats]) -> FlagStats:
     return flagstats
 
 
+@enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     logging.info("[bold underline red]General[/]")
     logging.info(f"Input\t\t{args.input}")
