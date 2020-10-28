@@ -130,7 +130,14 @@ def run(args: argparse.Namespace) -> None:
                     pos,
                     pos + len(args.needle) + 1,
                     f"{args.prefix}{location_id}",
-                    None, None, None, None, None, None, None, None
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
                 )
             )
         if not args.global_name:

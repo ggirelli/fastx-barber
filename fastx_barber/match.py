@@ -77,6 +77,6 @@ def search_needle(
     header, seq, _ = record
     match_counter = offset
     for i in track(range(0, len(seq) - len(needle) + 1), description=header):
-        if seq[i: (i + len(needle))] == needle:
+        if seq[i : (i + len(needle))] == needle:
             match_counter += 1
             yield (i, match_counter)

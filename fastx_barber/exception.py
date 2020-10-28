@@ -15,4 +15,5 @@ def enable_rich_assert(fun: Callable) -> Callable:
         except AssertionError as e:
             logging.exception(e)
             sys.exit()
+
     return wrapper
