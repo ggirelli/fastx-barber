@@ -6,6 +6,7 @@
 import argparse
 from fastx_barber import scriptio
 from fastx_barber.const import PATTERN_EXAMPLE, FastxFormats, FlagData
+from fastx_barber.exception import enable_rich_assert
 from fastx_barber.flag import (
     ABCFlagExtractor,
     FastqFlagExtractor,
@@ -56,15 +57,15 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "output",
         type=str,
         metavar="out.fastx[.gz]",
-        help="""Path to fasta/q file where to write
-                        trimmed records. Format will match the input.""",
+        help="Path to fasta/q file where to write trimmed records. "
+        + "Format will match the input.",
     )
 
     parser.add_argument(
         "--pattern",
         type=str,
-        help=f"""Pattern to match to reads and extract flagged groups.
-        Remember to use quotes. Example: '{PATTERN_EXAMPLE}'""",
+        help="Pattern to match to reads and extract flagged groups. "
+        + f"Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
 
     parser = ap.add_version_option(parser)
@@ -76,8 +77,8 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         "--selected-flags",
         type=str,
         nargs="+",
-        help="""Space-separated names of flags to be extracted.
-        By default it extracts all flags.""",
+        help="Space-separated names of flags to be extracted. "
+        + "By default it extracts all flags.",
     )
     advanced = ap.add_flagstats_option(advanced)
     advanced = ap.add_split_by_option(advanced)
@@ -90,8 +91,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         dest="qual_flags",
         const=False,
         default=True,
-        help="""Do not extract quality flags
-        (when running on a fastq file).""",
+        help="Do not extract quality flags (when running on a fastq file).",
     )
     advanced = ap.add_comment_space_option(advanced)
     advanced = ap.add_compress_level_option(advanced)
@@ -106,6 +106,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     return parser
 
 
+@enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     assert 1 == len(args.flag_delim)
     args.threads = ap.check_threads(args.threads)
@@ -170,7 +171,7 @@ def run_chunk(
     filtered_counter = 0
     for record in chunk:
         flags: Dict[str, FlagData] = {}
-        match, matched = matcher.match(record)
+        match, matched = matcher.do(record)
         if matched:
             flags = flag_extractor.extract_all(record, match)
             flag_extractor.update_stats(flags)
@@ -211,6 +212,7 @@ def merge_chunk_details(chunk_details: List[ChunkDetails]) -> ChunkDetails:
     return (parsed_counter, matched_counter, filtered_counter, flagstats)
 
 
+@enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 

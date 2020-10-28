@@ -5,12 +5,13 @@
 
 import argparse
 from fastx_barber import scriptio
+from fastx_barber.exception import enable_rich_assert
 from fastx_barber.const import FastxFormats
 from fastx_barber.io import ChunkMerger
 from fastx_barber.qual import QualityIO
 from fastx_barber.scripts import arguments as ap
 from fastx_barber.seqio import (
-    FastqChunkedParser,
+    FastxChunkedParser,
     get_fastx_format,
     get_fastx_parser,
     SimpleFastqRecord,
@@ -85,6 +86,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     return parser
 
 
+@enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
@@ -132,6 +134,7 @@ def run_chunk(
     return (trimmed_counter, untrimmed_counter, trimmed_length_list)
 
 
+@enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     logging.info("[bold underline red]General[/]")
     logging.info(f"Input\t\t{args.input}")
@@ -140,7 +143,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Chunk size\t{args.chunk_size}")
 
     IH, fmt = get_fastx_parser(args.input)
-    IH = FastqChunkedParser(IH, args.chunk_size)
+    IH = FastxChunkedParser(IH, args.chunk_size)
 
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
     assert FastxFormats.FASTQ == fmt, "Trimming by quality requires a fastq file."

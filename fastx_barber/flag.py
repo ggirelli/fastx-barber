@@ -16,7 +16,6 @@ from typing import Any, Dict, List, Match, Optional, Pattern, Tuple, Type
 
 
 class FlagStats(object):
-    """docstring for FlagStats"""
 
     __stats: FlagStatsType
     _flags_for_stats: Optional[List[str]] = None
@@ -48,25 +47,28 @@ class FlagStats(object):
     def items(self):
         return self.__stats.items()
 
+    def get_dataframe(self, flag_name: str) -> pd.DataFrame:
+        stats = self.__stats[flag_name]
+        df = pd.DataFrame()
+        df["value"] = list(stats.keys())
+        df["counts"] = list(stats.values())
+        df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
+        df.sort_values("counts", ascending=False, ignore_index=True, inplace=True)
+        return df
+
     def export(self, output_path: str, verbose: bool = True) -> None:
         output_dir = os.path.dirname(output_path)
         basename = os.path.basename(output_path)
         if basename.endswith(".gz"):
             basename = basename.split(".gz")[0]
         basename = os.path.splitext(basename)[0]
-
         if verbose:
-            itemized_flags = track(self.items(), description="Exporting flagstats")
+            flag_keys = track(self.keys(), description="Exporting flagstats")
         else:
-            itemized_flags = self.items()
+            flag_keys = self.keys()
 
-        for flag_name, stats in itemized_flags:
-            df = pd.DataFrame()
-            df["value"] = list(stats.keys())
-            df["counts"] = list(stats.values())
-            df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
-            df.sort_values("counts", ascending=False, ignore_index=True, inplace=True)
-            df.to_csv(
+        for flag_name, stats in flag_keys:
+            self.get_dataframe(flag_name).to_csv(
                 os.path.join(output_dir, f"{basename}.{flag_name}.stats.tsv"),
                 sep="\t",
                 index=False,
