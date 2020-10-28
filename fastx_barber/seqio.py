@@ -43,7 +43,7 @@ def get_fastx_parser(path: str) -> Tuple[SimpleFastxParser, FastxFormats]:
     if gzipped:
         handle = gzip.open(path, "rt")
     else:
-        handle = open(path, "rt")
+        handle = open(path, "r+")
     assert fmt in FastxFormats
     if FastxFormats.FASTA == fmt:
         parser = SeqIO.FastaIO.SimpleFastaParser(handle)
