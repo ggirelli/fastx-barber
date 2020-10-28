@@ -13,7 +13,7 @@ from fastx_barber.flag import (
     get_fastx_flag_extractor,
 )
 from fastx_barber.io import ChunkMerger
-from fastx_barber.match import FastxMatcher
+from fastx_barber.match import AlphaNumericPattern, FastxMatcher
 from fastx_barber.qual import setup_qual_filters
 from fastx_barber.scriptio import get_handles, get_split_handles
 from fastx_barber.scripts import arguments as ap
@@ -92,6 +92,14 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         default=True,
         help="Do not extract quality flags (when running on a fastq file).",
     )
+    advanced.add_argument(
+        "--simple-pattern",
+        action="store_const",
+        dest="simple_pattern",
+        const=True,
+        default=False,
+        help="Parse pattern as 'simple' (alphanumeric) pattern.",
+    )
     advanced = ap.add_comment_space_option(advanced)
     advanced = ap.add_compress_level_option(advanced)
     advanced = ap.add_log_file_option(advanced)
@@ -116,6 +124,12 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
             "No pattern specified (--pattern), nothing to do. :person_shrugging:"
         )
         sys.exit()
+
+    args.pattern = (
+        AlphaNumericPattern(args.pattern)
+        if args.simple_pattern
+        else re.compile(args.pattern)
+    )
 
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)
@@ -152,7 +166,7 @@ def run_chunk(
     )
     foutput = scriptio.get_output_fun(OHC, UHC)
 
-    matcher = FastxMatcher(re.compile(args.pattern))
+    matcher = FastxMatcher(args.pattern)
     trimmer = get_fastx_trimmer(fmt)
     quality_flag_filters, filter_fun = setup_qual_filters(
         args.filter_qual_flags, args.phred_offset

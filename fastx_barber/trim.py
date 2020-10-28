@@ -5,10 +5,11 @@
 
 from abc import ABCMeta, abstractmethod
 from fastx_barber.const import FastxFormats
+from fastx_barber.match import ANPMatch
 from fastx_barber.qual import QualityIO
 from fastx_barber.seqio import SimpleFastxRecord, SimpleFastqRecord
 import regex  # type: ignore
-from typing import Any, List, Match, Tuple, Type
+from typing import Any, List, Match, Tuple, Type, Union
 
 
 class ABCTrimmer(metaclass=ABCMeta):
@@ -20,7 +21,7 @@ class ABCTrimmer(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def trim_re(record: Any, match: Match) -> Any:
+    def trim_re(record: Any, match: Union[ANPMatch, Match, None]) -> Any:
         """Trim record using regexp match
 
         Decorators:
@@ -61,10 +62,12 @@ class FastaTrimmer(ABCTrimmer):
         super(FastaTrimmer, self).__init__()
 
     @staticmethod
-    def trim_re(record: SimpleFastxRecord, match: Match) -> SimpleFastxRecord:
+    def trim_re(
+        record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
+    ) -> SimpleFastxRecord:
         assert match is not None
         name, seq, _ = record
-        seq = regex.sub(match.re, "", seq)
+        seq = seq[: match.start(0)] + seq[match.end(0) :]
         return (name, seq, None)
 
     @staticmethod
@@ -84,12 +87,14 @@ class FastqTrimmer(ABCTrimmer):
         super(FastqTrimmer, self).__init__()
 
     @staticmethod
-    def trim_re(record: SimpleFastxRecord, match: Match) -> SimpleFastxRecord:
+    def trim_re(
+        record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
+    ) -> SimpleFastxRecord:
         assert match is not None
         name, seq, qual = record
         assert qual is not None
-        seq = regex.sub(match.re, "", seq)
-        qual = qual[-len(seq) :]
+        seq = seq[: match.start(0)] + seq[match.end(0) :]
+        qual = qual[: match.start(0)] + qual[match.end(0) :]
         return (name, seq, qual)
 
     @staticmethod
