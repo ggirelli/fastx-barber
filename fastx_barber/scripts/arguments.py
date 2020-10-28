@@ -14,7 +14,7 @@ import tempfile
 def log_args(args: argparse.Namespace) -> None:
     logging.info("[bold underline red]General[/]")
     logging.info(f"Input\t\t{args.input}")
-    logging.info(f"Pattern\t\t{args.pattern}")
+    logging.info(f"Pattern\t\t{args.pattern.pattern}")
     logging.info(f"Threads\t\t{args.threads}")
     logging.info(f"Chunk size\t{args.chunk_size}")
 

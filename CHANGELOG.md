@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `find_seq` option to locate needle sequence from FASTX files.
 - Unit tests.
 - `BedWriter` class for BED file output.
+- Option for `--simple-patter` in flag extraction.
 
 ### Changed
 - Script assert errors now reported through `rich` logging.

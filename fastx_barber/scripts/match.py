@@ -80,6 +80,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
             "No pattern specified (--pattern), nothing to do. :person_shrugging:"
         )
         sys.exit()
+    args.pattern = regex.compile(args.pattern)
 
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)
@@ -102,7 +103,7 @@ def run_chunk(
     )
     foutput = scriptio.get_output_fun(OHC, UHC)
 
-    matcher = FastxMatcher(regex.compile(args.pattern))
+    matcher = FastxMatcher(args.pattern)
 
     for record in chunk:
         match, matched = matcher.do(record)

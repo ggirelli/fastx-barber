@@ -10,12 +10,14 @@
 - [Flags](#flags)
   - [Extract flags](#extract-flags)
     - [Flag extraction example](#flag-extraction-example)
+    - [Using a simple alphanumeric pattern](#using-a-simple-alphanumeric-pattern)
     - [Extracting quality flags \(default\)](#extracting-quality-flags-default)
   - [After flag extraction](#after-flag-extraction)
     - [Filter by flag quality](#filter-by-flag-quality)
     - [Match flags with regular expressions](#match-flags-with-regular-expressions)
     - [Split by flag value](#split-by-flag-value)
     - [Calculate flag value frequency](#calculate-flag-value-frequency)
+- [Find sequence](#find-sequence)
 - [General](#general)
   - [Output](#output)
   - [Regular expressions](#regular-expressions)
@@ -123,6 +125,10 @@ would generate the following result:
 GTATCGATCAGTCAGTCGATCG
 ```
 
+#### Using a simple alphanumeric pattern
+
+When used together with `--simple-pattern`, the `--pattern` option accepts a *simple* alphanumeric pattern - a string composed of flag names and flag lengths. This pattern is always applied to the start (right-end, 5') of a sequence. This is especially useful to extract flags of known length, independently of their expected sequence. For example, a record starting with a UMI of 8 nt, a barcode (`BC`) of 8 nt, and a cutsite (`CS`) of 4 nt could be treated with the following pattern: `UMI8BC8CS4`. The rest of the execution proceeds in the same manner as with a normal regular expression. This can be particularly convenient as it provides a modest boost to performances.
+
 #### Extracting quality flags (default)
 
 When running `flag extract` on a fastq file, the portion of quality string corresponging to each flag is also stored in the header. The quality string is saved as a separate flag by appending a "q" prefix at the beginning of the flag name.
@@ -210,6 +216,16 @@ usage: fbarber flag stats [-h] [--version] [--flag-delim FLAG_DELIM] [--comment-
 ```
 
 The `flag stats` command allows to calculate the frequency of the value of one or more flags (`--flagstats`). This script can be parallelized; for more details see [Parallelization](#parallelization).
+
+## Find sequence
+
+```bash
+usage: fbarber find_seq [-h] [--version] [--output out.bed[.gz]] [--prefix prefix] [--case-insensitive]
+                        [--global-name] [--compress-level COMPRESS_LEVEL] [--log-file LOG_FILE]
+                        in.fastx[.gz] needle
+```
+
+The `find_seq` command allows to locate a substring (`needle`) in the records of a fastx file, and produce a bed file with the extracted locations. The `--case-insensitive` option can be used to make the search case-insensitive. The generated BED file is a BED4 file where the chromosome name corresponds to the FASTX record header value, and the location name is formed by the `--prefix` value and the location ID. Location IDs are assigned incrementally per record searched. To obtain location IDs incrementing over the whole FASTX file use the `--global-name` option.
 
 ## General
 
