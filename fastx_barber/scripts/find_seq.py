@@ -4,8 +4,10 @@
 """
 
 import argparse
-from fastx_barber import io, scriptio
+from fastx_barber import io, bedio, scriptio, seqio
+from fastx_barber.const import FastxFormats
 from fastx_barber.exception import enable_rich_assert
+from fastx_barber.match import search_needle
 from fastx_barber.scripts import arguments as ap
 import logging
 import os
@@ -56,6 +58,14 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         default="loc_",
     )
     advanced.add_argument(
+        "--case-insensitive",
+        action="store_const",
+        dest="case_insensitive",
+        const=True,
+        default=False,
+        help="Perform case-insensitive scan.",
+    )
+    advanced.add_argument(
         "--global-name",
         action="store_const",
         dest="global_name",
@@ -75,6 +85,12 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     assert os.path.isfile(args.input), f"file not found: '{args.input}'"
 
+    fmt, _ = seqio.get_fastx_format(args.input)
+    assert fmt in [
+        FastxFormats.FASTA,
+        FastxFormats.FASTQ,
+    ], f"input must be a FASTX file. ({fmt})"
+
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)
 
@@ -83,6 +99,9 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
         args.output = f"{base}.bed"
         if gzipped:
             args.output += ".gz"
+
+    if args.case_insensitive:
+        args.needle = args.needle.upper()
 
     return args
 
@@ -94,6 +113,27 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Needle\t\t{args.needle}")
     logging.info(f"Output\t\t{args.output}")
     logging.info(f"Prefix\t\t{args.prefix}")
-    logging.info(f"Gloval\t\t{args.global_name}")
+    logging.info(f"Global\t\t{args.global_name}")
+
+    parser, fmt = seqio.get_fastx_parser(args.input)
+
+    writer = bedio.BedWriter(args.output, 4)
+
+    location_id = 0
+    for record in parser:
+        if args.case_insensitive:
+            record[1] = record[1].upper()
+        for pos, location_id in search_needle(record, args.needle, location_id):
+            writer.do(
+                (
+                    record[0],
+                    pos,
+                    pos + len(args.needle) + 1,
+                    f"{args.prefix}{location_id}",
+                    None, None, None, None, None, None, None, None
+                )
+            )
+        if not args.global_name:
+            location_id = 0
 
     logging.info("Done. :thumbs_up: :smiley:")

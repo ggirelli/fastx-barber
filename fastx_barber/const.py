@@ -4,9 +4,26 @@
 """
 
 from enum import Enum
-from typing import DefaultDict, Tuple
+from typing import DefaultDict, Optional, Tuple
 
 __version__ = "0.1.1"
+
+
+BedRecord = Tuple[
+    str,
+    int,
+    int,
+    Optional[str],
+    Optional[float],
+    Optional[str],
+    Optional[int],
+    Optional[int],
+    Optional[str],
+    Optional[int],
+    Optional[int],
+    Optional[int],
+]
+BedExtension = ".bed"
 
 
 class FastxFormats(Enum):

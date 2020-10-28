@@ -6,7 +6,8 @@
 from abc import ABCMeta, abstractmethod
 from fastx_barber.seqio import SimpleFastxRecord
 import regex as re  # type: ignore
-from typing import Any, Match, Pattern, Tuple
+from rich.progress import track  # type: ignore
+from typing import Any, Iterator, Match, Pattern, Tuple
 
 
 class ABCMatcher(metaclass=ABCMeta):
@@ -68,3 +69,14 @@ class FastxMatcher(ABCMatcher):
         else:
             self._unmatched_count += 1
         return (match, matched)
+
+
+def search_needle(
+    record: SimpleFastxRecord, needle: str, offset: int = 0
+) -> Iterator[Tuple[int, int]]:
+    header, seq, _ = record
+    match_counter = offset
+    for i in track(range(0, len(seq) - len(needle) + 1), description=header):
+        if seq[i: (i + len(needle))] == needle:
+            match_counter += 1
+            yield (i, match_counter)
