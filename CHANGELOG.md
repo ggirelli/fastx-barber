@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Unit tests.
 - `BedWriter` class for BED file output.
 
+### Changed
+- Script assert errors now reported through `rich` logging.
+
 ### Fixed
 - Empty output when output path is not in current working directory.
 - Bug that caused log to crash script when extracting pattern matched no reads.
