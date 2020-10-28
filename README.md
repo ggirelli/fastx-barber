@@ -15,6 +15,7 @@ A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
 * Selects reads based on a pattern (regex).
 * Trims reads by pattern (regex), length, or single-base quality.
 * Extracts parts (flags) of reads based on a pattern and stores them in the read headers.
+* [Generates BED file with the locations of a substring](usage#find-sequence) in FASTX records.
 * Regular expression support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (*fuzzy matching* might affect the barber's speed).
 * Parallelizes processing by splitting the fastx file in chunks.
 
