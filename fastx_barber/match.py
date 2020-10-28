@@ -93,6 +93,10 @@ class AlphaNumericPattern(object):
         self._groups = self.parse(pattern)
         self._length = sum([e - s for n, (s, e) in self._groups])
 
+    @property
+    def pattern(self):
+        return self._pattern
+
     def match(self, query: str) -> Optional[ANPMatch]:
         if len(query) < self._length:
             return None
