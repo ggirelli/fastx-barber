@@ -4,9 +4,11 @@
 """
 
 import argparse
-from fastx_barber import scriptio
+from fastx_barber import io, scriptio
+from fastx_barber.exception import enable_rich_assert
 from fastx_barber.scripts import arguments as ap
 import logging
+import os
 from rich.logging import RichHandler  # type: ignore
 
 logging.basicConfig(
@@ -36,17 +38,31 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help="""Sequence to scan for.""",
     )
 
-    parser.add_argument(
+    parser = ap.add_version_option(parser)
+
+    advanced = parser.add_argument_group("advanced arguments")
+    advanced.add_argument(
         "--output",
         type=str,
         metavar="out.bed[.gz]",
         help="Path to fasta/q file where to write trimmed records. "
         + "Format will match the input. Defaults to input file with BED extension.",
     )
-
-    parser = ap.add_version_option(parser)
-
-    advanced = parser.add_argument_group("advanced arguments")
+    advanced.add_argument(
+        "--prefix",
+        type=str,
+        metavar="prefix",
+        help="""Name prefix. Default: 'loc_'""",
+        default="loc_",
+    )
+    advanced.add_argument(
+        "--global-name",
+        action="store_const",
+        dest="global_name",
+        const=True,
+        default=False,
+        help="Global location name. Requires sorted FASTA.",
+    )
     advanced = ap.add_compress_level_option(advanced)
     advanced = ap.add_log_file_option(advanced)
 
@@ -55,19 +71,29 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     return parser
 
 
+@enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    args.threads = ap.check_threads(args.threads)
+    assert os.path.isfile(args.input), f"file not found: '{args.input}'"
 
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)
 
+    if args.output is None:
+        base, ext, gzipped = io.is_gzipped(args.input)
+        args.output = f"{base}.bed"
+        if gzipped:
+            args.output += ".gz"
+
     return args
 
 
+@enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     logging.info("[bold underline red]General[/]")
     logging.info(f"Input\t\t{args.input}")
-    logging.info(f"Needle\t\t{args.nedle}")
-    logging.info(f"Threads\t\t{args.threads}")
+    logging.info(f"Needle\t\t{args.needle}")
+    logging.info(f"Output\t\t{args.output}")
+    logging.info(f"Prefix\t\t{args.prefix}")
+    logging.info(f"Gloval\t\t{args.global_name}")
 
     logging.info("Done. :thumbs_up: :smiley:")
