@@ -68,7 +68,7 @@ class FlagStats(object):
         else:
             flag_keys = self.keys()
 
-        for flag_name, stats in flag_keys:
+        for flag_name in list(flag_keys):
             self.get_dataframe(flag_name).to_csv(
                 os.path.join(output_dir, f"{basename}.{flag_name}.stats.tsv"),
                 sep="\t",
