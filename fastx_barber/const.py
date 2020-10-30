@@ -6,7 +6,7 @@
 from enum import Enum
 from typing import DefaultDict, Optional, Tuple
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 BedRecord = Tuple[
