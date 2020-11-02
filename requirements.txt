@@ -20,7 +20,7 @@ pytz==2020.1
 regex==2020.10.23
 rich==9.1.0
 six==1.15.0
-toml==0.10.1
+toml==0.10.2
 tqdm==4.51.0
 typing-extensions==3.7.4.3
 zipp==3.4.0; python_version < "3.8"
