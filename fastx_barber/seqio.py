@@ -121,7 +121,7 @@ class ABCSimpleWriter(metaclass=ABCMeta):
         super(ABCSimpleWriter, self).__init__()
         _, _, gzipped = is_gzipped(path)
         if gzipped:
-            self._OH = gzip.open(path, "wt+", compress_level)
+            self._OH = gzip.open(path, "wt", compress_level)
         else:
             self._OH = open(path, "w+")
 
@@ -244,16 +244,16 @@ class ABCSimpleSplitWriter(metaclass=ABCMeta):
         )
         if self._is_gzipped:
             if self.opened_before(split_value):
-                return gzip.open(path, "at+", self._compress_level)
+                return gzip.open(path, "at", self._compress_level)
             else:
                 self._split_by.add(split_value)
-                return gzip.open(path, "wt+", self._compress_level)
+                return gzip.open(path, "wt", self._compress_level)
         else:
             if self.opened_before(split_value):
-                return open(path, "a+")
+                return open(path, "a")
             else:
                 self._split_by.add(split_value)
-                return open(path, "w+")
+                return open(path, "w")
 
     @abstractmethod
     def write(self, record: Any, flag_data: Dict[str, FlagData], *args) -> None:

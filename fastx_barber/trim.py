@@ -8,7 +8,6 @@ from fastx_barber.const import FastxFormats
 from fastx_barber.match import ANPMatch
 from fastx_barber.qual import QualityIO
 from fastx_barber.seqio import SimpleFastxRecord, SimpleFastqRecord
-import regex  # type: ignore
 from typing import Any, List, Match, Tuple, Type, Union
 
 
