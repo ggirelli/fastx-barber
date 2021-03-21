@@ -7,7 +7,7 @@
 
 [PyPi](https://pypi.org/project/fastx-barber/) | [docs](https://ggirelli.github.io/fastx-barber/)
 
-A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
+A Python3.6.13+ package to trim and extract flags from FASTA  and FASTQ files.
 
 ## Features (in short)
 
@@ -23,7 +23,7 @@ For more available features, check out our [docs](https://ggirelli.github.io/fas
 
 ## Requirements
 
-`fastx-barber` has been tested with Python 3.6.1, 3.7, and 3.8. We recommend installing it using `pipx` (see [below](https://github.com/ggirelli/fastx-barber#install)) to avoid dependency conflicts with other packages. The packages it depends on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies). We use [`poetry`](https://github.com/python-poetry/poetry) to handle our dependencies.
+`fastx-barber` has been tested with Python 3.6.13, 3.7, 3.8, and 3.9. We recommend installing it using `pipx` (see [below](https://github.com/ggirelli/fastx-barber#install)) to avoid dependency conflicts with other packages. The packages it depends on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies). We use [`poetry`](https://github.com/python-poetry/poetry) to handle our dependencies.
 
 ## Install
 
