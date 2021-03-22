@@ -15,6 +15,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Operating System :: Unix",
     "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
 ]
 include = ["CHANGELOG.md", "LICENSE"]
 
