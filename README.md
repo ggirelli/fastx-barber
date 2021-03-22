@@ -36,7 +36,7 @@ Once you have `pipx` ready on your system, install the latest stable release of 
 Run:
 
 * `fbarber` to access the barber's services.
-* `fbarber find_seq` to scan records for a specific sequence (e.g., restriction site) and generate a BED file with its locations.
+* `fbarber find_seq` to generate a BED file with the locations of a sequence (e.g., restriction site) in FASTX records.
 * `fbarber flag` to extract or manipulate read flags.
 * `fbarber match` to select reads based on a pattern (regular expression).
 * `fbarber trim` to trim your reads.
