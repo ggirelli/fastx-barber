@@ -1,11 +1,8 @@
 # fastx-barber
 
-[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558) ![Release ID](https://img.shields.io/github/release/ggirelli/fastx-barber.svg?style=flat) ![Release date](https://img.shields.io/github/release-date/ggirelli/fastx-barber.svg?style=flat)
-
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fastx-barber) ![PyPI - Status](https://img.shields.io/pypi/status/fastx-barber)
-
-![GitHub Actions Python package status](https://github.com/ggirelli/fastx-barber/workflows/Python%20package/badge.svg?branch=main&event=push) ![license](https://img.shields.io/github/license/ggirelli/fastx-barber.svg?style=flat) ![Code size](https://img.shields.io/github/languages/code-size/ggirelli/fastx-barber.svg?style=flat)
-
+[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558) ![Release ID](https://img.shields.io/github/release/ggirelli/fastx-barber.svg?style=flat) ![Release date](https://img.shields.io/github/release-date/ggirelli/fastx-barber.svg?style=flat)  
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fastx-barber) ![PyPI - Status](https://img.shields.io/pypi/status/fastx-barber) ![GitHub Actions Python package status](https://github.com/ggirelli/fastx-barber/workflows/Python%20package/badge.svg?branch=main&event=push)  
+![license](https://img.shields.io/github/license/ggirelli/fastx-barber.svg?style=flat) ![Code size](https://img.shields.io/github/languages/code-size/ggirelli/fastx-barber.svg?style=flat)  
 ![Watch no.](https://img.shields.io/github/watchers/ggirelli/fastx-barber.svg?label=Watch&style=social) ![Stars no.](https://img.shields.io/github/stars/ggirelli/fastx-barber.svg?style=social)
 
 [PyPi](https://pypi.org/project/fastx-barber/) | [docs](https://ggirelli.github.io/fastx-barber/)
