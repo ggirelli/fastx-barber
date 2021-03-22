@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.1.3]
+### Fixed
+- Cleaned dependencies, solved linting and packaging issues.
+
 ## [0.1.2]
 ### Fixed
 - Bug in flagstats export.
@@ -49,6 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.0.1] - 2020-08-03
 
 [Unreleased]: https://github.com/ggirelli/fastx-barber/tree/dev  
+[0.1.2]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.1.3  
 [0.1.2]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.1.2  
 [0.1.1]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.1.1  
 [0.1.0]: https://github.com/ggirelli/fastx-barber/releases/tag/v0.1.0  
