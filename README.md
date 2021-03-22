@@ -15,7 +15,7 @@ A Python3.6.13+ package to trim and extract flags from FASTA  and FASTQ files.
 * Selects reads based on a pattern (regex).
 * Trims reads by pattern (regex), length, or single-base quality.
 * Extracts parts (flags) of reads based on a pattern and stores them in the read headers.
-* [Generates BED file with the locations of a substring](usage#find-sequence) in FASTX records.
+* [Generates BED file with the locations of a substring](https://ggirelli.github.io/fastx-barber/usage#find-sequence) in FASTX records.
 * Regular expression support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (*fuzzy matching* might affect the barber's speed).
 * Parallelizes processing by splitting the fastx file in chunks.
 
@@ -36,6 +36,7 @@ Once you have `pipx` ready on your system, install the latest stable release of 
 Run:
 
 * `fbarber` to access the barber's services.
+* `fbarber find_seq` to scan records for a specific sequence (e.g., restriction site) and generate a BED file with its locations.
 * `fbarber flag` to extract or manipulate read flags.
 * `fbarber match` to select reads based on a pattern (regular expression).
 * `fbarber trim` to trim your reads.
