@@ -4,7 +4,8 @@
 """
 
 import argparse
-from fastx_barber.const import __version__, DEFAULT_PHRED_OFFSET
+from fastx_barber import __version__
+from fastx_barber.const import DEFAULT_PHRED_OFFSET
 import joblib  # type: ignore
 import logging
 import sys
