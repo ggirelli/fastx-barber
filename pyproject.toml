@@ -15,15 +15,13 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Operating System :: Unix",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
 ]
 include = ["CHANGELOG.md", "LICENSE"]
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
+python = "^3.8"
 biopython = "^1.77"
 joblib = ">=0.16,<1.1"
 numpy = "^1.19.1"
