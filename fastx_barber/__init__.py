@@ -15,6 +15,7 @@ except PackageNotFoundError:
     pass
 
 __all__ = [
+    "__version__",
     "const",
     "scripts",
     "bedio",
