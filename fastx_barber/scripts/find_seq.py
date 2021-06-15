@@ -122,7 +122,7 @@ def run(args: argparse.Namespace) -> None:
     location_id = 0
     for record in parser:
         if args.case_insensitive:
-            record[1] = record[1].upper()
+            record = (record[0], record[1].upper())
         for pos, location_id in search_needle(record, args.needle, location_id):
             writer.do(
                 (
