@@ -64,9 +64,7 @@ class ChunkMerger(object):
     def do_remove(self, do_remove: bool) -> None:
         self._do_remove = do_remove
 
-    def __merge_simple(
-        self, path: str, last_chunk_id: int, desc: str = "iter"
-    ) -> None:
+    def __merge_simple(self, path: str, last_chunk_id: int, desc: str = "iter") -> None:
         with open(path, "wb") as OH:
             for cid in track(
                 range(1, last_chunk_id + 1), description=desc, transient=False
@@ -81,9 +79,7 @@ class ChunkMerger(object):
                 if self._do_remove:
                     os.remove(chunk_path)
 
-    def __merge_split(
-        self, path: str, last_chunk_id: int, desc: str = "iter"
-    ) -> None:
+    def __merge_split(self, path: str, last_chunk_id: int, desc: str = "iter") -> None:
         output_dir = os.path.dirname(path)
         output_base = os.path.basename(path)
         for cid in track(
