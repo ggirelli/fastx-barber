@@ -4,7 +4,8 @@
 """
 
 import argparse
-from fastx_barber.const import __version__, DEFAULT_PHRED_OFFSET
+from fastx_barber import __version__
+from fastx_barber.const import DEFAULT_PHRED_OFFSET
 import joblib  # type: ignore
 import logging
 import sys
@@ -90,11 +91,7 @@ def add_tempdir_option(arg_group: argparse._ArgumentGroup) -> argparse._Argument
 
 
 def check_threads(threads: int) -> int:
-    if threads > joblib.cpu_count():
-        return joblib.cpu_count()
-    elif threads <= 0:
-        return 1
-    return threads
+    return max(1, min(threads, joblib.cpu_count()))
 
 
 def add_phred_offset_option(

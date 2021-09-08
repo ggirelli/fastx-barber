@@ -4,7 +4,7 @@
 """
 
 import argparse
-from fastx_barber.const import __version__
+from fastx_barber import __version__
 from fastx_barber.scripts import arguments as ap
 from fastx_barber import scripts
 import sys

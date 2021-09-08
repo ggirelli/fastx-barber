@@ -1,13 +1,13 @@
 # fastx-barber
 
-[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558) ![](https://img.shields.io/librariesio/github/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/license/ggirelli/fastx-barber.svg?style=flat)  
-![](https://github.com/ggirelli/fastx-barber/workflows/Python%20package/badge.svg?branch=main&event=push) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fastx-barber) ![PyPI - Format](https://img.shields.io/pypi/format/fastx-barber) ![PyPI - Status](https://img.shields.io/pypi/status/fastx-barber)  
-![](https://img.shields.io/github/release/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/release-date/ggirelli/fastx-barber.svg?style=flat) ![](https://img.shields.io/github/languages/code-size/ggirelli/fastx-barber.svg?style=flat)  
-![](https://img.shields.io/github/watchers/ggirelli/fastx-barber.svg?label=Watch&style=social) ![](https://img.shields.io/github/stars/ggirelli/fastx-barber.svg?style=social)
+[![DOI](https://zenodo.org/badge/281703558.svg)](https://zenodo.org/badge/latestdoi/281703558) ![Release ID](https://img.shields.io/github/release/ggirelli/fastx-barber.svg?style=flat) ![Release date](https://img.shields.io/github/release-date/ggirelli/fastx-barber.svg?style=flat)  
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fastx-barber) ![PyPI - Status](https://img.shields.io/pypi/status/fastx-barber) ![GitHub Actions Python package status](https://github.com/ggirelli/fastx-barber/workflows/Python%20package/badge.svg?branch=main&event=push)  
+![license](https://img.shields.io/github/license/ggirelli/fastx-barber.svg?style=flat) ![Code size](https://img.shields.io/github/languages/code-size/ggirelli/fastx-barber.svg?style=flat)  
+![Watch no.](https://img.shields.io/github/watchers/ggirelli/fastx-barber.svg?label=Watch&style=social) ![Stars no.](https://img.shields.io/github/stars/ggirelli/fastx-barber.svg?style=social)
 
 [PyPi](https://pypi.org/project/fastx-barber/) | [docs](https://ggirelli.github.io/fastx-barber/)
 
-A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
+A Python3.8+ package to trim and extract flags from FASTA  and FASTQ files.
 
 ## Features (in short)
 
@@ -15,7 +15,7 @@ A Python3.6.1+ package to trim and extract flags from FASTA  and FASTQ files.
 * Selects reads based on a pattern (regex).
 * Trims reads by pattern (regex), length, or single-base quality.
 * Extracts parts (flags) of reads based on a pattern and stores them in the read headers.
-* [Generates BED file with the locations of a substring](usage#find-sequence) in FASTX records.
+* [Generates BED file with the locations of a substring](https://ggirelli.github.io/fastx-barber/usage#find-sequence) in FASTX records.
 * Regular expression support [*fuzzy* matching](https://pypi.org/project/regex/#approximate-fuzzy-matching-hg-issue-12-hg-issue-41-hg-issue-109) (*fuzzy matching* might affect the barber's speed).
 * Parallelizes processing by splitting the fastx file in chunks.
 
@@ -23,7 +23,7 @@ For more available features, check out our [docs](https://ggirelli.github.io/fas
 
 ## Requirements
 
-`fastx-barber` has been tested with Python 3.6.1, 3.7, and 3.8. We recommend installing it using `pipx` (see [below](https://github.com/ggirelli/fastx-barber#install)) to avoid dependency conflicts with other packages. The packages it depends on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies). We use [`poetry`](https://github.com/python-poetry/poetry) to handle our dependencies.
+`fastx-barber` has been tested with Python 3.8 and 3.9. We recommend installing it using `pipx` (see [below](https://github.com/ggirelli/fastx-barber#install)) to avoid dependency conflicts with other packages. The packages it depends on are listed in our [dependency graph](https://github.com/ggirelli/fastx-barber/network/dependencies). We use [`poetry`](https://github.com/python-poetry/poetry) to handle our dependencies.
 
 ## Install
 
@@ -36,6 +36,7 @@ Once you have `pipx` ready on your system, install the latest stable release of 
 Run:
 
 * `fbarber` to access the barber's services.
+* `fbarber find_seq` to extract the locations of a sequence (e.g., restriction site) in FASTX records.
 * `fbarber flag` to extract or manipulate read flags.
 * `fbarber match` to select reads based on a pattern (regular expression).
 * `fbarber trim` to trim your reads.
@@ -48,4 +49,4 @@ We welcome any contributions to `fastx-barber`. In short, we use [`black`](https
 
 ## License
 
-`MIT License - Copyright (c) 2020 Gabriele Girelli`
+`MIT License - Copyright (c) 2020-21 Gabriele Girelli`

@@ -16,7 +16,7 @@ class QualityIO(object):
 
     def __init__(self, phred_offset: int = 33):
         super(QualityIO, self).__init__()
-        assert phred_offset in [33, 64]
+        assert phred_offset in {33, 64}
         self.__phred_offset = phred_offset
 
     @property
@@ -25,9 +25,10 @@ class QualityIO(object):
 
     def phred_to_qscore(self, qual: str) -> List[int]:
         qscore = [ord(c) - self.__phred_offset for c in qual]
-        assert not any(
-            [q < 0 for q in qscore]
+        assert all(
+            q >= 0 for q in qscore
         ), f"phred offset of {self.__phred_offset} produces negative qscores"
+
         return qscore
 
 

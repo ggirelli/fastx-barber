@@ -24,7 +24,7 @@ def check_tmp_dir(path: Optional[str] = None) -> str:
 def splitext(path: str) -> Tuple[str, str]:
     base, ext = os.path.splitext(path)
     ext_final = ext
-    while ".gz" == ext:
+    while ext == ".gz":
         base, ext = os.path.splitext(base)
         ext_final = ext + ext_final
     return (base, ext_final)

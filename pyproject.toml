@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastx-barber"
-version = "0.1.1"
+version = "0.1.5"
 description = "FASTX trimming tools"
 authors = ["Gabriele Girelli <gigi.ga90@gmail.com>"]
 license = "MIT"
@@ -15,18 +15,20 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Operating System :: Unix",
     "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
 ]
 include = ["CHANGELOG.md", "LICENSE"]
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
+python = "^3.8"
 biopython = "^1.77"
-joblib = ">=0.16,<0.18"
+joblib = ">=0.16,<1.1"
 numpy = "^1.19.1"
 pandas = "^1.1.2"
 pytest = "^6.1.1"
-regex = "^2020.7.14"
-rich = "^9.0"
+regex = ">=2020.7.14,<2022.0.0"
+rich = ">=9,<11"
 tqdm = "^4.48.1"
 
 [build-system]
