@@ -12,7 +12,7 @@ TEST_ALPHABET = list("abcde")
 def test_make_random_string():
     random_string = random.make_random_string(const.UT_RECORD_SEQ_LEN, TEST_ALPHABET)
     assert const.UT_RECORD_SEQ_LEN == len(random_string)
-    assert all([c in TEST_ALPHABET for c in random_string])
+    assert all(c in TEST_ALPHABET for c in random_string)
 
 
 def assert_fasta_record(
@@ -24,7 +24,7 @@ def assert_fasta_record(
     assert expected_name == record[0]
     assert isinstance(record[1], str)
     assert const.UT_RECORD_SEQ_LEN == len(record[1])
-    assert all([c in random.DNA_ALPHABET for c in record[1]])
+    assert all(c in random.DNA_ALPHABET for c in record[1])
     assert record[2] is None
 
 
@@ -49,10 +49,10 @@ def assert_fastq_record(
     assert expected_name == record[0]
     assert isinstance(record[1], str)
     assert const.UT_RECORD_SEQ_LEN == len(record[1])
-    assert all([c in random.DNA_ALPHABET for c in record[1]])
+    assert all(c in random.DNA_ALPHABET for c in record[1])
     assert isinstance(record[2], str)
     assert const.UT_RECORD_SEQ_LEN == len(record[2])
-    assert all([c in random.QUAL_ALPHABET for c in record[2]])
+    assert all(c in random.QUAL_ALPHABET for c in record[2])
 
 
 def test_make_fastq_record():
@@ -70,7 +70,7 @@ def test_make_fastq_file():
 def assert_fastx_file(path: str, expected_fmt: const.FastxFormats) -> None:
     parser, fmt = seqio.get_fastx_parser(path)
     assert fmt is expected_fmt
-    for record in parser:
+    for _ in parser:
         pass
 
 

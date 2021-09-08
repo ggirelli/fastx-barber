@@ -32,12 +32,12 @@ def test_get_fastx_parser():
     fapath, dpath = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA, const.UT_N_RECORDS, const.UT_RECORD_SEQ_LEN
     )
-    for record in seqio.get_fastx_parser(fapath)[0]:
+    for _ in seqio.get_fastx_parser(fapath)[0]:
         pass
     fqpath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA, const.UT_N_RECORDS, const.UT_RECORD_SEQ_LEN, dpath
     )
-    for record in seqio.get_fastx_parser(fqpath)[0]:
+    for _ in seqio.get_fastx_parser(fqpath)[0]:
         pass
     zfapath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA,
@@ -46,7 +46,7 @@ def test_get_fastx_parser():
         dpath,
         gzipped=True,
     )
-    for record in seqio.get_fastx_parser(zfapath)[0]:
+    for _ in seqio.get_fastx_parser(zfapath)[0]:
         pass
     zfqpath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA,

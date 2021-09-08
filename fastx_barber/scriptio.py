@@ -43,7 +43,7 @@ def add_log_file_handler(path: str, logger_name: str = "") -> None:
     """
     assert not os.path.isdir(path)
     log_dir = os.path.dirname(path)
-    assert os.path.isdir(log_dir) or "" == log_dir
+    assert os.path.isdir(log_dir) or log_dir == ""
     fh = RichHandler(console=Console(file=open(path, mode="w+")), markup=True)
     fh.setLevel(logging.INFO)
     logging.getLogger(logger_name).addHandler(fh)
@@ -123,11 +123,11 @@ def get_qual_filter_handler(
     tempdir: Optional[tempfile.TemporaryDirectory] = None,
 ) -> Tuple[Optional[SimpleFastxWriter], Callable]:
     FH = get_chunk_handler(cid, fmt, path, compress_level, tempdir)
-    if FH is not None:
-        assert fmt == FH.format, "format mismatch between input and requested output"
-        return (FH, FH.write)
-    else:
+    if FH is None:
         return (FH, lambda *x: None)
+
+    assert fmt == FH.format, "format mismatch between input and requested output"
+    return (FH, FH.write)
 
 
 def get_split_qual_filter_handler(
@@ -139,11 +139,11 @@ def get_split_qual_filter_handler(
     tempdir: Optional[tempfile.TemporaryDirectory] = None,
 ) -> Tuple[Optional[SimpleSplitFastxWriter], Callable]:
     FH = get_split_chunk_handler(cid, fmt, path, compress_level, split_by, tempdir)
-    if FH is not None:
-        assert fmt == FH.format, "format mismatch between input and requested output"
-        return (FH, FH.write)
-    else:
+    if FH is None:
         return (FH, lambda *x: None)
+
+    assert fmt == FH.format, "format mismatch between input and requested output"
+    return (FH, FH.write)
 
 
 def get_handles(
