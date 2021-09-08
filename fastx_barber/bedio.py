@@ -18,11 +18,8 @@ class BedWriter(object):
         super(BedWriter, self).__init__()
         base, ext, gzipped = io.is_gzipped(path)
         assert ext == BedExtension
-        assert n_fields in [3, 4, 5, 6, 12]
-        if gzipped:
-            self._OH = gzip.open(path, "wt")
-        else:
-            self._OH = open(path, "w+")
+        assert n_fields in {3, 4, 5, 6, 12}
+        self._OH = gzip.open(path, "wt") if gzipped else open(path, "w+")
         self.__closed = False
         self._n_fields = n_fields
 

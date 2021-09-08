@@ -91,7 +91,7 @@ class AlphaNumericPattern(object):
         super(AlphaNumericPattern, self).__init__()
         self._pattern = pattern
         self._groups = self.parse(pattern)
-        self._length = sum([e - s for n, (s, e) in self._groups])
+        self._length = sum(e - s for n, (s, e) in self._groups)
 
     @property
     def pattern(self):
@@ -128,7 +128,7 @@ class AlphaNumericPattern(object):
         position = 0
         for c in pattern:
             if c.isalpha():
-                if 0 != len(group_len):
+                if len(group_len) != 0:
                     assert group_name not in groups
                     groups[group_name] = (position, position + int(group_len))
                     position += int(group_len)
@@ -220,7 +220,7 @@ def search_needle(
 ) -> Iterator[Tuple[int, int]]:
     header, seq, _ = record
     match_counter = offset
-    for i in track(range(0, len(seq) - len(needle) + 1), description=header):
+    for i in track(range(len(seq) - len(needle) + 1), description=header):
         if seq[i : (i + len(needle))] == needle:
             match_counter += 1
             yield (i, match_counter)

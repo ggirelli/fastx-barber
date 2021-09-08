@@ -20,7 +20,7 @@ QUAL_ALPHABET: List[str] = list("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ")
 
 
 def make_random_string(length: int, alphabet: List[str] = DNA_ALPHABET) -> str:
-    return "".join([choice(alphabet) for i in range(length)])
+    return "".join(choice(alphabet) for i in range(length))
 
 
 def make_fasta_record(name: str, length: int) -> SimpleFastaRecord:
@@ -49,10 +49,7 @@ def make_fastq_file(n_records: int, seq_length: int) -> List[SimpleFastqRecord]:
 
 
 def mk_suffix(fmt: FastxFormats, gzipped):
-    if fmt is FastxFormats.FASTA:
-        suffix = ".fasta"
-    else:
-        suffix = ".fastq"
+    suffix = ".fasta" if fmt is FastxFormats.FASTA else ".fastq"
     if gzipped:
         suffix += ".gz"
     return suffix

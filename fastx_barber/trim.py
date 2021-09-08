@@ -73,9 +73,9 @@ class FastaTrimmer(ABCTrimmer):
     def trim_len(
         record: SimpleFastxRecord, length: int, side: int
     ) -> SimpleFastxRecord:
-        if 5 == side:
+        if side == 5:
             return (record[0], record[1][length:], None)
-        elif 3 == side:
+        elif side == 3:
             return (record[0], record[1][:-length], None)
         else:
             raise Exception("Can trim only from 5' or 3' end.")
@@ -100,9 +100,9 @@ class FastqTrimmer(ABCTrimmer):
     def trim_len(
         record: SimpleFastqRecord, length: int, side: int
     ) -> SimpleFastxRecord:
-        if 5 == side:
+        if side == 5:
             return (record[0], record[1][length:], record[2][length:])
-        elif 3 == side:
+        elif side == 3:
             return (record[0], record[1][:-length], record[2][:-length])
         else:
             raise Exception("Can trim only from 5' or 3' end.")
@@ -112,13 +112,12 @@ class FastqTrimmer(ABCTrimmer):
         record: SimpleFastqRecord, qscore_thr: int, bases_qscores: List[int]
     ) -> Tuple[SimpleFastqRecord, int]:
         trimmed_length = 0
-        while 0 < len(bases_qscores):
-            if bases_qscores[0] < qscore_thr:
-                record = (record[0], record[1][1:], record[2][1:])
-                bases_qscores = bases_qscores[1:]
-                trimmed_length += 1
-            else:
+        while bases_qscores:
+            if bases_qscores[0] >= qscore_thr:
                 break
+            record = (record[0], record[1][1:], record[2][1:])
+            bases_qscores = bases_qscores[1:]
+            trimmed_length += 1
         return (record, trimmed_length)
 
     @staticmethod
@@ -126,13 +125,12 @@ class FastqTrimmer(ABCTrimmer):
         record: SimpleFastqRecord, qscore_thr: int, bases_qscores: List[int]
     ) -> Tuple[SimpleFastqRecord, int]:
         trimmed_length = 0
-        while 0 < len(bases_qscores):
-            if bases_qscores[-1] < qscore_thr:
-                record = (record[0], record[1][:-1], record[2][:-1])
-                bases_qscores = bases_qscores[:-1]
-                trimmed_length += 1
-            else:
+        while bases_qscores:
+            if bases_qscores[-1] >= qscore_thr:
                 break
+            record = (record[0], record[1][:-1], record[2][:-1])
+            bases_qscores = bases_qscores[:-1]
+            trimmed_length += 1
         return (record, trimmed_length)
 
     @staticmethod
@@ -155,9 +153,9 @@ class FastqTrimmer(ABCTrimmer):
             SimpleFastqRecord -- trimmed record
         """
         bases_qscores = qio.phred_to_qscore(record[2])
-        if 5 == side:
+        if side == 5:
             return FastqTrimmer.__trim_qual_5(record, qscore_thr, bases_qscores)
-        elif 3 == side:
+        elif side == 3:
             return FastqTrimmer.__trim_qual_3(record, qscore_thr, bases_qscores)
         else:
             raise Exception("Can trim only from 5' or 3' end.")

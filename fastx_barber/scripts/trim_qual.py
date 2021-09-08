@@ -91,7 +91,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
 
-    if 0 == args.qscore:
+    if args.qscore == 0:
         logging.info(
             "Trimming QSCORE threshold (-q) equal to 0. "
             + "Nothing to do. :person_shrugging:"
@@ -124,7 +124,7 @@ def run_chunk(
     for record in chunk:
         record, trimmed_length = trimmer.trim_qual(record, args.qscore, args.side, qio)
         trimmed_length_list.append(trimmed_length)
-        if 0 < len(record[1]):
+        if len(record[1]) > 0:
             OHC.write(record)
         trimmed_counter += trimmed_length != 0
         untrimmed_counter += trimmed_length == 0
