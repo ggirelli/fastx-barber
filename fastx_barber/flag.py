@@ -90,9 +90,6 @@ class ABCFlagBase(metaclass=ABCMeta):
     _flag_delim: str = "~"
     _comment_space: str = " "
 
-    def __init__(self):
-        super(ABCFlagBase, self).__init__()
-
     @property
     def flag_delim(self):
         return self._flag_delim
@@ -220,12 +217,6 @@ class ABCFlagExtractor(ABCFlagBase):
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
-    def __init__(
-        self,
-        selected_flags: Optional[List[str]] = None,
-        flags_for_stats: Optional[List[str]] = None,
-    ):
-        super(FastaFlagExtractor, self).__init__(selected_flags, flags_for_stats)
 
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
@@ -275,13 +266,6 @@ class FastaFlagExtractor(ABCFlagExtractor):
 class FastqFlagExtractor(FastaFlagExtractor):
 
     extract_qual_flags: bool = True
-
-    def __init__(
-        self,
-        selected_flags: Optional[List[str]] = None,
-        flags_for_stats: Optional[List[str]] = None,
-    ):
-        super(FastqFlagExtractor, self).__init__(selected_flags, flags_for_stats)
 
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
@@ -345,8 +329,6 @@ def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
 
 
 class ABCFlagReader(ABCFlagBase):
-    def __init__(self):
-        super(ABCFlagReader, self).__init__()
 
     @abstractmethod
     def read(self, record: Any) -> Optional[Dict[str, FlagData]]:
