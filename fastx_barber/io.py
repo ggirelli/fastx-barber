@@ -91,7 +91,8 @@ class ChunkMerger(object):
             flist = glob.glob(chunk_path)
             for fname in flist:
                 split_value = (
-                    os.path.basename(fname).split("_split.")[1].split(".tmp.chunk")[0]
+                    os.path.basename(fname).split("_split.")[
+                        1].split(".tmp.chunk")[0]
                 )
                 with open(
                     os.path.join(

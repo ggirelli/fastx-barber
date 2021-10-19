@@ -10,14 +10,22 @@ import tempfile
 
 
 def test_get_fastx_format():
-    assert (const.FastxFormats.FASTA, True) == seqio.get_fastx_format("fake.fasta.gz")
-    assert (const.FastxFormats.FASTA, False) == seqio.get_fastx_format("fake.fasta")
-    assert (const.FastxFormats.FASTQ, True) == seqio.get_fastx_format("fake.fastq.gz")
-    assert (const.FastxFormats.FASTQ, False) == seqio.get_fastx_format("fake.fastq")
-    assert (const.FastxFormats.FASTA, True) == seqio.get_fastx_format("fake.fa.gz")
-    assert (const.FastxFormats.FASTA, False) == seqio.get_fastx_format("fake.fa")
-    assert (const.FastxFormats.FASTQ, True) == seqio.get_fastx_format("fake.fq.gz")
-    assert (const.FastxFormats.FASTQ, False) == seqio.get_fastx_format("fake.fq")
+    assert (const.FastxFormats.FASTA,
+            True) == seqio.get_fastx_format("fake.fasta.gz")
+    assert (const.FastxFormats.FASTA,
+            False) == seqio.get_fastx_format("fake.fasta")
+    assert (const.FastxFormats.FASTQ,
+            True) == seqio.get_fastx_format("fake.fastq.gz")
+    assert (const.FastxFormats.FASTQ,
+            False) == seqio.get_fastx_format("fake.fastq")
+    assert (const.FastxFormats.FASTA,
+            True) == seqio.get_fastx_format("fake.fa.gz")
+    assert (const.FastxFormats.FASTA,
+            False) == seqio.get_fastx_format("fake.fa")
+    assert (const.FastxFormats.FASTQ,
+            True) == seqio.get_fastx_format("fake.fq.gz")
+    assert (const.FastxFormats.FASTQ,
+            False) == seqio.get_fastx_format("fake.fq")
     try:
         seqio.get_fastx_format("fake.txt.gz")
     except AssertionError:
@@ -145,9 +153,12 @@ def test_SimpleFastqWriter():
 
 
 def test_get_fastx_writer():
-    assert seqio.get_fastx_writer(const.FastxFormats.FASTA) is seqio.SimpleFastaWriter
-    assert seqio.get_fastx_writer(const.FastxFormats.FASTQ) is seqio.SimpleFastqWriter
-    assert seqio.get_fastx_writer(const.FastxFormats.NONE) is seqio.SimpleFastxWriter
+    assert seqio.get_fastx_writer(
+        const.FastxFormats.FASTA) is seqio.SimpleFastaWriter
+    assert seqio.get_fastx_writer(
+        const.FastxFormats.FASTQ) is seqio.SimpleFastqWriter
+    assert seqio.get_fastx_writer(
+        const.FastxFormats.NONE) is seqio.SimpleFastxWriter
 
 
 def test_SimpleSplitFastaWriter():
