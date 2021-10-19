@@ -26,10 +26,10 @@ class QualityIO(object):
 
     def phred_to_qscore(self, qual: str) -> List[int]:
         qscore = [ord(c) - self.__phred_offset for c in qual]
-        if not all(
-            q >= 0 for q in qscore
-        ):
-            raise AssertionError(f"phred offset of {self.__phred_offset} produces negative qscores")
+        if not all(q >= 0 for q in qscore):
+            raise AssertionError(
+                f"phred offset of {self.__phred_offset} produces negative qscores"
+            )
 
         return qscore
 

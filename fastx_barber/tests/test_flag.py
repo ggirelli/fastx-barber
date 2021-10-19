@@ -221,15 +221,18 @@ def test_FastqFlagExtractor_noSelectedFlags():
 
 def test_get_fastx_flag_extractor():
     if (
-        flag.get_fastx_flag_extractor(const.FastxFormats.FASTA) is not flag.FastaFlagExtractor
+        flag.get_fastx_flag_extractor(const.FastxFormats.FASTA)
+        is not flag.FastaFlagExtractor
     ):
         raise AssertionError
     if (
-        flag.get_fastx_flag_extractor(const.FastxFormats.FASTQ) is not flag.FastqFlagExtractor
+        flag.get_fastx_flag_extractor(const.FastxFormats.FASTQ)
+        is not flag.FastqFlagExtractor
     ):
         raise AssertionError
     if (
-        flag.get_fastx_flag_extractor(const.FastxFormats.NONE) is not flag.ABCFlagExtractor
+        flag.get_fastx_flag_extractor(const.FastxFormats.NONE)
+        is not flag.ABCFlagExtractor
     ):
         raise AssertionError
 

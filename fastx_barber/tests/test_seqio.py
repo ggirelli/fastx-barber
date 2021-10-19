@@ -199,14 +199,17 @@ def test_SimpleSplitFastqWriter():
 
 def test_get_split_fastx_writer():
     if (
-        seqio.get_split_fastx_writer(const.FastxFormats.FASTA) is not seqio.SimpleSplitFastaWriter
+        seqio.get_split_fastx_writer(const.FastxFormats.FASTA)
+        is not seqio.SimpleSplitFastaWriter
     ):
         raise AssertionError
     if (
-        seqio.get_split_fastx_writer(const.FastxFormats.FASTQ) is not seqio.SimpleSplitFastqWriter
+        seqio.get_split_fastx_writer(const.FastxFormats.FASTQ)
+        is not seqio.SimpleSplitFastqWriter
     ):
         raise AssertionError
     if (
-        seqio.get_split_fastx_writer(const.FastxFormats.NONE) is not seqio.SimpleSplitFastxWriter
+        seqio.get_split_fastx_writer(const.FastxFormats.NONE)
+        is not seqio.SimpleSplitFastxWriter
     ):
         raise AssertionError

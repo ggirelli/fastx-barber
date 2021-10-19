@@ -309,10 +309,10 @@ class SimpleSplitFastaWriter(SimpleSplitFastxWriter):
     def write(
         self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData], *args
     ) -> None:
-        if (
-            self._split_key not in flag_data
-        ):
-            raise AssertionError(f"Cannot split by flag '{self._split_key}'. Flag not found.")
+        if self._split_key not in flag_data:
+            raise AssertionError(
+                f"Cannot split by flag '{self._split_key}'. Flag not found."
+            )
         OH = self.open(flag_data[self._split_key][0])
         OH.write(f">{record[0]}\n{record[1]}\n")
         OH.close()
@@ -327,10 +327,10 @@ class SimpleSplitFastqWriter(SimpleSplitFastxWriter):
     def write(
         self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData], *args
     ) -> None:
-        if (
-            self._split_key not in flag_data
-        ):
-            raise AssertionError(f"Cannot split by flag '{self._split_key}'. Flag not found.")
+        if self._split_key not in flag_data:
+            raise AssertionError(
+                f"Cannot split by flag '{self._split_key}'. Flag not found."
+            )
         OH = self.open(flag_data[self._split_key][0])
         OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
         OH.close()
