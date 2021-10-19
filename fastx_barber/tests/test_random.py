@@ -13,7 +13,7 @@ def test_make_random_string():
     random_string = random.make_random_string(const.UT_RECORD_SEQ_LEN, TEST_ALPHABET)
     if const.UT_RECORD_SEQ_LEN != len(random_string):
         raise AssertionError
-    if not all(c in TEST_ALPHABET for c in random_string):
+    if any(c not in TEST_ALPHABET for c in random_string):
         raise AssertionError
 
 
@@ -32,7 +32,7 @@ def assert_fasta_record(
         raise AssertionError
     if const.UT_RECORD_SEQ_LEN != len(record[1]):
         raise AssertionError
-    if not all(c in random.DNA_ALPHABET for c in record[1]):
+    if any(c not in random.DNA_ALPHABET for c in record[1]):
         raise AssertionError
     if record[2] is not None:
         raise AssertionError
@@ -65,13 +65,13 @@ def assert_fastq_record(
         raise AssertionError
     if const.UT_RECORD_SEQ_LEN != len(record[1]):
         raise AssertionError
-    if not all(c in random.DNA_ALPHABET for c in record[1]):
+    if any(c not in random.DNA_ALPHABET for c in record[1]):
         raise AssertionError
     if not isinstance(record[2], str):
         raise AssertionError
     if const.UT_RECORD_SEQ_LEN != len(record[2]):
         raise AssertionError
-    if not all(c in random.QUAL_ALPHABET for c in record[2]):
+    if any(c not in random.QUAL_ALPHABET for c in record[2]):
         raise AssertionError
 
 
@@ -91,8 +91,6 @@ def assert_fastx_file(path: str, expected_fmt: const.FastxFormats) -> None:
     parser, fmt = seqio.get_fastx_parser(path)
     if fmt is not expected_fmt:
         raise AssertionError
-    for _ in parser:
-        pass
 
 
 def test_write_tmp_fasta_file():
