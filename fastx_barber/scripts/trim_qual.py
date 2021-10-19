@@ -113,7 +113,8 @@ def run_chunk(
     OHC = scriptio.get_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.temp_dir
     )
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
 
     trimmer = FastqTrimmer()
     qio = QualityIO(args.phred_offset)
@@ -146,7 +147,8 @@ def run(args: argparse.Namespace) -> None:
     IH = FastxChunkedParser(IH, args.chunk_size)
 
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
-    assert FastxFormats.FASTQ == fmt, "Trimming by quality requires a fastq file."
+    if FastxFormats.FASTQ != fmt:
+        raise AssertionError("Trimming by quality requires a fastq file.")
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming...")

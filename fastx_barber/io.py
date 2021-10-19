@@ -15,7 +15,8 @@ DTEMP_PREFIX = "fbarber_tmp."
 
 def check_tmp_dir(path: Optional[str] = None) -> str:
     if path is not None:
-        assert os.path.isdir(path)
+        if not os.path.isdir(path):
+            raise AssertionError
     else:
         path = tempfile.mkdtemp(prefix=DTEMP_PREFIX)
     return path

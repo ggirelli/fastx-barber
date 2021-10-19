@@ -115,7 +115,8 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 @enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    assert 1 == len(args.flag_delim)
+    if 1 != len(args.flag_delim):
+        raise AssertionError
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
 

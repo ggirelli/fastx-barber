@@ -13,19 +13,28 @@ def test_FastaTrimmer_trim_len():
     record = ("test", "ATCGATCGATCGATCGATGCAT", None)
 
     trimmed_record = trimmer.trim_len(record, 5, 5)
-    assert record[0] == trimmed_record[0]
-    assert record[1][5:] == trimmed_record[1]
-    assert record[2] == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if record[1][5:] != trimmed_record[1]:
+        raise AssertionError
+    if record[2] != trimmed_record[2]:
+        raise AssertionError
 
     trimmed_record = trimmer.trim_len(record, 5, 3)
-    assert record[0] == trimmed_record[0]
-    assert record[1][:-5] == trimmed_record[1]
-    assert record[2] == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if record[1][:-5] != trimmed_record[1]:
+        raise AssertionError
+    if record[2] != trimmed_record[2]:
+        raise AssertionError
 
     trimmed_record = trimmer.trim_len(record, 100, 3)
-    assert record[0] == trimmed_record[0]
-    assert "" == trimmed_record[1]
-    assert record[2] == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if "" != trimmed_record[1]:
+        raise AssertionError
+    if record[2] != trimmed_record[2]:
+        raise AssertionError
 
 
 def test_FastaTrimmer_trim_re():
@@ -34,15 +43,21 @@ def test_FastaTrimmer_trim_re():
 
     matcher = match.FastxMatcher(re.compile("^.*CGATCGA"))
     trimmed_record = trimmer.trim_re(record, matcher.do(record)[0])
-    assert record[0] == trimmed_record[0]
-    assert "TGCAT" == trimmed_record[1]
-    assert record[2] == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if "TGCAT" != trimmed_record[1]:
+        raise AssertionError
+    if record[2] != trimmed_record[2]:
+        raise AssertionError
 
     matcher = match.FastxMatcher(re.compile("^.*?CGATCGA"))
     trimmed_record = trimmer.trim_re(record, matcher.do(record)[0])
-    assert record[0] == trimmed_record[0]
-    assert "TCGATCGATGCAT" == trimmed_record[1]
-    assert record[2] == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if "TCGATCGATGCAT" != trimmed_record[1]:
+        raise AssertionError
+    if record[2] != trimmed_record[2]:
+        raise AssertionError
 
 
 def test_FastqTrimmer_trim_len():
@@ -50,19 +65,28 @@ def test_FastqTrimmer_trim_len():
     record = ("test", "ATCGATCGATCGATCGATGCAT", "A/A/A/A/A/A/A/A/A/A/A/")
 
     trimmed_record = trimmer.trim_len(record, 5, 5)
-    assert record[0] == trimmed_record[0]
-    assert record[1][5:] == trimmed_record[1]
-    assert record[2][5:] == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if record[1][5:] != trimmed_record[1]:
+        raise AssertionError
+    if record[2][5:] != trimmed_record[2]:
+        raise AssertionError
 
     trimmed_record = trimmer.trim_len(record, 5, 3)
-    assert record[0] == trimmed_record[0]
-    assert record[1][:-5] == trimmed_record[1]
-    assert record[2][:-5] == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if record[1][:-5] != trimmed_record[1]:
+        raise AssertionError
+    if record[2][:-5] != trimmed_record[2]:
+        raise AssertionError
 
     trimmed_record = trimmer.trim_len(record, 100, 3)
-    assert record[0] == trimmed_record[0]
-    assert "" == trimmed_record[1]
-    assert "" == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if "" != trimmed_record[1]:
+        raise AssertionError
+    if "" != trimmed_record[2]:
+        raise AssertionError
 
 
 def test_FastqTrimmer_trim_re():
@@ -71,15 +95,21 @@ def test_FastqTrimmer_trim_re():
 
     matcher = match.FastxMatcher(re.compile("^.*CGATCGA"))
     trimmed_record = trimmer.trim_re(record, matcher.do(record)[0])
-    assert record[0] == trimmed_record[0]
-    assert "TGCAT" == trimmed_record[1]
-    assert "/A/A/" == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if "TGCAT" != trimmed_record[1]:
+        raise AssertionError
+    if "/A/A/" != trimmed_record[2]:
+        raise AssertionError
 
     matcher = match.FastxMatcher(re.compile("^.*?CGATCGA"))
     trimmed_record = trimmer.trim_re(record, matcher.do(record)[0])
-    assert record[0] == trimmed_record[0]
-    assert "TCGATCGATGCAT" == trimmed_record[1]
-    assert "/A/A/A/A/A/A/" == trimmed_record[2]
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if "TCGATCGATGCAT" != trimmed_record[1]:
+        raise AssertionError
+    if "/A/A/A/A/A/A/" != trimmed_record[2]:
+        raise AssertionError
 
 
 def test_FastqTrimmer_trim_qual():
@@ -88,23 +118,34 @@ def test_FastqTrimmer_trim_qual():
     record = ("test", "ATCGATCGATCGATCGATGCAT", "////A/A/A/A/A/A/A/////")
 
     trimmed_record, trimmed_len = trimmer.trim_qual(record, 30, 5, qio)
-    assert 4 == trimmed_len
-    assert record[0] == trimmed_record[0]
-    assert "ATCGATCGATCGATGCAT" == trimmed_record[1]
-    assert "A/A/A/A/A/A/A/////" == trimmed_record[2]
+    if 4 != trimmed_len:
+        raise AssertionError
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if "ATCGATCGATCGATGCAT" != trimmed_record[1]:
+        raise AssertionError
+    if "A/A/A/A/A/A/A/////" != trimmed_record[2]:
+        raise AssertionError
 
     trimmed_record, trimmed_len = trimmer.trim_qual(record, 30, 3, qio)
-    assert 5 == trimmed_len
-    assert record[0] == trimmed_record[0]
-    assert "ATCGATCGATCGATCGA" == trimmed_record[1]
-    assert "////A/A/A/A/A/A/A" == trimmed_record[2]
+    if 5 != trimmed_len:
+        raise AssertionError
+    if record[0] != trimmed_record[0]:
+        raise AssertionError
+    if "ATCGATCGATCGATCGA" != trimmed_record[1]:
+        raise AssertionError
+    if "////A/A/A/A/A/A/A" != trimmed_record[2]:
+        raise AssertionError
 
 
 def test_get_fastx_trimmer():
-    assert isinstance(
+    if not isinstance(
         trim.get_fastx_trimmer(FastxFormats.FASTA), type(trim.FastaTrimmer)
-    )
-    assert isinstance(
+    ):
+        raise AssertionError
+    if not isinstance(
         trim.get_fastx_trimmer(FastxFormats.FASTQ), type(trim.FastqTrimmer)
-    )
-    assert isinstance(trim.get_fastx_trimmer(FastxFormats.NONE), type(trim.ABCTrimmer))
+    ):
+        raise AssertionError
+    if not isinstance(trim.get_fastx_trimmer(FastxFormats.NONE), type(trim.ABCTrimmer)):
+        raise AssertionError

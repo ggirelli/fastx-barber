@@ -22,13 +22,18 @@ def test_BedWriter_3fields():
 
     with open(bed_path) as IH:
         bed_content = IH.readlines()
-        assert len(bed_data) == len(bed_content)
+        if len(bed_data) != len(bed_content):
+            raise AssertionError
         for i in range(len(bed_data)):
             record = bed_content[i].strip().split()
-            assert 3 == len(record)
-            assert bed_data[i][0] == record[0]
-            assert bed_data[i][1] == int(record[1])
-            assert bed_data[i][2] == int(record[2])
+            if 3 != len(record):
+                raise AssertionError
+            if bed_data[i][0] != record[0]:
+                raise AssertionError
+            if bed_data[i][1] != int(record[1]):
+                raise AssertionError
+            if bed_data[i][2] != int(record[2]):
+                raise AssertionError
 
     os.remove(bed_path)
 
@@ -42,14 +47,20 @@ def test_BedWriter_4fields():
 
     with open(bed_path) as IH:
         bed_content = IH.readlines()
-        assert len(bed_data) == len(bed_content)
+        if len(bed_data) != len(bed_content):
+            raise AssertionError
         for i in range(len(bed_data)):
             record = bed_content[i].strip().split()
-            assert 4 == len(record)
-            assert bed_data[i][0] == record[0]
-            assert bed_data[i][1] == int(record[1])
-            assert bed_data[i][2] == int(record[2])
-            assert bed_data[i][3] == record[3]
+            if 4 != len(record):
+                raise AssertionError
+            if bed_data[i][0] != record[0]:
+                raise AssertionError
+            if bed_data[i][1] != int(record[1]):
+                raise AssertionError
+            if bed_data[i][2] != int(record[2]):
+                raise AssertionError
+            if bed_data[i][3] != record[3]:
+                raise AssertionError
 
     os.remove(bed_path)
 
@@ -63,15 +74,22 @@ def test_BedWriter_5fields():
 
     with open(bed_path) as IH:
         bed_content = IH.readlines()
-        assert len(bed_data) == len(bed_content)
+        if len(bed_data) != len(bed_content):
+            raise AssertionError
         for i in range(len(bed_data)):
             record = bed_content[i].strip().split()
-            assert 5 == len(record)
-            assert bed_data[i][0] == record[0]
-            assert bed_data[i][1] == int(record[1])
-            assert bed_data[i][2] == int(record[2])
-            assert bed_data[i][3] == record[3]
-            assert bed_data[i][4] == float(record[4])
+            if 5 != len(record):
+                raise AssertionError
+            if bed_data[i][0] != record[0]:
+                raise AssertionError
+            if bed_data[i][1] != int(record[1]):
+                raise AssertionError
+            if bed_data[i][2] != int(record[2]):
+                raise AssertionError
+            if bed_data[i][3] != record[3]:
+                raise AssertionError
+            if bed_data[i][4] != float(record[4]):
+                raise AssertionError
 
     os.remove(bed_path)
 
@@ -85,15 +103,23 @@ def test_BedWriter_6fields():
 
     with open(bed_path) as IH:
         bed_content = IH.readlines()
-        assert len(bed_data) == len(bed_content)
+        if len(bed_data) != len(bed_content):
+            raise AssertionError
         for i in range(len(bed_data)):
             record = bed_content[i].strip().split()
-            assert 6 == len(record)
-            assert bed_data[i][0] == record[0]
-            assert bed_data[i][1] == int(record[1])
-            assert bed_data[i][2] == int(record[2])
-            assert bed_data[i][3] == record[3]
-            assert bed_data[i][4] == float(record[4])
-            assert bed_data[i][5] == record[5]
+            if 6 != len(record):
+                raise AssertionError
+            if bed_data[i][0] != record[0]:
+                raise AssertionError
+            if bed_data[i][1] != int(record[1]):
+                raise AssertionError
+            if bed_data[i][2] != int(record[2]):
+                raise AssertionError
+            if bed_data[i][3] != record[3]:
+                raise AssertionError
+            if bed_data[i][4] != float(record[4]):
+                raise AssertionError
+            if bed_data[i][5] != record[5]:
+                raise AssertionError
 
     os.remove(bed_path)

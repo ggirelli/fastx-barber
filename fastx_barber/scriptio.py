@@ -23,7 +23,8 @@ from typing import Callable, Dict, Optional, Tuple, Union
 
 
 def set_tempdir(args: argparse.Namespace) -> argparse.Namespace:
-    assert os.path.isdir(args.temp_dir), f"temporary folder not found: {args.temp_dir}"
+    if not os.path.isdir(args.temp_dir):
+        raise AssertionError(f"temporary folder not found: {args.temp_dir}")
     args.temp_dir = tempfile.TemporaryDirectory(
         prefix="fastx-barber.", dir=args.temp_dir
     )
@@ -41,9 +42,11 @@ def add_log_file_handler(path: str, logger_name: str = "") -> None:
     Keyword Arguments:
         logger_name {str} -- logger name (default: {""})
     """
-    assert not os.path.isdir(path)
+    if os.path.isdir(path):
+        raise AssertionError
     log_dir = os.path.dirname(path)
-    assert os.path.isdir(log_dir) or log_dir == ""
+    if not (os.path.isdir(log_dir) or log_dir == ""):
+        raise AssertionError
     fh = RichHandler(console=Console(file=open(path, mode="w+")), markup=True)
     fh.setLevel(logging.INFO)
     logging.getLogger(logger_name).addHandler(fh)
@@ -79,7 +82,8 @@ def get_chunk_handler(
     if path is None:
         return None
     chunk_path = get_chunk_tmp_path(cid, path, tempdir)
-    assert not os.path.isdir(path)
+    if os.path.isdir(path):
+        raise AssertionError
     return get_fastx_writer(fmt)(chunk_path, compress_level)
 
 
@@ -94,7 +98,8 @@ def get_split_chunk_handler(
     if path is None:
         return None
     chunk_path = get_chunk_tmp_path(cid, path, tempdir)
-    assert not os.path.isdir(path)
+    if os.path.isdir(path):
+        raise AssertionError
     return get_split_fastx_writer(fmt)(chunk_path, split_by, compress_level)
 
 
@@ -108,7 +113,8 @@ def get_output_fun(
         OH {Optional[SimpleFastxWriter]} -- output buffer handler
         UH {Optional[SimpleFastxWriter]} -- unmatched output buffer handler
     """
-    assert OH is not None
+    if OH is None:
+        raise AssertionError
     if UH is not None:
         return {True: OH.write, False: UH.write}
     return {True: OH.write, False: lambda *x: None}
@@ -125,7 +131,8 @@ def get_qual_filter_handler(
     if FH is None:
         return (FH, lambda *x: None)
 
-    assert fmt == FH.format, "format mismatch between input and requested output"
+    if fmt != FH.format:
+        raise AssertionError("format mismatch between input and requested output")
     return (FH, FH.write)
 
 
@@ -141,7 +148,8 @@ def get_split_qual_filter_handler(
     if FH is None:
         return (FH, lambda *x: None)
 
-    assert fmt == FH.format, "format mismatch between input and requested output"
+    if fmt != FH.format:
+        raise AssertionError("format mismatch between input and requested output")
     return (FH, FH.write)
 
 
@@ -154,7 +162,8 @@ def get_handles(
     Callable,
 ]:
     OHC = get_chunk_handler(cid, fmt, args.output, args.compress_level, args.temp_dir)
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
     UHC = get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
     )
@@ -179,7 +188,8 @@ def get_split_handles(
     OHC = get_split_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.split_by, args.temp_dir
     )
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
     UHC = get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
     )

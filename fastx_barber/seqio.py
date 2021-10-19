@@ -27,7 +27,8 @@ def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
         Tuple[FastxFormats, bool] -- fastx file format and gzipped status
     """
     base, ext, gzipped = is_gzipped(path)
-    assert FastxExtensions.has_value(ext), f"Unrecognized extension '{ext}'."
+    if not FastxExtensions.has_value(ext):
+        raise AssertionError(f"Unrecognized extension '{ext}'.")
     if ext in FastxExtensions.FASTA.value:
         return (FastxFormats.FASTA, gzipped)
     if ext in FastxExtensions.FASTQ.value:
@@ -40,7 +41,8 @@ def get_fastx_parser(path: str) -> Tuple[SimpleFastxParser, FastxFormats]:
     fmt, gzipped = get_fastx_format(path)
     handle: Union[str, IO] = path
     handle = gzip.open(path, "rt") if gzipped else open(path, "r+")
-    assert fmt in FastxFormats
+    if fmt not in FastxFormats:
+        raise AssertionError
     if FastxFormats.FASTA == fmt:
         parser = SeqIO.FastaIO.SimpleFastaParser(handle)
         parser = ((*x, None) for x in parser)
@@ -65,7 +67,8 @@ class FastxChunkedParser(object):
     def __init__(self, parser: SimpleFastxParser, chunk_size: int):
         super(FastxChunkedParser, self).__init__()
         self.__IH = parser
-        assert chunk_size > 0
+        if chunk_size <= 0:
+            raise AssertionError
         self.__chunk_size = chunk_size
 
     @property
@@ -153,7 +156,8 @@ class SimpleFastxWriter(ABCSimpleWriter):
     def __init__(self, path: str, compress_level: int = 6):
         super(SimpleFastxWriter, self).__init__(path, compress_level)
         self._fmt, _ = get_fastx_format(path)
-        assert self._fmt in FastxFormats
+        if self._fmt not in FastxFormats:
+            raise AssertionError
 
     @property
     def format(self) -> FastxFormats:
@@ -175,7 +179,8 @@ class SimpleFastxWriter(ABCSimpleWriter):
 class SimpleFastaWriter(SimpleFastxWriter):
     def __init__(self, path: str, compress_level: int = 6):
         super(SimpleFastaWriter, self).__init__(path, compress_level)
-        assert FastxFormats.FASTA == self.format
+        if FastxFormats.FASTA != self.format:
+            raise AssertionError
 
     def write(self, record: SimpleFastxRecord, *args) -> None:
         self._OH.write(f">{record[0]}\n{record[1]}\n")
@@ -184,7 +189,8 @@ class SimpleFastaWriter(SimpleFastxWriter):
 class SimpleFastqWriter(SimpleFastxWriter):
     def __init__(self, path: str, compress_level: int = 6):
         super(SimpleFastqWriter, self).__init__(path, compress_level)
-        assert FastxFormats.FASTQ == self.format
+        if FastxFormats.FASTQ != self.format:
+            raise AssertionError
 
     def write(self, record: SimpleFastxRecord, *args) -> None:
         self._OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
@@ -271,7 +277,8 @@ class SimpleSplitFastxWriter(ABCSimpleSplitWriter):
     def __init__(self, path: str, split_key: str, compress_level: int = 6):
         super(SimpleSplitFastxWriter, self).__init__(path, split_key, compress_level)
         self._fmt, _ = get_fastx_format(path)
-        assert self._fmt in FastxFormats
+        if self._fmt not in FastxFormats:
+            raise AssertionError
 
     @property
     def format(self) -> FastxFormats:
@@ -296,14 +303,16 @@ class SimpleSplitFastxWriter(ABCSimpleSplitWriter):
 class SimpleSplitFastaWriter(SimpleSplitFastxWriter):
     def __init__(self, path: str, split_key: str, compress_level: int = 6):
         super(SimpleSplitFastaWriter, self).__init__(path, split_key, compress_level)
-        assert FastxFormats.FASTA == self.format
+        if FastxFormats.FASTA != self.format:
+            raise AssertionError
 
     def write(
         self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData], *args
     ) -> None:
-        assert (
-            self._split_key in flag_data
-        ), f"Cannot split by flag '{self._split_key}'. Flag not found."
+        if (
+            self._split_key not in flag_data
+        ):
+            raise AssertionError(f"Cannot split by flag '{self._split_key}'. Flag not found.")
         OH = self.open(flag_data[self._split_key][0])
         OH.write(f">{record[0]}\n{record[1]}\n")
         OH.close()
@@ -312,14 +321,16 @@ class SimpleSplitFastaWriter(SimpleSplitFastxWriter):
 class SimpleSplitFastqWriter(SimpleSplitFastxWriter):
     def __init__(self, path: str, split_key: str, compress_level: int = 6):
         super(SimpleSplitFastqWriter, self).__init__(path, split_key, compress_level)
-        assert FastxFormats.FASTQ == self.format
+        if FastxFormats.FASTQ != self.format:
+            raise AssertionError
 
     def write(
         self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData], *args
     ) -> None:
-        assert (
-            self._split_key in flag_data
-        ), f"Cannot split by flag '{self._split_key}'. Flag not found."
+        if (
+            self._split_key not in flag_data
+        ):
+            raise AssertionError(f"Cannot split by flag '{self._split_key}'. Flag not found.")
         OH = self.open(flag_data[self._split_key][0])
         OH.write(f"@{record[0]}\n{record[1]}\n+\n{record[2]}\n")
         OH.close()
