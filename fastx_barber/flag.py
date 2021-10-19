@@ -240,8 +240,8 @@ class FastaFlagExtractor(ABCFlagExtractor):
             flag_data.update([flag])
         return flag_data
 
+    @staticmethod
     def __extract_single_flag(
-        self,
         match: Union[ANPMatch, Match],
         gid: int,
         flag: Optional[Tuple[str, str]] = None,
@@ -292,8 +292,9 @@ class FastqFlagExtractor(FastaFlagExtractor):
             flag_data = self.__add_qual_flags(flag_data, qual)
         return flag_data
 
+    @staticmethod
     def __add_qual_flags(
-        self, flag_data: Dict[str, FlagData], qual: str
+        flag_data: Dict[str, FlagData], qual: str
     ) -> Dict[str, FlagData]:
         for name, (_, start, end) in list(flag_data.items()):
             flag = (f"{QFLAG_START}{name}", (qual[slice(start, end)], start, end))
