@@ -53,7 +53,7 @@ def get_fastx_parser(path: str) -> Tuple[SimpleFastxParser, FastxFormats]:
     return (parser, fmt)
 
 
-class FastxChunkedParser(object):
+class FastxChunkedParser:
     """Parser with chunking capabilities for fasta and fastq files.
 
     Variables:
