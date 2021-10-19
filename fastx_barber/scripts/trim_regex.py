@@ -124,7 +124,7 @@ def run_chunk(
 def run(args: argparse.Namespace) -> None:
     ap.log_args(args)
 
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    IH = scriptio.get_input_handler(args.input, args.chunk_size)[1]
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming...")
@@ -156,6 +156,7 @@ def run(args: argparse.Namespace) -> None:
     merger = ChunkMerger(args.temp_dir, None)
     merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.unmatched_output is not None:
-        merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched records")
+        merger.do(args.unmatched_output, IH.last_chunk_id,
+                  "Writing unmatched records")
 
     logging.info("Done. :thumbs_up: :smiley:")

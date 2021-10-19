@@ -54,7 +54,8 @@ class FlagStats(object):
         df["value"] = list(stats.keys())
         df["counts"] = list(stats.values())
         df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
-        df.sort_values("counts", ascending=False, ignore_index=True, inplace=True)
+        df.sort_values("counts", ascending=False,
+                       ignore_index=True, inplace=True)
         return df
 
     def export(self, output_path: str, verbose: bool = True) -> None:
@@ -225,7 +226,8 @@ class FastaFlagExtractor(ABCFlagExtractor):
         selected_flags: Optional[List[str]] = None,
         flags_for_stats: Optional[List[str]] = None,
     ):
-        super(FastaFlagExtractor, self).__init__(selected_flags, flags_for_stats)
+        super(FastaFlagExtractor, self).__init__(
+            selected_flags, flags_for_stats)
 
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
@@ -265,7 +267,8 @@ class FastaFlagExtractor(ABCFlagExtractor):
     ) -> SimpleFastxRecord:
         name, seq, _ = record
         name_bits = name.split(self._comment_space)
-        for name, (flag, start, end) in flag_data.items():
+        for name, v in flag_data.items():
+            flag = v[0]
             name_bits[0] += f"{self._flag_delim}{self._flag_delim}{name}"
             name_bits[0] += f"{self._flag_delim}{flag}"
         name = " ".join(name_bits)
@@ -281,15 +284,18 @@ class FastqFlagExtractor(FastaFlagExtractor):
         selected_flags: Optional[List[str]] = None,
         flags_for_stats: Optional[List[str]] = None,
     ):
-        super(FastqFlagExtractor, self).__init__(selected_flags, flags_for_stats)
+        super(FastqFlagExtractor, self).__init__(
+            selected_flags, flags_for_stats)
 
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
         assert match is not None
-        name, seq, qual = record
+        seq = record[1]
+        qual = record[2]
         assert qual is not None
-        flag_data = super(FastqFlagExtractor, self).extract_selected(record, match)
+        flag_data = super(FastqFlagExtractor,
+                          self).extract_selected(record, match)
         if self.extract_qual_flags:
             flag_data = self.__add_qual_flags(flag_data, qual)
         return flag_data
@@ -309,7 +315,8 @@ class FastqFlagExtractor(FastaFlagExtractor):
         self, flag_data: Dict[str, FlagData], qual: str
     ) -> Dict[str, FlagData]:
         for name, (_, start, end) in list(flag_data.items()):
-            flag = (f"{QFLAG_START}{name}", (qual[slice(start, end)], start, end))
+            flag = (f"{QFLAG_START}{name}",
+                    (qual[slice(start, end)], start, end))
             flag_data.update([flag])
         return flag_data
 
@@ -317,7 +324,8 @@ class FastqFlagExtractor(FastaFlagExtractor):
         self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData]
     ) -> SimpleFastxRecord:
         _, _, qual = record
-        name, seq, _ = super(FastqFlagExtractor, self).update(record, flag_data)
+        name, seq, _ = super(FastqFlagExtractor,
+                             self).update(record, flag_data)
         return (name, seq, qual)
 
     def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
