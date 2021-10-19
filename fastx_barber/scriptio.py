@@ -111,8 +111,7 @@ def get_output_fun(
     assert OH is not None
     if UH is not None:
         return {True: OH.write, False: UH.write}
-    else:
-        return {True: OH.write, False: lambda *x: None}
+    return {True: OH.write, False: lambda *x: None}
 
 
 def get_qual_filter_handler(

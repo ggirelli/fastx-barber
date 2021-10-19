@@ -208,12 +208,9 @@ class ABCFlagExtractor(ABCFlagBase):
         """
         if self._selected_flags is None:
             return flag_data
-        else:
-            return {
-                name: flag_data[name]
-                for name in self._selected_flags
-                if name in flag_data
-            }
+        return {
+            name: flag_data[name] for name in self._selected_flags if name in flag_data
+        }
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
@@ -318,10 +315,9 @@ def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
     """Retrieves appropriate flag extractor class."""
     if FastxFormats.FASTA == fmt:
         return FastaFlagExtractor
-    elif FastxFormats.FASTQ == fmt:
+    if FastxFormats.FASTQ == fmt:
         return FastqFlagExtractor
-    else:
-        return ABCFlagExtractor
+    return ABCFlagExtractor
 
 
 class ABCFlagReader(ABCFlagBase):
