@@ -199,7 +199,6 @@ class ABCMatcher(metaclass=ABCMeta):
 
 
 class FastxMatcher(ABCMatcher):
-
     def do(
         self, record: SimpleFastxRecord
     ) -> Tuple[Union[Optional[ANPMatch], Match], bool]:

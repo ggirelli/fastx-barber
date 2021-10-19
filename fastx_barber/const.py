@@ -68,8 +68,9 @@ DEFAULT_PHRED_OFFSET = 33
 
 PATTERN_EXAMPLE = "^(?<UMI>.{8})(?<BC>.{8})(?<CS>GATC){s<2}"
 
-"""Flag data, contains matched str, start, and end position"""
-FlagData = Tuple[str, int, int]
+FlagData = Tuple[
+    str, int, int
+]  # Flag data, contains matched str, start, and end position
 FlagStatsType = DefaultDict[str, DefaultDict[str, int]]
 
 # Unit tests related stuff

@@ -37,3 +37,8 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry.scripts]
 "fbarber" = "fastx_barber.scripts.barber:main"
+
+[tool.vulture]
+paths = ["fastx_barber"]
+min_confidence = 80
+verbose = true

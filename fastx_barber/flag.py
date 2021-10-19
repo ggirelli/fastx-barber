@@ -217,7 +217,6 @@ class ABCFlagExtractor(ABCFlagBase):
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
-
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
@@ -329,7 +328,6 @@ def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
 
 
 class ABCFlagReader(ABCFlagBase):
-
     @abstractmethod
     def read(self, record: Any) -> Optional[Dict[str, FlagData]]:
         pass
