@@ -64,7 +64,7 @@ class QualityFilter(QualityIO):
 
     @max_perc.setter
     def max_perc(self, max_perc: float) -> None:
-        if not (max_perc >= 0 and max_perc <= 1):
+        if not (0 <= max_perc <= 1):
             raise AssertionError
         self.__max_perc = max_perc
 
