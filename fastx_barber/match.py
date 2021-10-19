@@ -197,7 +197,7 @@ class ABCMatcher(metaclass=ABCMeta):
         Returns:
             Tuple[Match, bool] -- match and matched status
         """
-        pass
+        raise NotImplementedError
 
 
 class FastxMatcher(ABCMatcher):

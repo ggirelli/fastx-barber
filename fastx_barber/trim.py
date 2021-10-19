@@ -34,7 +34,7 @@ class ABCTrimmer(metaclass=ABCMeta):
         Returns:
             Any -- trimmed record
         """
-        pass
+        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
@@ -53,7 +53,7 @@ class ABCTrimmer(metaclass=ABCMeta):
         Returns:
             Any -- trimmed record
         """
-        pass
+        raise NotImplementedError
 
 
 class FastaTrimmer(ABCTrimmer):

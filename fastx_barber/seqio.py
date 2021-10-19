@@ -137,7 +137,7 @@ class ABCSimpleWriter(metaclass=ABCMeta):
         Arguments:
             record {Any} -- record to be written
         """
-        pass
+        raise NotImplementedError
 
     def close(self):
         """Close output buffer handle"""
@@ -173,7 +173,7 @@ class SimpleFastxWriter(ABCSimpleWriter):
         Arguments:
             record {SimpleFastxRecord} -- record to be written
         """
-        pass
+        raise NotImplementedError
 
 
 class SimpleFastaWriter(SimpleFastxWriter):
@@ -264,7 +264,7 @@ class ABCSimpleSplitWriter(metaclass=ABCMeta):
             record {Any} -- record to be written
             flag_data {Dict[str, FlagData]} -- flag data for splitting
         """
-        pass
+        raise NotImplementedError
 
     def close(self):
         pass
@@ -297,7 +297,7 @@ class SimpleSplitFastxWriter(ABCSimpleSplitWriter):
             record {SimpleFastxRecord} -- record to be written
             flag_data {Dict[str, FlagData]} -- flag data for splitting
         """
-        pass
+        raise NotImplementedError
 
 
 class SimpleSplitFastaWriter(SimpleSplitFastxWriter):
