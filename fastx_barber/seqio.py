@@ -30,10 +30,9 @@ def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
     assert FastxExtensions.has_value(ext), f"Unrecognized extension '{ext}'."
     if ext in FastxExtensions.FASTA.value:
         return (FastxFormats.FASTA, gzipped)
-    elif ext in FastxExtensions.FASTQ.value:
+    if ext in FastxExtensions.FASTQ.value:
         return (FastxFormats.FASTQ, gzipped)
-    else:
-        return (FastxFormats.NONE, False)
+    return (FastxFormats.NONE, False)
 
 
 def get_fastx_parser(path: str) -> Tuple[SimpleFastxParser, FastxFormats]:
@@ -199,7 +198,7 @@ def get_fastx_writer(fmt: FastxFormats) -> Type[SimpleFastxWriter]:
     """Retrieves appropriate simple writer class."""
     if FastxFormats.FASTA == fmt:
         return SimpleFastaWriter
-    elif FastxFormats.FASTQ == fmt:
+    if FastxFormats.FASTQ == fmt:
         return SimpleFastqWriter
     return SimpleFastxWriter
 
@@ -245,15 +244,13 @@ class ABCSimpleSplitWriter(metaclass=ABCMeta):
         if self._is_gzipped:
             if self.opened_before(split_value):
                 return gzip.open(path, "at", self._compress_level)
-            else:
-                self._split_by.add(split_value)
-                return gzip.open(path, "wt", self._compress_level)
+            self._split_by.add(split_value)
+            return gzip.open(path, "wt", self._compress_level)
         else:
             if self.opened_before(split_value):
                 return open(path, "a")
-            else:
-                self._split_by.add(split_value)
-                return open(path, "w")
+            self._split_by.add(split_value)
+            return open(path, "w")
 
     @abstractmethod
     def write(self, record: Any, flag_data: Dict[str, FlagData], *args) -> None:
@@ -337,6 +334,6 @@ def get_split_fastx_writer(fmt: FastxFormats) -> Type[SimpleSplitFastxWriter]:
     """Retrieves appropriate simple writer class."""
     if FastxFormats.FASTA == fmt:
         return SimpleSplitFastaWriter
-    elif FastxFormats.FASTQ == fmt:
+    if FastxFormats.FASTQ == fmt:
         return SimpleSplitFastqWriter
     return SimpleSplitFastxWriter

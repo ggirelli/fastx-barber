@@ -111,8 +111,7 @@ def get_output_fun(
     assert OH is not None
     if UH is not None:
         return {True: OH.write, False: UH.write}
-    else:
-        return {True: OH.write, False: lambda *x: None}
+    return {True: OH.write, False: lambda *x: None}
 
 
 def get_qual_filter_handler(
@@ -126,8 +125,7 @@ def get_qual_filter_handler(
     if FH is not None:
         assert fmt == FH.format, "format mismatch between input and requested output"
         return (FH, FH.write)
-    else:
-        return (FH, lambda *x: None)
+    return (FH, lambda *x: None)
 
 
 def get_split_qual_filter_handler(
@@ -142,8 +140,7 @@ def get_split_qual_filter_handler(
     if FH is not None:
         assert fmt == FH.format, "format mismatch between input and requested output"
         return (FH, FH.write)
-    else:
-        return (FH, lambda *x: None)
+    return (FH, lambda *x: None)
 
 
 def get_handles(
