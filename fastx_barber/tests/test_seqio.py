@@ -64,22 +64,16 @@ def test_FastxChunkedParser():
     fapath, dpath = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA, const.UT_N_RECORDS, const.UT_RECORD_SEQ_LEN
     )
-    fachunks = [
-        c
-        for c in seqio.FastxChunkedParser(
+    fachunks = list(seqio.FastxChunkedParser(
             seqio.get_fastx_parser(fapath)[0], const.UT_CHUNK_SIZE
-        )
-    ]
+        ))
     assert 13 == len(fachunks)
     fqpath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA, const.UT_N_RECORDS, const.UT_RECORD_SEQ_LEN, dpath
     )
-    fqchunks = [
-        c
-        for c in seqio.FastxChunkedParser(
+    fqchunks = list(seqio.FastxChunkedParser(
             seqio.get_fastx_parser(fqpath)[0], const.UT_CHUNK_SIZE
-        )
-    ]
+        ))
     assert 13 == len(fqchunks)
     zfapath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA,
@@ -88,12 +82,9 @@ def test_FastxChunkedParser():
         dpath,
         gzipped=True,
     )
-    fachunks = [
-        c
-        for c in seqio.FastxChunkedParser(
+    fachunks = list(seqio.FastxChunkedParser(
             seqio.get_fastx_parser(zfapath)[0], const.UT_CHUNK_SIZE
-        )
-    ]
+        ))
     assert 13 == len(fachunks)
     zfqpath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA,
@@ -102,12 +93,9 @@ def test_FastxChunkedParser():
         dpath,
         gzipped=True,
     )
-    fqchunks = [
-        c
-        for c in seqio.FastxChunkedParser(
+    fqchunks = list(seqio.FastxChunkedParser(
             seqio.get_fastx_parser(zfqpath)[0], const.UT_CHUNK_SIZE
-        )
-    ]
+        ))
     assert 13 == len(fqchunks)
     shutil.rmtree(dpath)
 
@@ -122,7 +110,7 @@ def test_SimpleFastaWriter():
     for record in generated_records:
         OH.write(record)
     OH.close()
-    written_records = [r for r in seqio.get_fastx_parser(fpath)[0]]
+    written_records = list(seqio.get_fastx_parser(fpath)[0])
     for i in range(len(generated_records)):
         assert generated_records[i] == written_records[i]
     shutil.rmtree(tmp_dir)
@@ -138,7 +126,7 @@ def test_SimpleFastqWriter():
     for record in generated_records:
         OH.write(record)
     OH.close()
-    written_records = [r for r in seqio.get_fastx_parser(fpath)[0]]
+    written_records = list(seqio.get_fastx_parser(fpath)[0])
     for i in range(len(generated_records)):
         assert generated_records[i] == written_records[i]
     shutil.rmtree(tmp_dir)

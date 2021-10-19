@@ -19,10 +19,10 @@ def test_FastxMatcher():
 
 def test_search_needle():
     record = ("test", "GATCACACATATATAGATCatcgatcagatcGATC", None)
-    positions = [x for x in match.search_needle(record, "GATC", 0)]
+    positions = list(match.search_needle(record, "GATC", 0))
     assert positions[0] == (0, 1)
     assert positions[1] == (15, 2)
     assert positions[2] == (31, 3)
-    positions = [x for x in match.search_needle(record, "gatc", 0)]
+    positions = list(match.search_needle(record, "gatc", 0))
     assert positions[0] == (22, 1)
     assert positions[1] == (27, 2)
