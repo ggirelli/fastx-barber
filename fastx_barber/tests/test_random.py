@@ -11,21 +11,31 @@ TEST_ALPHABET = list("abcde")
 
 def test_make_random_string():
     random_string = random.make_random_string(const.UT_RECORD_SEQ_LEN, TEST_ALPHABET)
-    assert const.UT_RECORD_SEQ_LEN == len(random_string)
-    assert all(c in TEST_ALPHABET for c in random_string)
+    if const.UT_RECORD_SEQ_LEN != len(random_string):
+        raise AssertionError
+    if not all(c in TEST_ALPHABET for c in random_string):
+        raise AssertionError
 
 
 def assert_fasta_record(
     record: seqio.SimpleFastaRecord, expected_name: str = const.UT_FLAG_NAME
 ) -> None:
-    assert isinstance(record, tuple)
-    assert isinstance(record[0], str)
-    assert 3 == len(record)
-    assert expected_name == record[0]
-    assert isinstance(record[1], str)
-    assert const.UT_RECORD_SEQ_LEN == len(record[1])
-    assert all(c in random.DNA_ALPHABET for c in record[1])
-    assert record[2] is None
+    if not isinstance(record, tuple):
+        raise AssertionError
+    if not isinstance(record[0], str):
+        raise AssertionError
+    if len(record) != 3:
+        raise AssertionError
+    if expected_name != record[0]:
+        raise AssertionError
+    if not isinstance(record[1], str):
+        raise AssertionError
+    if const.UT_RECORD_SEQ_LEN != len(record[1]):
+        raise AssertionError
+    if not all(c in random.DNA_ALPHABET for c in record[1]):
+        raise AssertionError
+    if record[2] is not None:
+        raise AssertionError
 
 
 def test_make_fasta_record():
@@ -43,16 +53,26 @@ def test_make_fasta_file():
 def assert_fastq_record(
     record: seqio.SimpleFastqRecord, expected_name: str = const.UT_FLAG_NAME
 ) -> None:
-    assert isinstance(record, tuple)
-    assert isinstance(record[0], str)
-    assert 3 == len(record)
-    assert expected_name == record[0]
-    assert isinstance(record[1], str)
-    assert const.UT_RECORD_SEQ_LEN == len(record[1])
-    assert all(c in random.DNA_ALPHABET for c in record[1])
-    assert isinstance(record[2], str)
-    assert const.UT_RECORD_SEQ_LEN == len(record[2])
-    assert all(c in random.QUAL_ALPHABET for c in record[2])
+    if not isinstance(record, tuple):
+        raise AssertionError
+    if not isinstance(record[0], str):
+        raise AssertionError
+    if len(record) != 3:
+        raise AssertionError
+    if expected_name != record[0]:
+        raise AssertionError
+    if not isinstance(record[1], str):
+        raise AssertionError
+    if const.UT_RECORD_SEQ_LEN != len(record[1]):
+        raise AssertionError
+    if not all(c in random.DNA_ALPHABET for c in record[1]):
+        raise AssertionError
+    if not isinstance(record[2], str):
+        raise AssertionError
+    if const.UT_RECORD_SEQ_LEN != len(record[2]):
+        raise AssertionError
+    if not all(c in random.QUAL_ALPHABET for c in record[2]):
+        raise AssertionError
 
 
 def test_make_fastq_record():
@@ -69,7 +89,8 @@ def test_make_fastq_file():
 
 def assert_fastx_file(path: str, expected_fmt: const.FastxFormats) -> None:
     parser, fmt = seqio.get_fastx_parser(path)
-    assert fmt is expected_fmt
+    if fmt is not expected_fmt:
+        raise AssertionError
     for _ in parser:
         pass
 

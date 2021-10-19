@@ -11,10 +11,12 @@ from typing import Dict
 def test_FlagStats():
     fs = flag.FlagStats()
     fs.update({const.UT_FLAG_NAME: ("value", 0, 0)})
-    assert 0 == fs.get_dataframe(const.UT_FLAG_NAME).shape[0]
+    if fs.get_dataframe(const.UT_FLAG_NAME).shape[0] != 0:
+        raise AssertionError
     fs = flag.FlagStats(const.UT_FLAG_NAME)
     fs.update({const.UT_FLAG_NAME: ("value", 0, 0)})
-    assert 1 == fs.get_dataframe(const.UT_FLAG_NAME).shape[0]
+    if fs.get_dataframe(const.UT_FLAG_NAME).shape[0] != 1:
+        raise AssertionError
 
 
 def assert_FastaFlagExtractor_update(
@@ -25,9 +27,12 @@ def assert_FastaFlagExtractor_update(
     expected_name = f"{record[0]}{fe.flag_delim}{fe.flag_delim}{const.UT_FLAG_NAME}"
     expected_name += f"{fe.flag_delim}{flag_data[const.UT_FLAG_NAME][0]}"
     updated_name, updated_seq, updated_qual = fe.update(record, flag_data)
-    assert expected_name == updated_name
-    assert record[1] == updated_seq
-    assert updated_qual is None
+    if expected_name != updated_name:
+        raise AssertionError
+    if record[1] != updated_seq:
+        raise AssertionError
+    if updated_qual is not None:
+        raise AssertionError
 
 
 def test_FastaFlagExtractor_noSelectedFlags_noStatFlags():
@@ -41,8 +46,10 @@ def test_FastaFlagExtractor_noSelectedFlags_noStatFlags():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastaFlagExtractor_update(fe, record, flag_data)
-        assert const.UT_FLAG_NAME not in fe.extract_selected(record, match_result)
-    assert 0 == len(fe.flagstats.keys())
+        if const.UT_FLAG_NAME in fe.extract_selected(record, match_result):
+            raise AssertionError
+    if len(fe.flagstats.keys()) != 0:
+        raise AssertionError
 
 
 def test_FastaFlagExtractor_noStatFlags():
@@ -56,11 +63,14 @@ def test_FastaFlagExtractor_noStatFlags():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastaFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
         flag_data = fe.extract_selected(record, match_result)
         assert_FastaFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-    assert 0 == len(fe.flagstats.keys())
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
+    if len(fe.flagstats.keys()) != 0:
+        raise AssertionError
 
 
 def test_FastaFlagExtractor():
@@ -74,11 +84,14 @@ def test_FastaFlagExtractor():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastaFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
         flag_data = fe.extract_selected(record, match_result)
         assert_FastaFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-    assert 1 == len(fe.flagstats.keys())
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
+    if len(fe.flagstats.keys()) != 1:
+        raise AssertionError
 
 
 def test_FastaFlagExtractor_noSelectedFlags():
@@ -92,9 +105,12 @@ def test_FastaFlagExtractor_noSelectedFlags():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastaFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-        assert const.UT_FLAG_NAME not in fe.extract_selected(record, match_result)
-    assert 1 == len(fe.flagstats.keys())
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
+        if const.UT_FLAG_NAME in fe.extract_selected(record, match_result):
+            raise AssertionError
+    if len(fe.flagstats.keys()) != 1:
+        raise AssertionError
 
 
 def assert_FastqFlagExtractor_update(
@@ -107,9 +123,12 @@ def assert_FastqFlagExtractor_update(
     expected_name += f"{fe.flag_delim}{fe.flag_delim}q{const.UT_FLAG_NAME}"
     expected_name += f"{fe.flag_delim}{flag_data['q'+const.UT_FLAG_NAME][0]}"
     updated_name, updated_seq, updated_qual = fe.update(record, flag_data)
-    assert expected_name == updated_name
-    assert record[1] == updated_seq
-    assert record[2] == updated_qual
+    if expected_name != updated_name:
+        raise AssertionError
+    if record[1] != updated_seq:
+        raise AssertionError
+    if record[2] != updated_qual:
+        raise AssertionError
 
 
 def test_FastqFlagExtractor_noSelectedFlags_noStatFlags():
@@ -123,8 +142,10 @@ def test_FastqFlagExtractor_noSelectedFlags_noStatFlags():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
-        assert const.UT_FLAG_NAME not in fe.extract_selected(record, match_result)
-    assert 0 == len(fe.flagstats.keys())
+        if const.UT_FLAG_NAME in fe.extract_selected(record, match_result):
+            raise AssertionError
+    if len(fe.flagstats.keys()) != 0:
+        raise AssertionError
 
 
 def test_FastqFlagExtractor_noStatFlags():
@@ -138,13 +159,18 @@ def test_FastqFlagExtractor_noStatFlags():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-        assert record[2][:8] == flag_data["q" + const.UT_FLAG_NAME][0]
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
+        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+            raise AssertionError
         flag_data = fe.extract_selected(record, match_result)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-        assert record[2][:8] == flag_data["q" + const.UT_FLAG_NAME][0]
-    assert 0 == len(fe.flagstats.keys())
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
+        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+            raise AssertionError
+    if len(fe.flagstats.keys()) != 0:
+        raise AssertionError
 
 
 def test_FastqFlagExtractor():
@@ -158,13 +184,18 @@ def test_FastqFlagExtractor():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-        assert record[2][:8] == flag_data["q" + const.UT_FLAG_NAME][0]
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
+        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+            raise AssertionError
         flag_data = fe.extract_selected(record, match_result)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-        assert record[2][:8] == flag_data["q" + const.UT_FLAG_NAME][0]
-    assert 1 == len(fe.flagstats.keys())
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
+        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+            raise AssertionError
+    if len(fe.flagstats.keys()) != 1:
+        raise AssertionError
 
 
 def test_FastqFlagExtractor_noSelectedFlags():
@@ -178,24 +209,32 @@ def test_FastqFlagExtractor_noSelectedFlags():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
-        assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-        assert record[2][:8] == flag_data["q" + const.UT_FLAG_NAME][0]
-        assert const.UT_FLAG_NAME not in fe.extract_selected(record, match_result)
-    assert 1 == len(fe.flagstats.keys())
+        if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
+            raise AssertionError
+        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+            raise AssertionError
+        if const.UT_FLAG_NAME in fe.extract_selected(record, match_result):
+            raise AssertionError
+    if len(fe.flagstats.keys()) != 1:
+        raise AssertionError
 
 
 def test_get_fastx_flag_extractor():
-    assert (
+    if (
         flag.get_fastx_flag_extractor(const.FastxFormats.FASTA)
-        is flag.FastaFlagExtractor
-    )
-    assert (
+        is not flag.FastaFlagExtractor
+    ):
+        raise AssertionError
+    if (
         flag.get_fastx_flag_extractor(const.FastxFormats.FASTQ)
-        is flag.FastqFlagExtractor
-    )
-    assert (
-        flag.get_fastx_flag_extractor(const.FastxFormats.NONE) is flag.ABCFlagExtractor
-    )
+        is not flag.FastqFlagExtractor
+    ):
+        raise AssertionError
+    if (
+        flag.get_fastx_flag_extractor(const.FastxFormats.NONE)
+        is not flag.ABCFlagExtractor
+    ):
+        raise AssertionError
 
 
 def test_FastxFlagReader_fasta():
@@ -212,9 +251,12 @@ def test_FastxFlagReader_fasta():
         updated_record = fe.update(record, flag_data)
         read_flag_data = fr.read(updated_record)
         for k, v in flag_data.items():
-            assert k in read_flag_data
-            assert read_flag_data[k][0] == v[0]
-        assert list(fe.flagstats.items()) == list(fr.flagstats.items())
+            if k not in read_flag_data:
+                raise AssertionError
+            if read_flag_data[k][0] != v[0]:
+                raise AssertionError
+        if list(fe.flagstats.items()) != list(fr.flagstats.items()):
+            raise AssertionError
 
 
 def test_FastxFlagReader_fastq():
@@ -231,9 +273,12 @@ def test_FastxFlagReader_fastq():
         updated_record = fe.update(record, flag_data)
         read_flag_data = fr.read(updated_record)
         for k, v in flag_data.items():
-            assert k in read_flag_data
-            assert read_flag_data[k][0] == v[0]
-        assert list(fe.flagstats.items()) == list(fr.flagstats.items())
+            if k not in read_flag_data:
+                raise AssertionError
+            if read_flag_data[k][0] != v[0]:
+                raise AssertionError
+        if list(fe.flagstats.items()) != list(fr.flagstats.items()):
+            raise AssertionError
 
 
 def test_FlagRegexes_fasta():
@@ -243,6 +288,8 @@ def test_FlagRegexes_fasta():
     match_result, matched = matcher.do(record)
     flag_data = fe.extract_all(record, match_result)
     fr = flag.FlagRegexes([f"{const.UT_FLAG_NAME},^AT.{{6}}$"])
-    assert fr.match(flag_data)
+    if not fr.match(flag_data):
+        raise AssertionError
     fr = flag.FlagRegexes([f"{const.UT_FLAG_NAME},^GT.{{6}}$"])
-    assert not fr.match(flag_data)
+    if fr.match(flag_data):
+        raise AssertionError

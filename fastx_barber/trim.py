@@ -61,7 +61,8 @@ class FastaTrimmer(ABCTrimmer):
     def trim_re(
         record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> SimpleFastxRecord:
-        assert match is not None
+        if match is None:
+            raise AssertionError
         name, seq, _ = record
         seq = seq[: match.start(0)] + seq[match.end(0) :]
         return (name, seq, None)
@@ -82,9 +83,11 @@ class FastqTrimmer(ABCTrimmer):
     def trim_re(
         record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> SimpleFastxRecord:
-        assert match is not None
+        if match is None:
+            raise AssertionError
         name, seq, qual = record
-        assert qual is not None
+        if qual is None:
+            raise AssertionError
         seq = seq[: match.start(0)] + seq[match.end(0) :]
         qual = qual[: match.start(0)] + qual[match.end(0) :]
         return (name, seq, qual)

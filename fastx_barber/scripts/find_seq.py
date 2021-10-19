@@ -83,13 +83,15 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 @enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    assert os.path.isfile(args.input), f"file not found: '{args.input}'"
+    if not os.path.isfile(args.input):
+        raise AssertionError(f"file not found: '{args.input}'")
 
     fmt, _ = seqio.get_fastx_format(args.input)
-    assert fmt in [
+    if fmt not in [
         FastxFormats.FASTA,
         FastxFormats.FASTQ,
-    ], f"input must be a FASTX file. ({fmt})"
+    ]:
+        raise AssertionError(f"input must be a FASTX file. ({fmt})")
 
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)

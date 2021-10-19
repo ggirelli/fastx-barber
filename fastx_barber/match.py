@@ -118,7 +118,8 @@ class AlphaNumericPattern(object):
 
     @staticmethod
     def parse(pattern: str) -> List[Tuple[str, Tuple[int, int]]]:
-        assert pattern.isalnum()
+        if not pattern.isalnum():
+            raise AssertionError
         pattern = AlphaNumericPattern.remove_leading_digits(pattern)
         pattern = AlphaNumericPattern.remove_trailing_alphas(pattern)
 
@@ -129,7 +130,8 @@ class AlphaNumericPattern(object):
         for c in pattern:
             if c.isalpha():
                 if len(group_len) != 0:
-                    assert group_name not in groups
+                    if group_name in groups:
+                        raise AssertionError
                     groups[group_name] = (position, position + int(group_len))
                     position += int(group_len)
                     group_name = ""

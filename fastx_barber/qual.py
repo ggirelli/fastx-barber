@@ -16,7 +16,8 @@ class QualityIO(object):
 
     def __init__(self, phred_offset: int = 33):
         super(QualityIO, self).__init__()
-        assert phred_offset in {33, 64}
+        if phred_offset not in {33, 64}:
+            raise AssertionError
         self.__phred_offset = phred_offset
 
     @property
@@ -25,9 +26,10 @@ class QualityIO(object):
 
     def phred_to_qscore(self, qual: str) -> List[int]:
         qscore = [ord(c) - self.__phred_offset for c in qual]
-        assert all(
-            q >= 0 for q in qscore
-        ), f"phred offset of {self.__phred_offset} produces negative qscores"
+        if not all(q >= 0 for q in qscore):
+            raise AssertionError(
+                f"phred offset of {self.__phred_offset} produces negative qscores"
+            )
 
         return qscore
 
@@ -62,7 +64,8 @@ class QualityFilter(QualityIO):
 
     @max_perc.setter
     def max_perc(self, max_perc: float) -> None:
-        assert max_perc >= 0 and max_perc <= 1
+        if not 0 <= max_perc <= 1:
+            raise AssertionError
         self.__max_perc = max_perc
 
     @property

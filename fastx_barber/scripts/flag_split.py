@@ -90,7 +90,8 @@ def run_chunk(
     OHC = get_split_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.split_by, args.temp_dir
     )
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
 
     flag_reader = FastxFlagReader()
     flag_reader.flag_delim = args.flag_delim

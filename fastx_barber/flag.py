@@ -96,7 +96,8 @@ class ABCFlagBase(metaclass=ABCMeta):
 
     @flag_delim.setter
     def flag_delim(self, flag_delim: str):
-        assert 1 == len(flag_delim)
+        if len(flag_delim) != 1:
+            raise AssertionError
         self._flag_delim = flag_delim
 
     @property
@@ -105,7 +106,8 @@ class ABCFlagBase(metaclass=ABCMeta):
 
     @comment_space.setter
     def comment_space(self, comment_space: str):
-        assert 1 == len(comment_space)
+        if len(comment_space) != 1:
+            raise AssertionError
         self._comment_space = comment_space
 
 
@@ -217,7 +219,8 @@ class FastaFlagExtractor(ABCFlagExtractor):
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
-        assert match is not None
+        if match is None:
+            raise AssertionError
         flag_data: Dict[str, FlagData] = {}
         flag_data_all = self.extract_all(record, match)
         if self._selected_flags is not None:
@@ -266,9 +269,11 @@ class FastqFlagExtractor(FastaFlagExtractor):
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
-        assert match is not None
+        if match is None:
+            raise AssertionError
         name, seq, qual = record
-        assert qual is not None
+        if qual is None:
+            raise AssertionError
         flag_data = super(FastqFlagExtractor, self).extract_selected(record, match)
         if self.extract_qual_flags:
             flag_data = self.__add_qual_flags(flag_data, qual)
@@ -277,9 +282,11 @@ class FastqFlagExtractor(FastaFlagExtractor):
     def extract_all(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
-        assert match is not None
+        if match is None:
+            raise AssertionError
         name, seq, qual = record
-        assert qual is not None
+        if qual is None:
+            raise AssertionError
         flag_data = super(FastqFlagExtractor, self).extract_all(record, match)
         if self.extract_qual_flags:
             flag_data = self.__add_qual_flags(flag_data, qual)

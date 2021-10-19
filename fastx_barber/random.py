@@ -110,4 +110,5 @@ def write_tmp_fastx_file(
         return write_tmp_fastq_file(
             n_records, seq_length, tmp_dir, gzipped, compresslevel
         )
-    assert fmt is not FastxFormats.NONE
+    if fmt is FastxFormats.NONE:
+        raise AssertionError

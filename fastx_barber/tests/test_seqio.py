@@ -10,14 +10,22 @@ import tempfile
 
 
 def test_get_fastx_format():
-    assert (const.FastxFormats.FASTA, True) == seqio.get_fastx_format("fake.fasta.gz")
-    assert (const.FastxFormats.FASTA, False) == seqio.get_fastx_format("fake.fasta")
-    assert (const.FastxFormats.FASTQ, True) == seqio.get_fastx_format("fake.fastq.gz")
-    assert (const.FastxFormats.FASTQ, False) == seqio.get_fastx_format("fake.fastq")
-    assert (const.FastxFormats.FASTA, True) == seqio.get_fastx_format("fake.fa.gz")
-    assert (const.FastxFormats.FASTA, False) == seqio.get_fastx_format("fake.fa")
-    assert (const.FastxFormats.FASTQ, True) == seqio.get_fastx_format("fake.fq.gz")
-    assert (const.FastxFormats.FASTQ, False) == seqio.get_fastx_format("fake.fq")
+    if (const.FastxFormats.FASTA, True) != seqio.get_fastx_format("fake.fasta.gz"):
+        raise AssertionError
+    if (const.FastxFormats.FASTA, False) != seqio.get_fastx_format("fake.fasta"):
+        raise AssertionError
+    if (const.FastxFormats.FASTQ, True) != seqio.get_fastx_format("fake.fastq.gz"):
+        raise AssertionError
+    if (const.FastxFormats.FASTQ, False) != seqio.get_fastx_format("fake.fastq"):
+        raise AssertionError
+    if (const.FastxFormats.FASTA, True) != seqio.get_fastx_format("fake.fa.gz"):
+        raise AssertionError
+    if (const.FastxFormats.FASTA, False) != seqio.get_fastx_format("fake.fa"):
+        raise AssertionError
+    if (const.FastxFormats.FASTQ, True) != seqio.get_fastx_format("fake.fq.gz"):
+        raise AssertionError
+    if (const.FastxFormats.FASTQ, False) != seqio.get_fastx_format("fake.fq"):
+        raise AssertionError
     try:
         seqio.get_fastx_format("fake.txt.gz")
     except AssertionError:
@@ -67,14 +75,16 @@ def test_FastxChunkedParser():
     fachunks = list(
         seqio.FastxChunkedParser(seqio.get_fastx_parser(fapath)[0], const.UT_CHUNK_SIZE)
     )
-    assert 13 == len(fachunks)
+    if len(fachunks) != 13:
+        raise AssertionError
     fqpath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA, const.UT_N_RECORDS, const.UT_RECORD_SEQ_LEN, dpath
     )
     fqchunks = list(
         seqio.FastxChunkedParser(seqio.get_fastx_parser(fqpath)[0], const.UT_CHUNK_SIZE)
     )
-    assert 13 == len(fqchunks)
+    if len(fqchunks) != 13:
+        raise AssertionError
     zfapath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA,
         const.UT_N_RECORDS,
@@ -87,7 +97,8 @@ def test_FastxChunkedParser():
             seqio.get_fastx_parser(zfapath)[0], const.UT_CHUNK_SIZE
         )
     )
-    assert 13 == len(fachunks)
+    if len(fachunks) != 13:
+        raise AssertionError
     zfqpath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA,
         const.UT_N_RECORDS,
@@ -100,7 +111,8 @@ def test_FastxChunkedParser():
             seqio.get_fastx_parser(zfqpath)[0], const.UT_CHUNK_SIZE
         )
     )
-    assert 13 == len(fqchunks)
+    if len(fqchunks) != 13:
+        raise AssertionError
     shutil.rmtree(dpath)
 
 
@@ -116,7 +128,8 @@ def test_SimpleFastaWriter():
     OH.close()
     written_records = list(seqio.get_fastx_parser(fpath)[0])
     for i in range(len(generated_records)):
-        assert generated_records[i] == written_records[i]
+        if generated_records[i] != written_records[i]:
+            raise AssertionError
     shutil.rmtree(tmp_dir)
 
 
@@ -132,14 +145,18 @@ def test_SimpleFastqWriter():
     OH.close()
     written_records = list(seqio.get_fastx_parser(fpath)[0])
     for i in range(len(generated_records)):
-        assert generated_records[i] == written_records[i]
+        if generated_records[i] != written_records[i]:
+            raise AssertionError
     shutil.rmtree(tmp_dir)
 
 
 def test_get_fastx_writer():
-    assert seqio.get_fastx_writer(const.FastxFormats.FASTA) is seqio.SimpleFastaWriter
-    assert seqio.get_fastx_writer(const.FastxFormats.FASTQ) is seqio.SimpleFastqWriter
-    assert seqio.get_fastx_writer(const.FastxFormats.NONE) is seqio.SimpleFastxWriter
+    if seqio.get_fastx_writer(const.FastxFormats.FASTA) is not seqio.SimpleFastaWriter:
+        raise AssertionError
+    if seqio.get_fastx_writer(const.FastxFormats.FASTQ) is not seqio.SimpleFastqWriter:
+        raise AssertionError
+    if seqio.get_fastx_writer(const.FastxFormats.NONE) is not seqio.SimpleFastxWriter:
+        raise AssertionError
 
 
 def test_SimpleSplitFastaWriter():
@@ -156,7 +173,8 @@ def test_SimpleSplitFastaWriter():
             os.path.join(tmp_dir, f"first_split.{c}.{os.path.basename(fpath)}")
         )
         for record in parser:
-            assert c == record[1][0]
+            if c != record[1][0]:
+                raise AssertionError
     shutil.rmtree(tmp_dir)
 
 
@@ -174,20 +192,24 @@ def test_SimpleSplitFastqWriter():
             os.path.join(tmp_dir, f"first_split.{c}.{os.path.basename(fpath)}")
         )
         for record in parser:
-            assert c == record[1][0]
+            if c != record[1][0]:
+                raise AssertionError
     shutil.rmtree(tmp_dir)
 
 
 def test_get_split_fastx_writer():
-    assert (
+    if (
         seqio.get_split_fastx_writer(const.FastxFormats.FASTA)
-        is seqio.SimpleSplitFastaWriter
-    )
-    assert (
+        is not seqio.SimpleSplitFastaWriter
+    ):
+        raise AssertionError
+    if (
         seqio.get_split_fastx_writer(const.FastxFormats.FASTQ)
-        is seqio.SimpleSplitFastqWriter
-    )
-    assert (
+        is not seqio.SimpleSplitFastqWriter
+    ):
+        raise AssertionError
+    if (
         seqio.get_split_fastx_writer(const.FastxFormats.NONE)
-        is seqio.SimpleSplitFastxWriter
-    )
+        is not seqio.SimpleSplitFastxWriter
+    ):
+        raise AssertionError
