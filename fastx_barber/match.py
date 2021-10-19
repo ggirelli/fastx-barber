@@ -15,7 +15,6 @@ class ANPMatch:
     __spans: List[Tuple[int, int]]
     __groups: List[str]
     __names: List[str]
-    __groupdict: Dict[str, str]
 
     def __init__(
         self,
