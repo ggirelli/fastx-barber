@@ -24,7 +24,7 @@ def assert_fasta_record(
         raise AssertionError
     if not isinstance(record[0], str):
         raise AssertionError
-    if 3 != len(record):
+    if len(record) != 3:
         raise AssertionError
     if expected_name != record[0]:
         raise AssertionError
@@ -57,7 +57,7 @@ def assert_fastq_record(
         raise AssertionError
     if not isinstance(record[0], str):
         raise AssertionError
-    if 3 != len(record):
+    if len(record) != 3:
         raise AssertionError
     if expected_name != record[0]:
         raise AssertionError

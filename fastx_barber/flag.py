@@ -96,7 +96,7 @@ class ABCFlagBase(metaclass=ABCMeta):
 
     @flag_delim.setter
     def flag_delim(self, flag_delim: str):
-        if 1 != len(flag_delim):
+        if len(flag_delim) != 1:
             raise AssertionError
         self._flag_delim = flag_delim
 
@@ -106,7 +106,7 @@ class ABCFlagBase(metaclass=ABCMeta):
 
     @comment_space.setter
     def comment_space(self, comment_space: str):
-        if 1 != len(comment_space):
+        if len(comment_space) != 1:
             raise AssertionError
         self._comment_space = comment_space
 

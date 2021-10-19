@@ -31,7 +31,7 @@ def test_FastaTrimmer_trim_len():
     trimmed_record = trimmer.trim_len(record, 100, 3)
     if record[0] != trimmed_record[0]:
         raise AssertionError
-    if "" != trimmed_record[1]:
+    if trimmed_record[1] != "":
         raise AssertionError
     if record[2] != trimmed_record[2]:
         raise AssertionError
@@ -45,7 +45,7 @@ def test_FastaTrimmer_trim_re():
     trimmed_record = trimmer.trim_re(record, matcher.do(record)[0])
     if record[0] != trimmed_record[0]:
         raise AssertionError
-    if "TGCAT" != trimmed_record[1]:
+    if trimmed_record[1] != "TGCAT":
         raise AssertionError
     if record[2] != trimmed_record[2]:
         raise AssertionError
@@ -54,7 +54,7 @@ def test_FastaTrimmer_trim_re():
     trimmed_record = trimmer.trim_re(record, matcher.do(record)[0])
     if record[0] != trimmed_record[0]:
         raise AssertionError
-    if "TCGATCGATGCAT" != trimmed_record[1]:
+    if trimmed_record[1] != "TCGATCGATGCAT":
         raise AssertionError
     if record[2] != trimmed_record[2]:
         raise AssertionError
@@ -83,9 +83,9 @@ def test_FastqTrimmer_trim_len():
     trimmed_record = trimmer.trim_len(record, 100, 3)
     if record[0] != trimmed_record[0]:
         raise AssertionError
-    if "" != trimmed_record[1]:
+    if trimmed_record[1] != "":
         raise AssertionError
-    if "" != trimmed_record[2]:
+    if trimmed_record[2] != "":
         raise AssertionError
 
 
@@ -97,18 +97,18 @@ def test_FastqTrimmer_trim_re():
     trimmed_record = trimmer.trim_re(record, matcher.do(record)[0])
     if record[0] != trimmed_record[0]:
         raise AssertionError
-    if "TGCAT" != trimmed_record[1]:
+    if trimmed_record[1] != "TGCAT":
         raise AssertionError
-    if "/A/A/" != trimmed_record[2]:
+    if trimmed_record[2] != "/A/A/":
         raise AssertionError
 
     matcher = match.FastxMatcher(re.compile("^.*?CGATCGA"))
     trimmed_record = trimmer.trim_re(record, matcher.do(record)[0])
     if record[0] != trimmed_record[0]:
         raise AssertionError
-    if "TCGATCGATGCAT" != trimmed_record[1]:
+    if trimmed_record[1] != "TCGATCGATGCAT":
         raise AssertionError
-    if "/A/A/A/A/A/A/" != trimmed_record[2]:
+    if trimmed_record[2] != "/A/A/A/A/A/A/":
         raise AssertionError
 
 
@@ -118,23 +118,23 @@ def test_FastqTrimmer_trim_qual():
     record = ("test", "ATCGATCGATCGATCGATGCAT", "////A/A/A/A/A/A/A/////")
 
     trimmed_record, trimmed_len = trimmer.trim_qual(record, 30, 5, qio)
-    if 4 != trimmed_len:
+    if trimmed_len != 4:
         raise AssertionError
     if record[0] != trimmed_record[0]:
         raise AssertionError
-    if "ATCGATCGATCGATGCAT" != trimmed_record[1]:
+    if trimmed_record[1] != "ATCGATCGATCGATGCAT":
         raise AssertionError
-    if "A/A/A/A/A/A/A/////" != trimmed_record[2]:
+    if trimmed_record[2] != "A/A/A/A/A/A/A/////":
         raise AssertionError
 
     trimmed_record, trimmed_len = trimmer.trim_qual(record, 30, 3, qio)
-    if 5 != trimmed_len:
+    if trimmed_len != 5:
         raise AssertionError
     if record[0] != trimmed_record[0]:
         raise AssertionError
-    if "ATCGATCGATCGATCGA" != trimmed_record[1]:
+    if trimmed_record[1] != "ATCGATCGATCGATCGA":
         raise AssertionError
-    if "////A/A/A/A/A/A/A" != trimmed_record[2]:
+    if trimmed_record[2] != "////A/A/A/A/A/A/A":
         raise AssertionError
 
 

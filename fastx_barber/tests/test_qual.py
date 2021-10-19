@@ -11,13 +11,13 @@ DEFAULT_FILTER_QUAL_FLAGS = ["flag,30,.2", "test,15,.1"]
 
 def test_QualityIO():
     qio = qual.QualityIO()
-    if 32 != qio.phred_to_qscore("A")[0]:
+    if qio.phred_to_qscore("A")[0] != 32:
         raise AssertionError
-    if 14 != qio.phred_to_qscore("/")[0]:
+    if qio.phred_to_qscore("/")[0] != 14:
         raise AssertionError
-    if 60 != qio.phred_to_qscore("]")[0]:
+    if qio.phred_to_qscore("]")[0] != 60:
         raise AssertionError
-    if 36 != qio.phred_to_qscore("E")[0]:
+    if qio.phred_to_qscore("E")[0] != 36:
         raise AssertionError
     if [32, 14, 60, 36] != qio.phred_to_qscore("A/]E"):
         raise AssertionError
@@ -40,9 +40,9 @@ def test_QualityFilter():
         raise AssertionError
     if not qf.qual_pass_filter("AE]]]/"):
         raise AssertionError
-    if 3 != qf.parsed:
+    if qf.parsed != 3:
         raise AssertionError
-    if 2 != qf.passed:
+    if qf.passed != 2:
         raise AssertionError
 
 
@@ -51,17 +51,17 @@ def validate_filters(filters):
         raise AssertionError
     if not isinstance(filters["qflag"], qual.QualityFilter):
         raise AssertionError
-    if 30 != filters["qflag"].min_qscore:
+    if filters["qflag"].min_qscore != 30:
         raise AssertionError
-    if 0.2 != filters["qflag"].max_perc:
+    if filters["qflag"].max_perc != 0.2:
         raise AssertionError
     if "qtest" not in filters:
         raise AssertionError
     if not isinstance(filters["qtest"], qual.QualityFilter):
         raise AssertionError
-    if 15 != filters["qtest"].min_qscore:
+    if filters["qtest"].min_qscore != 15:
         raise AssertionError
-    if 0.1 != filters["qtest"].max_perc:
+    if filters["qtest"].max_perc != 0.1:
         raise AssertionError
 
 
@@ -105,12 +105,12 @@ def test_apply_filter_flag():
 
 def test_setup_qual_filters():
     qff, ff = qual.setup_qual_filters(None, DEFAULT_PHRED_OFFSET)
-    if 0 != len(qff):
+    if len(qff) != 0:
         raise AssertionError
     if qual.dummy_apply_filter_flag != ff:
         raise AssertionError
     qff, ff = qual.setup_qual_filters(DEFAULT_FILTER_QUAL_FLAGS, DEFAULT_PHRED_OFFSET)
-    if 2 != len(qff):
+    if len(qff) != 2:
         raise AssertionError
     if qual.apply_filter_flag != ff:
         raise AssertionError

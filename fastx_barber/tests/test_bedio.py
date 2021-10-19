@@ -26,7 +26,7 @@ def test_BedWriter_3fields():
             raise AssertionError
         for i in range(len(bed_data)):
             record = bed_content[i].strip().split()
-            if 3 != len(record):
+            if len(record) != 3:
                 raise AssertionError
             if bed_data[i][0] != record[0]:
                 raise AssertionError
@@ -51,7 +51,7 @@ def test_BedWriter_4fields():
             raise AssertionError
         for i in range(len(bed_data)):
             record = bed_content[i].strip().split()
-            if 4 != len(record):
+            if len(record) != 4:
                 raise AssertionError
             if bed_data[i][0] != record[0]:
                 raise AssertionError
@@ -78,7 +78,7 @@ def test_BedWriter_5fields():
             raise AssertionError
         for i in range(len(bed_data)):
             record = bed_content[i].strip().split()
-            if 5 != len(record):
+            if len(record) != 5:
                 raise AssertionError
             if bed_data[i][0] != record[0]:
                 raise AssertionError
@@ -107,7 +107,7 @@ def test_BedWriter_6fields():
             raise AssertionError
         for i in range(len(bed_data)):
             record = bed_content[i].strip().split()
-            if 6 != len(record):
+            if len(record) != 6:
                 raise AssertionError
             if bed_data[i][0] != record[0]:
                 raise AssertionError

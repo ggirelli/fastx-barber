@@ -25,19 +25,19 @@ def test_is_gzipped():
 
 def test_splitext():
     base, ext = io.splitext("/root/test.txt")
-    if "/root/test" != base:
+    if base != "/root/test":
         raise AssertionError
-    if ".txt" != ext:
+    if ext != ".txt":
         raise AssertionError
     base, ext = io.splitext("/root/test.txt.gz")
-    if "/root/test" != base:
+    if base != "/root/test":
         raise AssertionError
-    if ".txt.gz" != ext:
+    if ext != ".txt.gz":
         raise AssertionError
     base, ext = io.splitext("/root/test.txt.gz.gz")
-    if "/root/test" != base:
+    if base != "/root/test":
         raise AssertionError
-    if ".txt.gz.gz" != ext:
+    if ext != ".txt.gz.gz":
         raise AssertionError
 
 
@@ -56,11 +56,11 @@ def test_ChunkMerger():
 
     with open("test.txt", "r+") as MH:
         merged_content = MH.readlines()
-        if 2 != len(merged_content):
+        if len(merged_content) != 2:
             raise AssertionError
-        if "chunk1\n" != merged_content[0]:
+        if merged_content[0] != "chunk1\n":
             raise AssertionError
-        if "chunk2\n" != merged_content[1]:
+        if merged_content[1] != "chunk2\n":
             raise AssertionError
     os.remove(MH.name)
 
@@ -87,22 +87,22 @@ def test_ChunkMerger_split():
     with open("test_split.ASD.test.txt", "r+") as MH:
         merged_content = MH.readlines()
         print(merged_content)
-        if 2 != len(merged_content):
+        if len(merged_content) != 2:
             raise AssertionError
-        if "chunk1\n" != merged_content[0]:
+        if merged_content[0] != "chunk1\n":
             raise AssertionError
-        if "chunk3\n" != merged_content[1]:
+        if merged_content[1] != "chunk3\n":
             raise AssertionError
     os.remove(MH.name)
 
     with open("test_split.DSA.test.txt", "r+") as MH:
         merged_content = MH.readlines()
         print(merged_content)
-        if 2 != len(merged_content):
+        if len(merged_content) != 2:
             raise AssertionError
-        if "chunk2\n" != merged_content[0]:
+        if merged_content[0] != "chunk2\n":
             raise AssertionError
-        if "chunk4\n" != merged_content[1]:
+        if merged_content[1] != "chunk4\n":
             raise AssertionError
     os.remove(MH.name)
 
@@ -125,11 +125,11 @@ def test_ChunkMerger_noRemove():
 
     with open("test.txt", "r+") as MH:
         merged_content = MH.readlines()
-        if 2 != len(merged_content):
+        if len(merged_content) != 2:
             raise AssertionError
-        if "chunk1\n" != merged_content[0]:
+        if merged_content[0] != "chunk1\n":
             raise AssertionError
-        if "chunk2\n" != merged_content[1]:
+        if merged_content[1] != "chunk2\n":
             raise AssertionError
     os.remove(MH.name)
 
