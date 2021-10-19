@@ -72,10 +72,9 @@ class FastaTrimmer(ABCTrimmer):
     ) -> SimpleFastxRecord:
         if side == 5:
             return (record[0], record[1][length:], None)
-        elif side == 3:
+        if side == 3:
             return (record[0], record[1][:-length], None)
-        else:
-            raise Exception("Can trim only from 5' or 3' end.")
+        raise Exception("Can trim only from 5' or 3' end.")
 
 
 class FastqTrimmer(ABCTrimmer):
@@ -96,10 +95,9 @@ class FastqTrimmer(ABCTrimmer):
     ) -> SimpleFastxRecord:
         if side == 5:
             return (record[0], record[1][length:], record[2][length:])
-        elif side == 3:
+        if side == 3:
             return (record[0], record[1][:-length], record[2][:-length])
-        else:
-            raise Exception("Can trim only from 5' or 3' end.")
+        raise Exception("Can trim only from 5' or 3' end.")
 
     @staticmethod
     def __trim_qual_5(
@@ -149,17 +147,15 @@ class FastqTrimmer(ABCTrimmer):
         bases_qscores = qio.phred_to_qscore(record[2])
         if side == 5:
             return FastqTrimmer.__trim_qual_5(record, qscore_thr, bases_qscores)
-        elif side == 3:
+        if side == 3:
             return FastqTrimmer.__trim_qual_3(record, qscore_thr, bases_qscores)
-        else:
-            raise Exception("Can trim only from 5' or 3' end.")
+        raise Exception("Can trim only from 5' or 3' end.")
 
 
 def get_fastx_trimmer(fmt: FastxFormats) -> Type[ABCTrimmer]:
     """Retrieves appropriate trimmer class."""
     if FastxFormats.FASTA == fmt:
         return FastaTrimmer
-    elif FastxFormats.FASTQ == fmt:
+    if FastxFormats.FASTQ == fmt:
         return FastqTrimmer
-    else:
-        return ABCTrimmer
+    return ABCTrimmer
