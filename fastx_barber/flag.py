@@ -209,9 +209,7 @@ class ABCFlagExtractor(ABCFlagBase):
         if self._selected_flags is None:
             return flag_data
         return {
-            name: flag_data[name]
-            for name in self._selected_flags
-            if name in flag_data
+            name: flag_data[name] for name in self._selected_flags if name in flag_data
         }
 
 
