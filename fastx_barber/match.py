@@ -199,9 +199,6 @@ class ABCMatcher(metaclass=ABCMeta):
 
 
 class FastxMatcher(ABCMatcher):
-    def __init__(self, pattern: Union[AlphaNumericPattern, Pattern]):
-        super(FastxMatcher, self).__init__(pattern)
-
     def do(
         self, record: SimpleFastxRecord
     ) -> Tuple[Union[Optional[ANPMatch], Match], bool]:

@@ -57,9 +57,6 @@ class ABCTrimmer(metaclass=ABCMeta):
 
 
 class FastaTrimmer(ABCTrimmer):
-    def __init__(self):
-        super(FastaTrimmer, self).__init__()
-
     @staticmethod
     def trim_re(
         record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
@@ -82,9 +79,6 @@ class FastaTrimmer(ABCTrimmer):
 
 
 class FastqTrimmer(ABCTrimmer):
-    def __init__(self):
-        super(FastqTrimmer, self).__init__()
-
     @staticmethod
     def trim_re(
         record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
