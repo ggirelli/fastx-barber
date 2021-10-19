@@ -10,7 +10,8 @@ TEST_ALPHABET = list("abcde")
 
 
 def test_make_random_string():
-    random_string = random.make_random_string(const.UT_RECORD_SEQ_LEN, TEST_ALPHABET)
+    random_string = random.make_random_string(
+        const.UT_RECORD_SEQ_LEN, TEST_ALPHABET)
     assert const.UT_RECORD_SEQ_LEN == len(random_string)
     assert all(c in TEST_ALPHABET for c in random_string)
 

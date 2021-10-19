@@ -71,7 +71,8 @@ def test_apply_filter_flag():
         {"qflag": ("/AAA", -1, -1), "qtest": ("/AAAAAAAA", -1, -1)}, filters
     )
     assert qual.apply_filter_flag(
-        {"qflag": ("/EEAAAA", -1, -1), "qtest": ("/EEAAAAAAAA", -1, -1)}, filters
+        {"qflag": ("/EEAAAA", -1, -1),
+         "qtest": ("/EEAAAAAAAA", -1, -1)}, filters
     )
 
 
@@ -79,7 +80,8 @@ def test_setup_qual_filters():
     qff, ff = qual.setup_qual_filters(None, DEFAULT_PHRED_OFFSET)
     assert 0 == len(qff)
     assert qual.dummy_apply_filter_flag == ff
-    qff, ff = qual.setup_qual_filters(DEFAULT_FILTER_QUAL_FLAGS, DEFAULT_PHRED_OFFSET)
+    qff, ff = qual.setup_qual_filters(
+        DEFAULT_FILTER_QUAL_FLAGS, DEFAULT_PHRED_OFFSET)
     assert 2 == len(qff)
     assert qual.apply_filter_flag == ff
     validate_filters(qff)

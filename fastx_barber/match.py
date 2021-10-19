@@ -36,7 +36,7 @@ class ANPMatch(object):
         for name, span in groups:
             self.__names.append(name)
             self.__spans.append(span)
-            self.__groups.append(self.__match[span[0] : span[1]])
+            self.__groups.append(self.__match[span[0]: span[1]])
 
     @property
     def lastindex(self) -> int:
@@ -101,7 +101,8 @@ class AlphaNumericPattern(object):
         if len(query) < self._length:
             return None
         return ANPMatch(
-            query[: self._length], (0, self._length), self._groups, self._pattern
+            query[: self._length], (0,
+                                    self._length), self._groups, self._pattern
         )
 
     @staticmethod
@@ -218,6 +219,6 @@ def search_needle(
     header, seq, _ = record
     match_counter = offset
     for i in track(range(len(seq) - len(needle) + 1), description=header):
-        if seq[i : (i + len(needle))] == needle:
+        if seq[i: (i + len(needle))] == needle:
             match_counter += 1
             yield (i, match_counter)

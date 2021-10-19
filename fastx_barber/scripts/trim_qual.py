@@ -122,7 +122,8 @@ def run_chunk(
     untrimmed_counter = 0
     trimmed_length_list: List[int] = []
     for record in chunk:
-        record, trimmed_length = trimmer.trim_qual(record, args.qscore, args.side, qio)
+        record, trimmed_length = trimmer.trim_qual(
+            record, args.qscore, args.side, qio)
         trimmed_length_list.append(trimmed_length)
         if len(record[1]) > 0:
             OHC.write(record)

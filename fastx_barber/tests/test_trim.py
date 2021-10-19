@@ -107,4 +107,5 @@ def test_get_fastx_trimmer():
     assert isinstance(
         trim.get_fastx_trimmer(FastxFormats.FASTQ), type(trim.FastqTrimmer)
     )
-    assert isinstance(trim.get_fastx_trimmer(FastxFormats.NONE), type(trim.ABCTrimmer))
+    assert isinstance(trim.get_fastx_trimmer(
+        FastxFormats.NONE), type(trim.ABCTrimmer))

@@ -96,7 +96,8 @@ def run_chunk(
 ) -> Tuple[int, int]:
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
-    OHC = get_chunk_handler(cid, fmt, args.output, args.compress_level, args.temp_dir)
+    OHC = get_chunk_handler(cid, fmt, args.output,
+                            args.compress_level, args.temp_dir)
     assert OHC is not None
     UHC = get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
@@ -166,7 +167,8 @@ def run(args: argparse.Namespace) -> None:
     logging.info("Merging batch output...")
     merger = ChunkMerger(args.temp_dir, None)
     if args.unmatched_output is not None:
-        merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched records")
+        merger.do(args.unmatched_output, IH.last_chunk_id,
+                  "Writing unmatched records")
     merger.do(args.output, IH.last_chunk_id, "Writing matched records")
 
     logging.info("Done. :thumbs_up: :smiley:")

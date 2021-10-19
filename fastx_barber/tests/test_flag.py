@@ -41,7 +41,8 @@ def test_FastaFlagExtractor_noSelectedFlags_noStatFlags():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastaFlagExtractor_update(fe, record, flag_data)
-        assert const.UT_FLAG_NAME not in fe.extract_selected(record, match_result)
+        assert const.UT_FLAG_NAME not in fe.extract_selected(
+            record, match_result)
     assert 0 == len(fe.flagstats.keys())
 
 
@@ -93,7 +94,8 @@ def test_FastaFlagExtractor_noSelectedFlags():
         fe.update_stats(flag_data)
         assert_FastaFlagExtractor_update(fe, record, flag_data)
         assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
-        assert const.UT_FLAG_NAME not in fe.extract_selected(record, match_result)
+        assert const.UT_FLAG_NAME not in fe.extract_selected(
+            record, match_result)
     assert 1 == len(fe.flagstats.keys())
 
 
@@ -123,7 +125,8 @@ def test_FastqFlagExtractor_noSelectedFlags_noStatFlags():
         flag_data = fe.extract_all(record, match_result)
         fe.update_stats(flag_data)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
-        assert const.UT_FLAG_NAME not in fe.extract_selected(record, match_result)
+        assert const.UT_FLAG_NAME not in fe.extract_selected(
+            record, match_result)
     assert 0 == len(fe.flagstats.keys())
 
 
@@ -180,7 +183,8 @@ def test_FastqFlagExtractor_noSelectedFlags():
         assert_FastqFlagExtractor_update(fe, record, flag_data)
         assert record[1][:8] == flag_data[const.UT_FLAG_NAME][0]
         assert record[2][:8] == flag_data["q" + const.UT_FLAG_NAME][0]
-        assert const.UT_FLAG_NAME not in fe.extract_selected(record, match_result)
+        assert const.UT_FLAG_NAME not in fe.extract_selected(
+            record, match_result)
     assert 1 == len(fe.flagstats.keys())
 
 
@@ -194,7 +198,8 @@ def test_get_fastx_flag_extractor():
         is flag.FastqFlagExtractor
     )
     assert (
-        flag.get_fastx_flag_extractor(const.FastxFormats.NONE) is flag.ABCFlagExtractor
+        flag.get_fastx_flag_extractor(
+            const.FastxFormats.NONE) is flag.ABCFlagExtractor
     )
 
 

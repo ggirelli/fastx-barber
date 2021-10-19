@@ -23,7 +23,8 @@ from typing import Callable, Dict, Optional, Tuple, Union
 
 
 def set_tempdir(args: argparse.Namespace) -> argparse.Namespace:
-    assert os.path.isdir(args.temp_dir), f"temporary folder not found: {args.temp_dir}"
+    assert os.path.isdir(
+        args.temp_dir), f"temporary folder not found: {args.temp_dir}"
     args.temp_dir = tempfile.TemporaryDirectory(
         prefix="fastx-barber.", dir=args.temp_dir
     )
@@ -138,7 +139,8 @@ def get_split_qual_filter_handler(
     split_by: str,
     tempdir: Optional[tempfile.TemporaryDirectory] = None,
 ) -> Tuple[Optional[SimpleSplitFastxWriter], Callable]:
-    FH = get_split_chunk_handler(cid, fmt, path, compress_level, split_by, tempdir)
+    FH = get_split_chunk_handler(
+        cid, fmt, path, compress_level, split_by, tempdir)
     if FH is None:
         return (FH, lambda *x: None)
 
@@ -154,7 +156,8 @@ def get_handles(
     Optional[SimpleFastxWriter],
     Callable,
 ]:
-    OHC = get_chunk_handler(cid, fmt, args.output, args.compress_level, args.temp_dir)
+    OHC = get_chunk_handler(cid, fmt, args.output,
+                            args.compress_level, args.temp_dir)
     assert OHC is not None
     UHC = get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir

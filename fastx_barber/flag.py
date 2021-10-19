@@ -54,7 +54,8 @@ class FlagStats(object):
         df["value"] = list(stats.keys())
         df["counts"] = list(stats.values())
         df["perc"] = round(df["counts"] / df["counts"].sum() * 100, 2)
-        df.sort_values("counts", ascending=False, ignore_index=True, inplace=True)
+        df.sort_values("counts", ascending=False,
+                       ignore_index=True, inplace=True)
         return df
 
     def export(self, output_path: str, verbose: bool = True) -> None:
@@ -272,7 +273,8 @@ class FastqFlagExtractor(FastaFlagExtractor):
         assert match is not None
         name, seq, qual = record
         assert qual is not None
-        flag_data = super(FastqFlagExtractor, self).extract_selected(record, match)
+        flag_data = super(FastqFlagExtractor,
+                          self).extract_selected(record, match)
         if self.extract_qual_flags:
             flag_data = self.__add_qual_flags(flag_data, qual)
         return flag_data
@@ -292,7 +294,8 @@ class FastqFlagExtractor(FastaFlagExtractor):
         self, flag_data: Dict[str, FlagData], qual: str
     ) -> Dict[str, FlagData]:
         for name, (_, start, end) in list(flag_data.items()):
-            flag = (f"{QFLAG_START}{name}", (qual[slice(start, end)], start, end))
+            flag = (f"{QFLAG_START}{name}",
+                    (qual[slice(start, end)], start, end))
             flag_data.update([flag])
         return flag_data
 
@@ -300,13 +303,15 @@ class FastqFlagExtractor(FastaFlagExtractor):
         self, record: SimpleFastxRecord, flag_data: Dict[str, FlagData]
     ) -> SimpleFastxRecord:
         _, _, qual = record
-        name, seq, _ = super(FastqFlagExtractor, self).update(record, flag_data)
+        name, seq, _ = super(FastqFlagExtractor,
+                             self).update(record, flag_data)
         return (name, seq, qual)
 
     def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
         if self._selected_flags is None:
             return flag_data
-        selected_flag_data = super(FastqFlagExtractor, self).apply_selection(flag_data)
+        selected_flag_data = super(
+            FastqFlagExtractor, self).apply_selection(flag_data)
         for name in self._selected_flags:
             name = f"{QFLAG_START}{name}"
             if name in flag_data:

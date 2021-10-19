@@ -63,7 +63,7 @@ class FastaTrimmer(ABCTrimmer):
     ) -> SimpleFastxRecord:
         assert match is not None
         name, seq, _ = record
-        seq = seq[: match.start(0)] + seq[match.end(0) :]
+        seq = seq[: match.start(0)] + seq[match.end(0):]
         return (name, seq, None)
 
     @staticmethod
@@ -86,8 +86,8 @@ class FastqTrimmer(ABCTrimmer):
         assert match is not None
         name, seq, qual = record
         assert qual is not None
-        seq = seq[: match.start(0)] + seq[match.end(0) :]
-        qual = qual[: match.start(0)] + qual[match.end(0) :]
+        seq = seq[: match.start(0)] + seq[match.end(0):]
+        qual = qual[: match.start(0)] + qual[match.end(0):]
         return (name, seq, qual)
 
     @staticmethod

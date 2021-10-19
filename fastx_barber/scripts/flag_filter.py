@@ -74,7 +74,8 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args = scriptio.set_tempdir(args)
 
     if args.filter_qual_flags is None:
-        logging.info("No quality filter specified, nothing to do. :person_shrugging:")
+        logging.info(
+            "No quality filter specified, nothing to do. :person_shrugging:")
         sys.exit()
 
     if args.log_file is not None:
@@ -166,6 +167,7 @@ def run(args: argparse.Namespace) -> None:
     merger = ChunkMerger(args.temp_dir)
     merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.filter_qual_output is not None:
-        merger.do(args.filter_qual_output, IH.last_chunk_id, "Writing filtered records")
+        merger.do(args.filter_qual_output, IH.last_chunk_id,
+                  "Writing filtered records")
 
     logging.info("Done. :thumbs_up: :smiley:")

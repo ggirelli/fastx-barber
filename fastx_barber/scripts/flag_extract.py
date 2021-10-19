@@ -172,7 +172,8 @@ def run_chunk(
         args.filter_qual_flags, args.phred_offset
     )
 
-    flag_extractor = get_fastx_flag_extractor(fmt)(args.selected_flags, args.flagstats)
+    flag_extractor = get_fastx_flag_extractor(
+        fmt)(args.selected_flags, args.flagstats)
     flag_extractor.flag_delim = args.flag_delim
     flag_extractor.comment_space = args.comment_space
     if isinstance(flag_extractor, FastqFlagExtractor):
@@ -236,7 +237,8 @@ def run(args: argparse.Namespace) -> None:
         joblib.delayed(run_chunk)(chunk, cid, args) for chunk, cid in IH
     )
     logging.info("Merging subprocesses details...")
-    n_parsed, n_matched, n_filtered, flagstats = merge_chunk_details(chunk_details)
+    n_parsed, n_matched, n_filtered, flagstats = merge_chunk_details(
+        chunk_details)
 
     logging.info(
         f"{n_matched}/{n_parsed} ({n_matched/n_parsed*100:.2f}%) "
@@ -259,10 +261,12 @@ def run(args: argparse.Namespace) -> None:
     logging.info("Merging batch output...")
     if args.unmatched_output is not None:
         merger = ChunkMerger(args.temp_dir, None)
-        merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched records")
+        merger.do(args.unmatched_output, IH.last_chunk_id,
+                  "Writing unmatched records")
     merger = ChunkMerger(args.temp_dir, args.split_by)
     merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.filter_qual_output is not None:
-        merger.do(args.filter_qual_output, IH.last_chunk_id, "Writing filtered records")
+        merger.do(args.filter_qual_output, IH.last_chunk_id,
+                  "Writing filtered records")
 
     logging.info("Done. :thumbs_up: :smiley:")
