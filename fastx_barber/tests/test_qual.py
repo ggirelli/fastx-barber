@@ -107,11 +107,11 @@ def test_setup_qual_filters():
     qff, ff = qual.setup_qual_filters(None, DEFAULT_PHRED_OFFSET)
     if len(qff) != 0:
         raise AssertionError
-    if qual.dummy_apply_filter_flag != ff:
+    if qual.dummy_apply_filter_flag is not ff:
         raise AssertionError
     qff, ff = qual.setup_qual_filters(DEFAULT_FILTER_QUAL_FLAGS, DEFAULT_PHRED_OFFSET)
     if len(qff) != 2:
         raise AssertionError
-    if qual.apply_filter_flag != ff:
+    if qual.apply_filter_flag is not ff:
         raise AssertionError
     validate_filters(qff)
