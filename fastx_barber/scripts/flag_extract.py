@@ -115,7 +115,8 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 @enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    assert 1 == len(args.flag_delim)
+    if len(args.flag_delim) != 1:
+        raise AssertionError
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
 
@@ -242,7 +243,7 @@ def run(args: argparse.Namespace) -> None:
         f"{n_matched}/{n_parsed} ({n_matched/n_parsed*100:.2f}%) "
         + "records matched the pattern.",
     )
-    if args.filter_qual_flags is not None and 0 != n_matched:
+    if args.filter_qual_flags is not None and n_matched != 0:
         logging.info(
             " ".join(
                 (

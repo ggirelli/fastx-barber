@@ -9,7 +9,7 @@ from rich.progress import track  # type: ignore
 from typing import Any, Dict, Iterator, List, Match, Optional, Pattern, Tuple, Union
 
 
-class ANPMatch(object):
+class ANPMatch:
     __pattern: str
     __match: str
     __spans: List[Tuple[int, int]]
@@ -82,7 +82,7 @@ class ANPMatch(object):
         return dict(zip(self.__names[1:], self.__groups[1:]))
 
 
-class AlphaNumericPattern(object):
+class AlphaNumericPattern:
     _pattern: str
     _length: int
     _groups: List[Tuple[str, Tuple[int, int]]]
@@ -91,7 +91,7 @@ class AlphaNumericPattern(object):
         super(AlphaNumericPattern, self).__init__()
         self._pattern = pattern
         self._groups = self.parse(pattern)
-        self._length = sum([e - s for n, (s, e) in self._groups])
+        self._length = sum(e - s for n, (s, e) in self._groups)
 
     @property
     def pattern(self):
@@ -118,7 +118,8 @@ class AlphaNumericPattern(object):
 
     @staticmethod
     def parse(pattern: str) -> List[Tuple[str, Tuple[int, int]]]:
-        assert pattern.isalnum()
+        if not pattern.isalnum():
+            raise AssertionError
         pattern = AlphaNumericPattern.remove_leading_digits(pattern)
         pattern = AlphaNumericPattern.remove_trailing_alphas(pattern)
 
@@ -128,8 +129,9 @@ class AlphaNumericPattern(object):
         position = 0
         for c in pattern:
             if c.isalpha():
-                if 0 != len(group_len):
-                    assert group_name not in groups
+                if len(group_len) != 0:
+                    if group_name in groups:
+                        raise AssertionError
                     groups[group_name] = (position, position + int(group_len))
                     position += int(group_len)
                     group_name = ""
@@ -195,13 +197,10 @@ class ABCMatcher(metaclass=ABCMeta):
         Returns:
             Tuple[Match, bool] -- match and matched status
         """
-        pass
+        raise NotImplementedError
 
 
 class FastxMatcher(ABCMatcher):
-    def __init__(self, pattern: Union[AlphaNumericPattern, Pattern]):
-        super(FastxMatcher, self).__init__(pattern)
-
     def do(
         self, record: SimpleFastxRecord
     ) -> Tuple[Union[Optional[ANPMatch], Match], bool]:
@@ -220,7 +219,7 @@ def search_needle(
 ) -> Iterator[Tuple[int, int]]:
     header, seq, _ = record
     match_counter = offset
-    for i in track(range(0, len(seq) - len(needle) + 1), description=header):
+    for i in track(range(len(seq) - len(needle) + 1), description=header):
         if seq[i : (i + len(needle))] == needle:
             match_counter += 1
             yield (i, match_counter)

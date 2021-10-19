@@ -91,7 +91,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
 
-    if 0 == args.qscore:
+    if args.qscore == 0:
         logging.info(
             "Trimming QSCORE threshold (-q) equal to 0. "
             + "Nothing to do. :person_shrugging:"
@@ -113,7 +113,8 @@ def run_chunk(
     OHC = scriptio.get_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.temp_dir
     )
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
 
     trimmer = FastqTrimmer()
     qio = QualityIO(args.phred_offset)
@@ -124,7 +125,7 @@ def run_chunk(
     for record in chunk:
         record, trimmed_length = trimmer.trim_qual(record, args.qscore, args.side, qio)
         trimmed_length_list.append(trimmed_length)
-        if 0 < len(record[1]):
+        if len(record[1]) > 0:
             OHC.write(record)
         trimmed_counter += trimmed_length != 0
         untrimmed_counter += trimmed_length == 0
@@ -146,7 +147,8 @@ def run(args: argparse.Namespace) -> None:
     IH = FastxChunkedParser(IH, args.chunk_size)
 
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
-    assert FastxFormats.FASTQ == fmt, "Trimming by quality requires a fastq file."
+    if FastxFormats.FASTQ != fmt:
+        raise AssertionError("Trimming by quality requires a fastq file.")
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming...")

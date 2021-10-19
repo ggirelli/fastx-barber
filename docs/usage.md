@@ -2,28 +2,29 @@
 
 <!-- MarkdownTOC -->
 
-- [Match](#match)
-- [Trim](#trim)
-  - [Trim by length](#trim-by-length)
-  - [Trim by quality](#trim-by-quality)
-  - [Trim by regular expression](#trim-by-regular-expression)
-- [Flags](#flags)
-  - [Extract flags](#extract-flags)
-    - [Flag extraction example](#flag-extraction-example)
-    - [Using a simple alphanumeric pattern](#using-a-simple-alphanumeric-pattern)
-    - [Extracting quality flags \(default\)](#extracting-quality-flags-default)
-  - [After flag extraction](#after-flag-extraction)
-    - [Filter by flag quality](#filter-by-flag-quality)
-    - [Match flags with regular expressions](#match-flags-with-regular-expressions)
-    - [Split by flag value](#split-by-flag-value)
-    - [Calculate flag value frequency](#calculate-flag-value-frequency)
-- [Find sequence](#find-sequence)
-- [General](#general)
-  - [Output](#output)
-  - [Regular expressions](#regular-expressions)
-  - [QSCORE](#qscore)
-  - [Logging](#logging)
-  - [Parallelization](#parallelization)
+- [Usage](#usage)
+  - [Match](#match)
+  - [Trim](#trim)
+    - [Trim by length](#trim-by-length)
+    - [Trim by quality](#trim-by-quality)
+    - [Trim by regular expression](#trim-by-regular-expression)
+  - [Flags](#flags)
+    - [Extract flags](#extract-flags)
+      - [Flag extraction example](#flag-extraction-example)
+      - [Using a simple alphanumeric pattern](#using-a-simple-alphanumeric-pattern)
+      - [Extracting quality flags (default)](#extracting-quality-flags-default)
+    - [After flag extraction](#after-flag-extraction)
+      - [Filter by flag quality](#filter-by-flag-quality)
+      - [Match flags with regular expressions](#match-flags-with-regular-expressions)
+      - [Split by flag value](#split-by-flag-value)
+      - [Calculate flag value frequency](#calculate-flag-value-frequency)
+  - [Find sequence](#find-sequence)
+  - [General](#general)
+    - [Output](#output)
+    - [Regular expressions](#regular-expressions)
+    - [QSCORE](#qscore)
+    - [Logging](#logging)
+    - [Parallelization](#parallelization)
 
 <!-- /MarkdownTOC -->
 
@@ -80,7 +81,7 @@ The `trim regex` command tries to match a regex (`--pattern`, see [regular expre
 
 ## Flags
 
-The `flag` command can be used to access tools to extract portions of the reads (flags) and store them in the read headers, filter them, match them to a regex, calculate statistics, or split reads besed on their value. These operations can be either performed simultaneously at time of flag extraction (see [extract flags](#extract-flags) below) or on a file with previously extracted flags (see [after flag extraction](#after-flag-extraction)).
+The `flag` command can be used to access tools to extract portions of the reads (flags) and store them in the read headers, filter them, match them to a regex, calculate statistics, or split reads based on their value. These operations can be either performed simultaneously at time of flag extraction (see [extract flags](#extract-flags) below) or on a file with previously extracted flags (see [after flag extraction](#after-flag-extraction)).
 
 ### Extract flags
 
@@ -131,7 +132,7 @@ When used together with `--simple-pattern`, the `--pattern` option accepts a *si
 
 #### Extracting quality flags (default)
 
-When running `flag extract` on a fastq file, the portion of quality string corresponging to each flag is also stored in the header. The quality string is saved as a separate flag by appending a "q" prefix at the beginning of the flag name.
+When running `flag extract` on a fastq file, the portion of quality string corresponding to each flag is also stored in the header. The quality string is saved as a separate flag by appending a "q" prefix at the beginning of the flag name.
 
 To avoid extracting quality flags from fastq files, please use the `--no-qual-flags` option.
 
