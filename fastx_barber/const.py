@@ -40,8 +40,8 @@ class FastxFormats(Enum):
     NONE = "None"
 
     @classmethod
-    def has_value(self, value):
-        return value in self._value2member_map_
+    def has_value(cls, value):
+        return value in cls._value2member_map_
 
 
 class FastxExtensions(Enum):
@@ -59,8 +59,8 @@ class FastxExtensions(Enum):
     FASTQ = (".fq", ".fastq")
 
     @classmethod
-    def has_value(self, value):
-        return any(value in v for v in self._value2member_map_)
+    def has_value(cls, value):
+        return any(value in v for v in cls._value2member_map_)
 
 
 QFLAG_START = "q"
