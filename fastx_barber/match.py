@@ -9,7 +9,7 @@ from rich.progress import track  # type: ignore
 from typing import Any, Dict, Iterator, List, Match, Optional, Pattern, Tuple, Union
 
 
-class ANPMatch(object):
+class ANPMatch:
     __pattern: str
     __match: str
     __spans: List[Tuple[int, int]]
@@ -82,7 +82,7 @@ class ANPMatch(object):
         return dict(zip(self.__names[1:], self.__groups[1:]))
 
 
-class AlphaNumericPattern(object):
+class AlphaNumericPattern:
     _pattern: str
     _length: int
     _groups: List[Tuple[str, Tuple[int, int]]]

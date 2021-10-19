@@ -16,7 +16,7 @@ from rich.progress import track  # type: ignore
 from typing import Any, Dict, List, Match, Optional, Pattern, Tuple, Type, Union
 
 
-class FlagStats(object):
+class FlagStats:
 
     __stats: FlagStatsType
     _flags_for_stats: Optional[List[str]] = None
@@ -363,7 +363,7 @@ class FastxFlagReader(ABCFlagReader):
         return flag_data
 
 
-class FlagRegexes(object):
+class FlagRegexes:
 
     _flag_regex: Dict[str, str]
     _flag_regex_compiled: Dict[str, Pattern]

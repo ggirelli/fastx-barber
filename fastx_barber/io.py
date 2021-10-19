@@ -42,7 +42,7 @@ def is_gzipped(path: str) -> Tuple[str, str, bool]:
     return (base, ext, gzipped)
 
 
-class ChunkMerger(object):
+class ChunkMerger:
     _do_remove: bool = True
     _tempdir: Optional[tempfile.TemporaryDirectory]
     _split_by: Optional[str] = None

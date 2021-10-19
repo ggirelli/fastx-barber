@@ -9,7 +9,7 @@ import numpy as np  # type: ignore
 from typing import Callable, Dict, List, Tuple
 
 
-class QualityIO(object):
+class QualityIO:
     """docstring for QualityIO"""
 
     __phred_offset: int

@@ -9,7 +9,7 @@ import gzip
 from typing import IO
 
 
-class BedWriter(object):
+class BedWriter:
     _OH: IO
     _n_fields: int
     __closed: bool
