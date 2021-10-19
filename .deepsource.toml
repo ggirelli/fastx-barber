@@ -1,16 +1,24 @@
 version = 1
 
 [[analyzers]]
-name = "python"
+name = "shell"
 enabled = true
-
-  [analyzers.meta]
-  runtime_version = "3.x.x"
 
 [[analyzers]]
 name = "secrets"
 enabled = true
 
 [[analyzers]]
-name = "shell"
+name = "python"
+enabled = true
+
+  [analyzers.meta]
+  runtime_version = "3.x.x"
+
+[[transformers]]
+name = "black"
+enabled = true
+
+[[transformers]]
+name = "autopep8"
 enabled = true
