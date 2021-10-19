@@ -156,7 +156,7 @@ class ABCFlagExtractor(ABCFlagBase):
         Returns:
             Dict[str, FlagData] -- a dictionary with flag name as key and data as value
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def extract_all(
@@ -174,7 +174,7 @@ class ABCFlagExtractor(ABCFlagBase):
         Returns:
             Dict[str, FlagData] -- a dictionary with flag name as key and data as value
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def update(self, record: Any, flag_data: Dict[str, FlagData]) -> Any:
@@ -191,7 +191,7 @@ class ABCFlagExtractor(ABCFlagBase):
         Returns:
             Any -- updated record.
         """
-        pass
+        raise NotImplementedError
 
     def update_stats(self, flags: Dict[str, FlagData]) -> None:
         self._flagstats.update(flags)
@@ -331,7 +331,7 @@ def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
 class ABCFlagReader(ABCFlagBase):
     @abstractmethod
     def read(self, record: Any) -> Optional[Dict[str, FlagData]]:
-        pass
+        raise NotImplementedError
 
 
 class FastxFlagReader(ABCFlagReader):
