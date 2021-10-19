@@ -64,16 +64,16 @@ def test_FastxChunkedParser():
     fapath, dpath = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA, const.UT_N_RECORDS, const.UT_RECORD_SEQ_LEN
     )
-    fachunks = list(seqio.FastxChunkedParser(
-            seqio.get_fastx_parser(fapath)[0], const.UT_CHUNK_SIZE
-        ))
+    fachunks = list(
+        seqio.FastxChunkedParser(seqio.get_fastx_parser(fapath)[0], const.UT_CHUNK_SIZE)
+    )
     assert 13 == len(fachunks)
     fqpath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA, const.UT_N_RECORDS, const.UT_RECORD_SEQ_LEN, dpath
     )
-    fqchunks = list(seqio.FastxChunkedParser(
-            seqio.get_fastx_parser(fqpath)[0], const.UT_CHUNK_SIZE
-        ))
+    fqchunks = list(
+        seqio.FastxChunkedParser(seqio.get_fastx_parser(fqpath)[0], const.UT_CHUNK_SIZE)
+    )
     assert 13 == len(fqchunks)
     zfapath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA,
@@ -82,9 +82,11 @@ def test_FastxChunkedParser():
         dpath,
         gzipped=True,
     )
-    fachunks = list(seqio.FastxChunkedParser(
+    fachunks = list(
+        seqio.FastxChunkedParser(
             seqio.get_fastx_parser(zfapath)[0], const.UT_CHUNK_SIZE
-        ))
+        )
+    )
     assert 13 == len(fachunks)
     zfqpath, _ = random.write_tmp_fastx_file(
         const.FastxFormats.FASTA,
@@ -93,9 +95,11 @@ def test_FastxChunkedParser():
         dpath,
         gzipped=True,
     )
-    fqchunks = list(seqio.FastxChunkedParser(
+    fqchunks = list(
+        seqio.FastxChunkedParser(
             seqio.get_fastx_parser(zfqpath)[0], const.UT_CHUNK_SIZE
-        ))
+        )
+    )
     assert 13 == len(fqchunks)
     shutil.rmtree(dpath)
 
