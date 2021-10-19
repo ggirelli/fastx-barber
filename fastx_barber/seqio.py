@@ -266,8 +266,9 @@ class ABCSimpleSplitWriter(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def close(self):
-        pass
+        raise NotImplementedError
 
 
 class SimpleSplitFastxWriter(ABCSimpleSplitWriter):

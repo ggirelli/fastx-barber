@@ -7,10 +7,6 @@ from fastx_barber import match
 import regex as re  # type: ignore
 
 
-def test_AlphaNumericPattern():
-    pass
-
-
 def test_FastxMatcher():
     matcher = match.FastxMatcher(re.compile("GATC.{3}TTT"))
     if not matcher.do(("test", "GATCAAATTT", None))[1]:
