@@ -106,7 +106,7 @@ def run_chunk(
     matcher = FastxMatcher(args.pattern)
 
     for record in chunk:
-        matched = matcher.do(record)[1]
+        _ , matched = matcher.do(record)
         foutput[matched](record)
 
     OHC.close()
@@ -120,7 +120,7 @@ def run_chunk(
 def run(args: argparse.Namespace) -> None:
     ap.log_args(args)
 
-    IH = scriptio.get_input_handler(args.input, args.chunk_size)[1]
+    _ , IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Matching...")

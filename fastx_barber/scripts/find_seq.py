@@ -95,8 +95,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
         scriptio.add_log_file_handler(args.log_file)
 
     if args.output is None:
-        base = io.is_gzipped(args.input)[0]
-        gzipped = io.is_gzipped(args.input)[2]
+        base, _, gzipped = io.is_gzipped(args.input)
         args.output = f"{base}.bed"
         if gzipped:
             args.output += ".gz"
@@ -116,7 +115,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Prefix\t\t{args.prefix}")
     logging.info(f"Global\t\t{args.global_name}")
 
-    parser = seqio.get_fastx_parser(args.input)[0]
+    parser, _ = seqio.get_fastx_parser(args.input)
 
     writer = bedio.BedWriter(args.output, 4)
 

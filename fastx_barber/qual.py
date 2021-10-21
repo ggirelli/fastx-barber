@@ -80,8 +80,7 @@ class QualityFilter(QualityIO):
         Returns:
             bool -- whether the quality string passes the filter
         """
-        has_passed = self.__qual_pass_filter(
-            qual, self.__min_qscore, self.__max_perc)
+        has_passed = self.__qual_pass_filter(qual, self.__min_qscore, self.__max_perc)
         self._passed += has_passed
         self._parsed += 1
         return has_passed
@@ -134,8 +133,7 @@ def apply_filter_flag(
     Returns:
         bool -- whether the flags pass the filters
     """
-    for flag, kv in flag_data.items():
-        qual = kv[0]
+    for flag, (qual, _, _) in flag_data.items():
         if not flag.startswith(QFLAG_START) or flag not in filters.keys():
             continue
         if not filters[flag].qual_pass_filter(qual):
@@ -149,8 +147,7 @@ def log_qual_filters(
     logging.info("[bold underline red]Quality filters[/]")
     logging.info(f"PHRED offset\t{phred_offset}")
     for name, f in quality_flag_filters.items():
-        logging.info(
-            f"{name}-filter\tmin_score={f.min_qscore} & max_perc={f.max_perc}")
+        logging.info(f"{name}-filter\tmin_score={f.min_qscore} & max_perc={f.max_perc}")
 
 
 def setup_qual_filters(

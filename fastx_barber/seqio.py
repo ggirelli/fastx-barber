@@ -26,7 +26,6 @@ def get_fastx_format(path: str) -> Tuple[FastxFormats, bool]:
     Returns:
         Tuple[FastxFormats, bool] -- fastx file format and gzipped status
     """
-    base, ext, gzipped = is_gzipped(path)
 
     ext = is_gzipped(path)[1]
     gzipped = is_gzipped(path)[2]
@@ -281,8 +280,7 @@ class SimpleSplitFastxWriter(ABCSimpleSplitWriter):
     _fmt: FastxFormats
 
     def __init__(self, path: str, split_key: str, compress_level: int = 6):
-        super(SimpleSplitFastxWriter, self).__init__(
-            path, split_key, compress_level)
+        super(SimpleSplitFastxWriter, self).__init__(path, split_key, compress_level)
         self._fmt, _ = get_fastx_format(path)
         assert self._fmt in FastxFormats
 
@@ -308,8 +306,7 @@ class SimpleSplitFastxWriter(ABCSimpleSplitWriter):
 
 class SimpleSplitFastaWriter(SimpleSplitFastxWriter):
     def __init__(self, path: str, split_key: str, compress_level: int = 6):
-        super(SimpleSplitFastaWriter, self).__init__(
-            path, split_key, compress_level)
+        super(SimpleSplitFastaWriter, self).__init__(path, split_key, compress_level)
         assert FastxFormats.FASTA == self.format
 
     def write(
@@ -325,8 +322,7 @@ class SimpleSplitFastaWriter(SimpleSplitFastxWriter):
 
 class SimpleSplitFastqWriter(SimpleSplitFastxWriter):
     def __init__(self, path: str, split_key: str, compress_level: int = 6):
-        super(SimpleSplitFastqWriter, self).__init__(
-            path, split_key, compress_level)
+        super(SimpleSplitFastqWriter, self).__init__(path, split_key, compress_level)
         assert FastxFormats.FASTQ == self.format
 
     def write(

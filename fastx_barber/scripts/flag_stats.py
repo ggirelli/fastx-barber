@@ -77,6 +77,7 @@ def run_chunk(
     cid: int,
     args: argparse.Namespace,
 ) -> None:
+    _ , _ = scriptio.get_input_handler(args.input, args.chunk_size)
 
     flag_reader = FastxFlagReader(args.flagstats)
     flag_reader.flag_delim = args.flag_delim

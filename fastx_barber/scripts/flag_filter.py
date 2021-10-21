@@ -74,8 +74,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args = scriptio.set_tempdir(args)
 
     if args.filter_qual_flags is None:
-        logging.info(
-            "No quality filter specified, nothing to do. :person_shrugging:")
+        logging.info("No quality filter specified, nothing to do. :person_shrugging:")
         sys.exit()
 
     if args.log_file is not None:
@@ -91,7 +90,7 @@ def run_chunk(
     cid: int,
     args: argparse.Namespace,
 ) -> Tuple[int, int]:
-    fmt = scriptio.get_input_handler(args.input, args.chunk_size)[0]
+    fmt, _ = scriptio.get_input_handler(args.input, args.chunk_size)
     OHC, _, FHC, filter_output_fun = get_handles(fmt, cid, args)
     foutput = scriptio.get_output_fun(OHC, None)
 
@@ -132,6 +131,9 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Comment delim\t'{args.comment_space}'")
 
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _, _ = setup_qual_filters(
+        args.filter_qual_flags, args.phred_offset, verbose=True
+    )
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Matching...")
@@ -164,7 +166,6 @@ def run(args: argparse.Namespace) -> None:
     merger = ChunkMerger(args.temp_dir)
     merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.filter_qual_output is not None:
-        merger.do(args.filter_qual_output, IH.last_chunk_id,
-                  "Writing filtered records")
+        merger.do(args.filter_qual_output, IH.last_chunk_id, "Writing filtered records")
 
     logging.info("Done. :thumbs_up: :smiley:")
