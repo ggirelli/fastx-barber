@@ -225,9 +225,7 @@ def merge_chunk_details(chunk_details: List[ChunkDetails]) -> ChunkDetails:
 @enable_rich_assert
 def run(args: argparse.Namespace) -> None:
     _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
-    _, _ = setup_qual_filters(
-              args.filter_qual_flags, args.phred_offset, verbose=True
-    )
+    _, _ = setup_qual_filters(args.filter_qual_flags, args.phred_offset, verbose=True)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming and extracting flags...")
@@ -258,10 +256,10 @@ def run(args: argparse.Namespace) -> None:
     logging.info("Merging batch output...")
     if args.unmatched_output is not None:
         merger = ChunkMerger(args.temp_dir, None)
-        merger.do(args.unmatched_output, IH.last_chunk_id,"Writing unmatched records")
+        merger.do(args.unmatched_output, IH.last_chunk_id, "Writing unmatched records")
     merger = ChunkMerger(args.temp_dir, args.split_by)
     merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.filter_qual_output is not None:
-        merger.do(args.filter_qual_output, IH.last_chunk_id,"Writing filtered records")
+        merger.do(args.filter_qual_output, IH.last_chunk_id, "Writing filtered records")
 
     logging.info("Done. :thumbs_up: :smiley:")

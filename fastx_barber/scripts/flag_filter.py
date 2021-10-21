@@ -131,9 +131,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Comment delim\t'{args.comment_space}'")
 
     fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
-    _, _ = setup_qual_filters(
-        args.filter_qual_flags, args.phred_offset, verbose=True
-    )
+    _, _ = setup_qual_filters(args.filter_qual_flags, args.phred_offset, verbose=True)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Matching...")
