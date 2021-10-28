@@ -227,7 +227,7 @@ def run(args: argparse.Namespace) -> None:
     _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     _ = setup_qual_filters(
-              args.filter_qual_flags, args.phred_offset, verbose=True
+        args.filter_qual_flags, args.phred_offset, verbose=True
     )
 
     logging.info("[bold underline red]Running[/]")
