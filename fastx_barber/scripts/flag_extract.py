@@ -263,6 +263,6 @@ def run(args: argparse.Namespace) -> None:
     merger = ChunkMerger(args.temp_dir, args.split_by)
     merger.do(args.output, IH.last_chunk_id, "Writing matched records")
     if args.filter_qual_output is not None:
-        merger.do(args.filter_qual_output, IH.last_chunk_id,"Writing filtered records")
+        merger.do(args.filter_qual_output, IH.last_chunk_id, "Writing filtered records")
 
     logging.info("Done. :thumbs_up: :smiley:")
