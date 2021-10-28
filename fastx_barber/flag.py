@@ -225,8 +225,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
         selected_flags: Optional[List[str]] = None,
         flags_for_stats: Optional[List[str]] = None,
     ):
-        super(FastaFlagExtractor, self).__init__(
-            selected_flags, flags_for_stats)
+        super(FastaFlagExtractor, self).__init__(selected_flags, flags_for_stats)
 
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
