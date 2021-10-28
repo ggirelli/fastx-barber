@@ -271,7 +271,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
     ) -> Dict[str, FlagData]:
         if match is None:
             raise AssertionError
-        _, seq, qual = record
+        _, _, qual = record
         if qual is None:
             raise AssertionError
         flag_data = super(FastqFlagExtractor, self).extract_selected(record, match)
