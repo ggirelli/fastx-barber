@@ -82,7 +82,7 @@ def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
 
-    if 0 == args.length:
+    if args.length == 0:
         logging.info(
             "Trimming length (--length) equal to 0. Nothing to do. :person_shrugging:"
         )
@@ -103,7 +103,8 @@ def run_chunk(
     OHC = scriptio.get_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.temp_dir
     )
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
 
     trimmer = get_fastx_trimmer(fmt)
 

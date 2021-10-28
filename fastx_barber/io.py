@@ -14,17 +14,17 @@ DTEMP_PREFIX = "fbarber_tmp."
 
 
 def check_tmp_dir(path: Optional[str] = None) -> str:
-    if path is not None:
-        assert os.path.isdir(path)
-    else:
+    if path is None:
         path = tempfile.mkdtemp(prefix=DTEMP_PREFIX)
+    elif not os.path.isdir(path):
+        raise AssertionError
     return path
 
 
 def splitext(path: str) -> Tuple[str, str]:
     base, ext = os.path.splitext(path)
     ext_final = ext
-    while ".gz" == ext:
+    while ext == ".gz":
         base, ext = os.path.splitext(base)
         ext_final = ext + ext_final
     return (base, ext_final)
@@ -42,7 +42,7 @@ def is_gzipped(path: str) -> Tuple[str, str, bool]:
     return (base, ext, gzipped)
 
 
-class ChunkMerger(object):
+class ChunkMerger:
     _do_remove: bool = True
     _tempdir: Optional[tempfile.TemporaryDirectory]
     _split_by: Optional[str] = None
@@ -64,9 +64,7 @@ class ChunkMerger(object):
     def do_remove(self, do_remove: bool) -> None:
         self._do_remove = do_remove
 
-    def __merge_simple(
-        self, path: str, last_chunk_id: int, desc: Optional[str] = None
-    ) -> None:
+    def __merge_simple(self, path: str, last_chunk_id: int, desc: str = "iter") -> None:
         with open(path, "wb") as OH:
             for cid in track(
                 range(1, last_chunk_id + 1), description=desc, transient=False
@@ -81,9 +79,7 @@ class ChunkMerger(object):
                 if self._do_remove:
                     os.remove(chunk_path)
 
-    def __merge_split(
-        self, path: str, last_chunk_id: int, desc: Optional[str] = None
-    ) -> None:
+    def __merge_split(self, path: str, last_chunk_id: int, desc: str = "iter") -> None:
         output_dir = os.path.dirname(path)
         output_base = os.path.basename(path)
         for cid in track(
@@ -109,7 +105,7 @@ class ChunkMerger(object):
                     if self._do_remove:
                         os.remove(fname)
 
-    def do(self, path: str, last_chunk_id: int, desc: Optional[str] = None) -> None:
+    def do(self, path: str, last_chunk_id: int, desc: str = "iter") -> None:
         if self._split_by is None:
             self.__merge_simple(path, last_chunk_id, desc)
         else:

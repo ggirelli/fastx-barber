@@ -97,7 +97,8 @@ def run_chunk(
     OHC = scriptio.get_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.temp_dir
     )
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
     UHC = scriptio.get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
     )

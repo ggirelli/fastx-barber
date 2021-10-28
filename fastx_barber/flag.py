@@ -16,7 +16,7 @@ from rich.progress import track  # type: ignore
 from typing import Any, Dict, List, Match, Optional, Pattern, Tuple, Type, Union
 
 
-class FlagStats(object):
+class FlagStats:
 
     __stats: FlagStatsType
     _flags_for_stats: Optional[List[str]] = None
@@ -90,16 +90,14 @@ class ABCFlagBase(metaclass=ABCMeta):
     _flag_delim: str = "~"
     _comment_space: str = " "
 
-    def __init__(self):
-        super(ABCFlagBase, self).__init__()
-
     @property
     def flag_delim(self):
         return self._flag_delim
 
     @flag_delim.setter
     def flag_delim(self, flag_delim: str):
-        assert 1 == len(flag_delim)
+        if len(flag_delim) != 1:
+            raise AssertionError
         self._flag_delim = flag_delim
 
     @property
@@ -108,7 +106,8 @@ class ABCFlagBase(metaclass=ABCMeta):
 
     @comment_space.setter
     def comment_space(self, comment_space: str):
-        assert 1 == len(comment_space)
+        if len(comment_space) != 1:
+            raise AssertionError
         self._comment_space = comment_space
 
 
@@ -157,7 +156,7 @@ class ABCFlagExtractor(ABCFlagBase):
         Returns:
             Dict[str, FlagData] -- a dictionary with flag name as key and data as value
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def extract_all(
@@ -175,7 +174,7 @@ class ABCFlagExtractor(ABCFlagBase):
         Returns:
             Dict[str, FlagData] -- a dictionary with flag name as key and data as value
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def update(self, record: Any, flag_data: Dict[str, FlagData]) -> Any:
@@ -192,7 +191,7 @@ class ABCFlagExtractor(ABCFlagBase):
         Returns:
             Any -- updated record.
         """
-        pass
+        raise NotImplementedError
 
     def update_stats(self, flags: Dict[str, FlagData]) -> None:
         self._flagstats.update(flags)
@@ -211,26 +210,17 @@ class ABCFlagExtractor(ABCFlagBase):
         """
         if self._selected_flags is None:
             return flag_data
-        else:
-            selected_flag_data = {}
-            for name in self._selected_flags:
-                if name in flag_data.keys():
-                    selected_flag_data[name] = flag_data[name]
-            return selected_flag_data
+        return {
+            name: flag_data[name] for name in self._selected_flags if name in flag_data
+        }
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
-    def __init__(
-        self,
-        selected_flags: Optional[List[str]] = None,
-        flags_for_stats: Optional[List[str]] = None,
-    ):
-        super(FastaFlagExtractor, self).__init__(selected_flags, flags_for_stats)
-
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
-        assert match is not None
+        if match is None:
+            raise AssertionError
         flag_data: Dict[str, FlagData] = {}
         flag_data_all = self.extract_all(record, match)
         if self._selected_flags is not None:
@@ -250,8 +240,8 @@ class FastaFlagExtractor(ABCFlagExtractor):
             flag_data.update([flag])
         return flag_data
 
+    @staticmethod
     def __extract_single_flag(
-        self,
         match: Union[ANPMatch, Match],
         gid: int,
         flag: Optional[Tuple[str, str]] = None,
@@ -276,19 +266,14 @@ class FastqFlagExtractor(FastaFlagExtractor):
 
     extract_qual_flags: bool = True
 
-    def __init__(
-        self,
-        selected_flags: Optional[List[str]] = None,
-        flags_for_stats: Optional[List[str]] = None,
-    ):
-        super(FastqFlagExtractor, self).__init__(selected_flags, flags_for_stats)
-
     def extract_selected(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
-        assert match is not None
+        if match is None:
+            raise AssertionError
         _, seq, qual = record
-        assert qual is not None
+        if qual is None:
+            raise AssertionError
         flag_data = super(FastqFlagExtractor, self).extract_selected(record, match)
         if self.extract_qual_flags:
             flag_data = self.__add_qual_flags(flag_data, qual)
@@ -297,16 +282,19 @@ class FastqFlagExtractor(FastaFlagExtractor):
     def extract_all(
         self, record: SimpleFastxRecord, match: Union[ANPMatch, Match, None]
     ) -> Dict[str, FlagData]:
-        assert match is not None
+        if match is None:
+            raise AssertionError
         name, seq, qual = record
-        assert qual is not None
+        if qual is None:
+            raise AssertionError
         flag_data = super(FastqFlagExtractor, self).extract_all(record, match)
         if self.extract_qual_flags:
             flag_data = self.__add_qual_flags(flag_data, qual)
         return flag_data
 
+    @staticmethod
     def __add_qual_flags(
-        self, flag_data: Dict[str, FlagData], qual: str
+        flag_data: Dict[str, FlagData], qual: str
     ) -> Dict[str, FlagData]:
         for name, (_, start, end) in list(flag_data.items()):
             flag = (f"{QFLAG_START}{name}", (qual[slice(start, end)], start, end))
@@ -323,34 +311,27 @@ class FastqFlagExtractor(FastaFlagExtractor):
     def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
         if self._selected_flags is None:
             return flag_data
-        else:
-            selected_flag_data = super(FastqFlagExtractor, self).apply_selection(
-                flag_data
-            )
-            for name in self._selected_flags:
-                name = f"{QFLAG_START}{name}"
-                if name in flag_data.keys():
-                    selected_flag_data[name] = flag_data[name]
-            return selected_flag_data
+        selected_flag_data = super(FastqFlagExtractor, self).apply_selection(flag_data)
+        for name in self._selected_flags:
+            name = f"{QFLAG_START}{name}"
+            if name in flag_data:
+                selected_flag_data[name] = flag_data[name]
+        return selected_flag_data
 
 
 def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
     """Retrieves appropriate flag extractor class."""
     if FastxFormats.FASTA == fmt:
         return FastaFlagExtractor
-    elif FastxFormats.FASTQ == fmt:
+    if FastxFormats.FASTQ == fmt:
         return FastqFlagExtractor
-    else:
-        return ABCFlagExtractor
+    return ABCFlagExtractor
 
 
 class ABCFlagReader(ABCFlagBase):
-    def __init__(self):
-        super(ABCFlagReader, self).__init__()
-
     @abstractmethod
     def read(self, record: Any) -> Optional[Dict[str, FlagData]]:
-        pass
+        raise NotImplementedError
 
 
 class FastxFlagReader(ABCFlagReader):
@@ -382,7 +363,7 @@ class FastxFlagReader(ABCFlagReader):
         return flag_data
 
 
-class FlagRegexes(object):
+class FlagRegexes:
 
     _flag_regex: Dict[str, str]
     _flag_regex_compiled: Dict[str, Pattern]
