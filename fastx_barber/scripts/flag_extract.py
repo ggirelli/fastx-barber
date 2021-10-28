@@ -242,7 +242,7 @@ def run(args: argparse.Namespace) -> None:
         f"{n_matched}/{n_parsed} ({n_matched/n_parsed*100:.2f}%) "
         + "records matched the pattern.",
     )
-    if args.filter_qual_flags is not None and 0 != n_matched:
+    if args.filter_qual_flags is not None and n_matched != 0:
         logging.info(
             " ".join(
                 (

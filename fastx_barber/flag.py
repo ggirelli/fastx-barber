@@ -212,11 +212,11 @@ class ABCFlagExtractor(ABCFlagBase):
         if self._selected_flags is None:
             return flag_data
         else:
-            selected_flag_data = {}
-            for name in self._selected_flags:
-                if name in flag_data.keys():
-                    selected_flag_data[name] = flag_data[name]
-            return selected_flag_data
+            return {
+                name: flag_data[name]
+                for name in self._selected_flags
+                if name in flag_data
+            }
 
 
 class FastaFlagExtractor(ABCFlagExtractor):
@@ -323,15 +323,14 @@ class FastqFlagExtractor(FastaFlagExtractor):
     def apply_selection(self, flag_data: Dict[str, FlagData]) -> Dict[str, FlagData]:
         if self._selected_flags is None:
             return flag_data
-        else:
-            selected_flag_data = super(FastqFlagExtractor, self).apply_selection(
-                flag_data
-            )
-            for name in self._selected_flags:
-                name = f"{QFLAG_START}{name}"
-                if name in flag_data.keys():
-                    selected_flag_data[name] = flag_data[name]
-            return selected_flag_data
+        selected_flag_data = super(FastqFlagExtractor, self).apply_selection(
+            flag_data
+        )
+        for name in self._selected_flags:
+            name = f"{QFLAG_START}{name}"
+            if name in flag_data:
+                selected_flag_data[name] = flag_data[name]
+        return selected_flag_data
 
 
 def get_fastx_flag_extractor(fmt: FastxFormats) -> Type[ABCFlagExtractor]:
