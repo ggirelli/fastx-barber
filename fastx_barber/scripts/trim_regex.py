@@ -125,7 +125,7 @@ def run_chunk(
 def run(args: argparse.Namespace) -> None:
     ap.log_args(args)
 
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming...")

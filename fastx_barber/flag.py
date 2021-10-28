@@ -255,7 +255,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
     ) -> SimpleFastxRecord:
         name, seq, _ = record
         name_bits = name.split(self._comment_space)
-        for name, (flag, start, end) in flag_data.items():
+        for name, (flag, _, _) in flag_data.items():
             name_bits[0] += f"{self._flag_delim}{self._flag_delim}{name}"
             name_bits[0] += f"{self._flag_delim}{flag}"
         name = " ".join(name_bits)
@@ -271,7 +271,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
     ) -> Dict[str, FlagData]:
         if match is None:
             raise AssertionError
-        name, seq, qual = record
+        _, _, qual = record
         if qual is None:
             raise AssertionError
         flag_data = super(FastqFlagExtractor, self).extract_selected(record, match)

@@ -137,7 +137,7 @@ def apply_filter_flag(
     Returns:
         bool -- whether the flags pass the filters
     """
-    for flag, (qual, start, end) in flag_data.items():
+    for flag, (qual, _, _) in flag_data.items():
         if not flag.startswith(QFLAG_START) or flag not in filters.keys():
             continue
         if not filters[flag].qual_pass_filter(qual):

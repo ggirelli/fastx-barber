@@ -225,11 +225,9 @@ def merge_chunk_details(chunk_details: List[ChunkDetails]) -> ChunkDetails:
 
 @enable_rich_assert
 def run(args: argparse.Namespace) -> None:
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
-    quality_flag_filters, filter_fun = setup_qual_filters(
-        args.filter_qual_flags, args.phred_offset, verbose=True
-    )
+    _ = setup_qual_filters(args.filter_qual_flags, args.phred_offset, verbose=True)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming and extracting flags...")
