@@ -77,7 +77,7 @@ def run_chunk(
     cid: int,
     args: argparse.Namespace,
 ) -> None:
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _ , _ = scriptio.get_input_handler(args.input, args.chunk_size)
 
     flag_reader = FastxFlagReader(args.flagstats)
     flag_reader.flag_delim = args.flag_delim
@@ -109,7 +109,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Comment delim\t'{args.comment_space}'")
     logging.info(f"Flag stats\t'{args.flagstats}'")
 
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    IH = scriptio.get_input_handler(args.input, args.chunk_size)[1]
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Matching...")

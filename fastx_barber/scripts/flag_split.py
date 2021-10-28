@@ -116,7 +116,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Comment delim\t'{args.comment_space}'")
     logging.info(f"Split by\t'{args.split_by}'")
 
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Matching...")

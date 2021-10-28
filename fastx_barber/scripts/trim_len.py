@@ -131,7 +131,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Threads\t\t{args.threads}")
     logging.info(f"Chunk size\t{args.chunk_size}")
 
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _ , IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming...")
