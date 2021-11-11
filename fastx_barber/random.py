@@ -28,10 +28,7 @@ def make_fasta_record(name: str, length: int) -> SimpleFastaRecord:
 
 
 def make_fasta_file(n_records: int, seq_length: int) -> List[SimpleFastaRecord]:
-    records: List[SimpleFastaRecord] = []
-    for i in range(n_records):
-        records.append(make_fasta_record(f"record_{i+1}", seq_length))
-    return records
+    return [make_fasta_record(f"record_{i+1}", seq_length) for i in range(n_records)]
 
 
 def make_fastq_record(name: str, length: int) -> SimpleFastqRecord:
@@ -42,10 +39,7 @@ def make_fastq_record(name: str, length: int) -> SimpleFastqRecord:
 
 
 def make_fastq_file(n_records: int, seq_length: int) -> List[SimpleFastqRecord]:
-    records: List[SimpleFastqRecord] = []
-    for i in range(n_records):
-        records.append(make_fastq_record(f"record_{i+1}", seq_length))
-    return records
+    return [make_fastq_record(f"record_{i+1}", seq_length) for i in range(n_records)]
 
 
 def mk_suffix(fmt: FastxFormats, gzipped):
