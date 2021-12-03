@@ -128,7 +128,7 @@ class AlphaNumericPattern:
         position = 0
         for c in pattern:
             if c.isalpha():
-                if len(group_len) != 0:
+                if group_len != "":
                     if group_name in groups:
                         raise AssertionError
                     groups[group_name] = (position, position + int(group_len))
