@@ -20,7 +20,7 @@ QUAL_ALPHABET: List[str] = list("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ")
 
 
 def make_random_string(length: int, alphabet: List[str] = DNA_ALPHABET) -> str:
-    return "".join(choice(alphabet) for i in range(length))
+    return "".join(choice(alphabet) for _ in range(length))
 
 
 def make_fasta_record(name: str, length: int) -> SimpleFastaRecord:
