@@ -106,8 +106,7 @@ def run_chunk(
     filtered_counter = 0
     for record in chunk:
         flags = flag_reader.read(record)
-        pass_filters = filter_fun(flags, quality_flag_filters)
-        if pass_filters:
+        if filter_fun(flags, quality_flag_filters):
             unfiltered_counter += 1
             foutput[True](record, flags)
         else:
