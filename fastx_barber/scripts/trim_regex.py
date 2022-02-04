@@ -54,7 +54,6 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help=f"Pattern to match to reads and trim. Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
 
-
     parser = ap.add_version_option(parser)
 
     advanced = parser.add_argument_group("advanced arguments")

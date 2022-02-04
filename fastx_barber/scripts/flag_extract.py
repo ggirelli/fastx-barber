@@ -66,7 +66,6 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
         help=f"Pattern to match to reads and extract flagged groups. Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
 
-
     parser = ap.add_version_option(parser)
 
     advanced = parser.add_argument_group("advanced arguments")
@@ -238,7 +237,7 @@ def run(args: argparse.Namespace) -> None:
     n_parsed, n_matched, n_filtered, flagstats = merge_chunk_details(chunk_details)
 
     logging.info(
-        f'{n_matched}/{n_parsed} ({n_matched/n_parsed * 100:.2f}%) records matched the pattern.'
+        f"{n_matched}/{n_parsed} ({n_matched/n_parsed * 100:.2f}%) records matched the pattern."
     )
 
     if args.filter_qual_flags is not None and n_matched != 0:
