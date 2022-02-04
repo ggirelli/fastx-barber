@@ -51,9 +51,9 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     parser.add_argument(
         "--pattern",
         type=str,
-        help="Pattern to match to reads and trim. "
-        + f"Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
+        help=f"Pattern to match to reads and trim. Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
+
 
     parser = ap.add_version_option(parser)
 
