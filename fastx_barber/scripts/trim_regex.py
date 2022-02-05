@@ -51,8 +51,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     parser.add_argument(
         "--pattern",
         type=str,
-        help="Pattern to match to reads and trim. "
-        + f"Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
+        help=f"Pattern to match to reads and trim. Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
 
     parser = ap.add_version_option(parser)
@@ -98,7 +97,8 @@ def run_chunk(
     OHC = scriptio.get_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.temp_dir
     )
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
     UHC = scriptio.get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
     )
@@ -124,7 +124,7 @@ def run_chunk(
 def run(args: argparse.Namespace) -> None:
     ap.log_args(args)
 
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming...")

@@ -90,7 +90,8 @@ def run_chunk(
     OHC = get_split_chunk_handler(
         cid, fmt, args.output, args.compress_level, args.split_by, args.temp_dir
     )
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
 
     flag_reader = FastxFlagReader()
     flag_reader.flag_delim = args.flag_delim
@@ -115,7 +116,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Comment delim\t'{args.comment_space}'")
     logging.info(f"Split by\t'{args.split_by}'")
 
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Matching...")

@@ -9,14 +9,15 @@ import numpy as np  # type: ignore
 from typing import Callable, Dict, List, Tuple
 
 
-class QualityIO(object):
+class QualityIO:
     """docstring for QualityIO"""
 
     __phred_offset: int
 
     def __init__(self, phred_offset: int = 33):
         super(QualityIO, self).__init__()
-        assert phred_offset in [33, 64]
+        if phred_offset not in {33, 64}:
+            raise AssertionError
         self.__phred_offset = phred_offset
 
     @property
@@ -25,9 +26,11 @@ class QualityIO(object):
 
     def phred_to_qscore(self, qual: str) -> List[int]:
         qscore = [ord(c) - self.__phred_offset for c in qual]
-        assert not any(
-            [q < 0 for q in qscore]
-        ), f"phred offset of {self.__phred_offset} produces negative qscores"
+        if any(q < 0 for q in qscore):
+            raise AssertionError(
+                f"phred offset of {self.__phred_offset} produces negative qscores"
+            )
+
         return qscore
 
 
@@ -61,7 +64,8 @@ class QualityFilter(QualityIO):
 
     @max_perc.setter
     def max_perc(self, max_perc: float) -> None:
-        assert max_perc >= 0 and max_perc <= 1
+        if not 0 <= max_perc <= 1:
+            raise AssertionError
         self.__max_perc = max_perc
 
     @property
@@ -133,7 +137,7 @@ def apply_filter_flag(
     Returns:
         bool -- whether the flags pass the filters
     """
-    for flag, (qual, start, end) in flag_data.items():
+    for flag, (qual, _, _) in flag_data.items():
         if not flag.startswith(QFLAG_START) or flag not in filters.keys():
             continue
         if not filters[flag].qual_pass_filter(qual):

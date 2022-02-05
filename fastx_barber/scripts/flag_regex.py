@@ -94,10 +94,11 @@ def run_chunk(
     cid: int,
     args: argparse.Namespace,
 ) -> Tuple[int, int]:
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    fmt, _ = scriptio.get_input_handler(args.input, args.chunk_size)
 
     OHC = get_chunk_handler(cid, fmt, args.output, args.compress_level, args.temp_dir)
-    assert OHC is not None
+    if OHC is None:
+        raise AssertionError
     UHC = get_chunk_handler(
         cid, fmt, args.unmatched_output, args.compress_level, args.temp_dir
     )
@@ -133,7 +134,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Flag delim\t'{args.flag_delim}'")
     logging.info(f"Comment delim\t'{args.comment_space}'")
 
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
     FlagRegexes(args.pattern).log()
 
     logging.info("[bold underline red]Running[/]")

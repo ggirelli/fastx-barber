@@ -83,19 +83,21 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 @enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    assert os.path.isfile(args.input), f"file not found: '{args.input}'"
+    if not os.path.isfile(args.input):
+        raise AssertionError(f"file not found: '{args.input}'")
 
     fmt, _ = seqio.get_fastx_format(args.input)
-    assert fmt in [
+    if fmt not in [
         FastxFormats.FASTA,
         FastxFormats.FASTQ,
-    ], f"input must be a FASTX file. ({fmt})"
+    ]:
+        raise AssertionError(f"input must be a FASTX file. ({fmt})")
 
     if args.log_file is not None:
         scriptio.add_log_file_handler(args.log_file)
 
     if args.output is None:
-        base, ext, gzipped = io.is_gzipped(args.input)
+        base, _, gzipped = io.is_gzipped(args.input)
         args.output = f"{base}.bed"
         if gzipped:
             args.output += ".gz"
@@ -115,7 +117,7 @@ def run(args: argparse.Namespace) -> None:
     logging.info(f"Prefix\t\t{args.prefix}")
     logging.info(f"Global\t\t{args.global_name}")
 
-    parser, fmt = seqio.get_fastx_parser(args.input)
+    parser, _ = seqio.get_fastx_parser(args.input)
 
     writer = bedio.BedWriter(args.output, 4)
 

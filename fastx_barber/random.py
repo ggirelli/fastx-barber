@@ -20,7 +20,7 @@ QUAL_ALPHABET: List[str] = list("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJ")
 
 
 def make_random_string(length: int, alphabet: List[str] = DNA_ALPHABET) -> str:
-    return "".join([choice(alphabet) for i in range(length)])
+    return "".join(choice(alphabet) for _ in range(length))
 
 
 def make_fasta_record(name: str, length: int) -> SimpleFastaRecord:
@@ -28,10 +28,7 @@ def make_fasta_record(name: str, length: int) -> SimpleFastaRecord:
 
 
 def make_fasta_file(n_records: int, seq_length: int) -> List[SimpleFastaRecord]:
-    records: List[SimpleFastaRecord] = []
-    for i in range(n_records):
-        records.append(make_fasta_record(f"record_{i+1}", seq_length))
-    return records
+    return [make_fasta_record(f"record_{i+1}", seq_length) for i in range(n_records)]
 
 
 def make_fastq_record(name: str, length: int) -> SimpleFastqRecord:
@@ -42,17 +39,11 @@ def make_fastq_record(name: str, length: int) -> SimpleFastqRecord:
 
 
 def make_fastq_file(n_records: int, seq_length: int) -> List[SimpleFastqRecord]:
-    records: List[SimpleFastqRecord] = []
-    for i in range(n_records):
-        records.append(make_fastq_record(f"record_{i+1}", seq_length))
-    return records
+    return [make_fastq_record(f"record_{i+1}", seq_length) for i in range(n_records)]
 
 
 def mk_suffix(fmt: FastxFormats, gzipped):
-    if fmt is FastxFormats.FASTA:
-        suffix = ".fasta"
-    else:
-        suffix = ".fastq"
+    suffix = ".fasta" if fmt is FastxFormats.FASTA else ".fastq"
     if gzipped:
         suffix += ".gz"
     return suffix
@@ -113,4 +104,5 @@ def write_tmp_fastx_file(
         return write_tmp_fastq_file(
             n_records, seq_length, tmp_dir, gzipped, compresslevel
         )
-    assert fmt is not FastxFormats.NONE
+    if fmt is FastxFormats.NONE:
+        raise AssertionError

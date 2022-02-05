@@ -63,8 +63,7 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
     parser.add_argument(
         "--pattern",
         type=str,
-        help="Pattern to match to reads and extract flagged groups. "
-        + f"Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
+        help=f"Pattern to match to reads and extract flagged groups. Remember to use quotes. Example: '{PATTERN_EXAMPLE}'",
     )
 
     parser = ap.add_version_option(parser)
@@ -115,7 +114,8 @@ def init_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPars
 
 @enable_rich_assert
 def parse_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    assert 1 == len(args.flag_delim)
+    if len(args.flag_delim) != 1:
+        raise AssertionError
     args.threads = ap.check_threads(args.threads)
     args = scriptio.set_tempdir(args)
 
@@ -224,11 +224,9 @@ def merge_chunk_details(chunk_details: List[ChunkDetails]) -> ChunkDetails:
 
 @enable_rich_assert
 def run(args: argparse.Namespace) -> None:
-    fmt, IH = scriptio.get_input_handler(args.input, args.chunk_size)
+    _, IH = scriptio.get_input_handler(args.input, args.chunk_size)
 
-    quality_flag_filters, filter_fun = setup_qual_filters(
-        args.filter_qual_flags, args.phred_offset, verbose=True
-    )
+    _ = setup_qual_filters(args.filter_qual_flags, args.phred_offset, verbose=True)
 
     logging.info("[bold underline red]Running[/]")
     logging.info("Trimming and extracting flags...")
@@ -239,10 +237,10 @@ def run(args: argparse.Namespace) -> None:
     n_parsed, n_matched, n_filtered, flagstats = merge_chunk_details(chunk_details)
 
     logging.info(
-        f"{n_matched}/{n_parsed} ({n_matched/n_parsed*100:.2f}%) "
-        + "records matched the pattern.",
+        f"{n_matched}/{n_parsed} ({n_matched/n_parsed * 100:.2f}%) records matched the pattern."
     )
-    if args.filter_qual_flags is not None and 0 != n_matched:
+
+    if args.filter_qual_flags is not None and n_matched != 0:
         logging.info(
             " ".join(
                 (
