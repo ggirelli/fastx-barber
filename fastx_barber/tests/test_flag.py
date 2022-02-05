@@ -161,7 +161,7 @@ def test_FastqFlagExtractor_noStatFlags():
         assert_FastqFlagExtractor_update(fe, record, flag_data)
         if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
             raise AssertionError
-        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+        if record[2][:8] != flag_data[f"q{const.UT_FLAG_NAME}"][0]:
             raise AssertionError
         flag_data = fe.extract_selected(record, match_result)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
@@ -186,7 +186,7 @@ def test_FastqFlagExtractor():
         assert_FastqFlagExtractor_update(fe, record, flag_data)
         if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
             raise AssertionError
-        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+        if record[2][:8] != flag_data[f"q{const.UT_FLAG_NAME}"][0]:
             raise AssertionError
         flag_data = fe.extract_selected(record, match_result)
         assert_FastqFlagExtractor_update(fe, record, flag_data)
