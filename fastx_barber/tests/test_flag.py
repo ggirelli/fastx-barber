@@ -121,7 +121,7 @@ def assert_FastqFlagExtractor_update(
     expected_name = f"{record[0]}{fe.flag_delim}{fe.flag_delim}{const.UT_FLAG_NAME}"
     expected_name += f"{fe.flag_delim}{flag_data[const.UT_FLAG_NAME][0]}"
     expected_name += f"{fe.flag_delim}{fe.flag_delim}q{const.UT_FLAG_NAME}"
-    expected_name += f"{fe.flag_delim}{flag_data['q'+const.UT_FLAG_NAME][0]}"
+    expected_name += f'{fe.flag_delim}{flag_data[f"q{const.UT_FLAG_NAME}"][0]}'
     updated_name, updated_seq, updated_qual = fe.update(record, flag_data)
     if expected_name != updated_name:
         raise AssertionError
@@ -167,7 +167,7 @@ def test_FastqFlagExtractor_noStatFlags():
         assert_FastqFlagExtractor_update(fe, record, flag_data)
         if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
             raise AssertionError
-        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+        if record[2][:8] != flag_data[f"q{const.UT_FLAG_NAME}"][0]:
             raise AssertionError
     if len(fe.flagstats.keys()) != 0:
         raise AssertionError
@@ -192,7 +192,7 @@ def test_FastqFlagExtractor():
         assert_FastqFlagExtractor_update(fe, record, flag_data)
         if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
             raise AssertionError
-        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+        if record[2][:8] != flag_data[f"q{const.UT_FLAG_NAME}"][0]:
             raise AssertionError
     if len(fe.flagstats.keys()) != 1:
         raise AssertionError
@@ -211,7 +211,7 @@ def test_FastqFlagExtractor_noSelectedFlags():
         assert_FastqFlagExtractor_update(fe, record, flag_data)
         if record[1][:8] != flag_data[const.UT_FLAG_NAME][0]:
             raise AssertionError
-        if record[2][:8] != flag_data["q" + const.UT_FLAG_NAME][0]:
+        if record[2][:8] != flag_data[f"q{const.UT_FLAG_NAME}"][0]:
             raise AssertionError
         if const.UT_FLAG_NAME in fe.extract_selected(record, match_result):
             raise AssertionError
