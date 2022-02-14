@@ -63,7 +63,7 @@ def test_get_fastx_parser():
         dpath,
         gzipped=True,
     )
-    for record in seqio.get_fastx_parser(zfqpath)[0]:
+    for _ in seqio.get_fastx_parser(zfqpath)[0]:
         pass
     shutil.rmtree(dpath)
 
