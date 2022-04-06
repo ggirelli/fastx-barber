@@ -237,7 +237,7 @@ class FastaFlagExtractor(ABCFlagExtractor):
         flag_data: Dict[str, FlagData] = {}
         for gid in range(len(match.groups())):
             flag = self.__extract_single_flag(match, gid)
-            flag_data.update([flag])
+            flag_data |= [flag]
         return flag_data
 
     @staticmethod
@@ -298,7 +298,7 @@ class FastqFlagExtractor(FastaFlagExtractor):
     ) -> Dict[str, FlagData]:
         for name, (_, start, end) in list(flag_data.items()):
             flag = (f"{QFLAG_START}{name}", (qual[slice(start, end)], start, end))
-            flag_data.update([flag])
+            flag_data |= [flag]
         return flag_data
 
     def update(
@@ -358,7 +358,7 @@ class FastxFlagReader(ABCFlagReader):
             if self._flag_delim not in flag:
                 continue
             name, value = flag.split(self._flag_delim)[:2]
-            flag_data.update([(name, (value, -1, -1))])
+            flag_data |= [(name, (value, -1, -1))]
         self._flagstats.update(flag_data)
         return flag_data
 
