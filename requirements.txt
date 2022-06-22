@@ -5,7 +5,7 @@ colorama==0.4.4; python_version >= "3.6" and python_full_version < "3.0.0" and s
 commonmark==0.9.1; python_version >= "3.6" and python_version < "4.0"
 iniconfig==1.1.1; python_version >= "3.6"
 joblib==1.0.1; python_version >= "3.6"
-numpy==1.22.2; python_version >= "3.7"
+numpy==1.22.0; python_version >= "3.7"
 packaging==20.9; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
 pandas==1.2.3; python_full_version >= "3.7.1"
 pluggy==0.13.1; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
