@@ -107,9 +107,7 @@ class FastqTrimmer(ABCTrimmer):
         record: SimpleFastqRecord, qscore_thr: int, bases_qscores: List[int]
     ) -> Tuple[SimpleFastqRecord, int]:
         trimmed_length = 0
-        while bases_qscores:
-            if bases_qscores[0] >= qscore_thr:
-                break
+        while bases_qscores and bases_qscores[0] < qscore_thr:
             record = (record[0], record[1][1:], record[2][1:])
             bases_qscores = bases_qscores[1:]
             trimmed_length += 1
@@ -120,9 +118,7 @@ class FastqTrimmer(ABCTrimmer):
         record: SimpleFastqRecord, qscore_thr: int, bases_qscores: List[int]
     ) -> Tuple[SimpleFastqRecord, int]:
         trimmed_length = 0
-        while bases_qscores:
-            if bases_qscores[-1] >= qscore_thr:
-                break
+        while bases_qscores and bases_qscores[-1] < qscore_thr:
             record = (record[0], record[1][:-1], record[2][:-1])
             bases_qscores = bases_qscores[:-1]
             trimmed_length += 1
@@ -159,6 +155,4 @@ def get_fastx_trimmer(fmt: FastxFormats) -> Type[ABCTrimmer]:
     """Retrieves appropriate trimmer class."""
     if FastxFormats.FASTA == fmt:
         return FastaTrimmer
-    if FastxFormats.FASTQ == fmt:
-        return FastqTrimmer
-    return ABCTrimmer
+    return FastqTrimmer if FastxFormats.FASTQ == fmt else ABCTrimmer

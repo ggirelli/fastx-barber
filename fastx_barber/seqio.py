@@ -200,9 +200,7 @@ def get_fastx_writer(fmt: FastxFormats) -> Type[SimpleFastxWriter]:
     """Retrieves appropriate simple writer class."""
     if FastxFormats.FASTA == fmt:
         return SimpleFastaWriter
-    if FastxFormats.FASTQ == fmt:
-        return SimpleFastqWriter
-    return SimpleFastxWriter
+    return SimpleFastqWriter if FastxFormats.FASTQ == fmt else SimpleFastxWriter
 
 
 class ABCSimpleSplitWriter(metaclass=ABCMeta):
