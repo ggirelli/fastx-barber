@@ -3,7 +3,7 @@ attrs==20.3.0; python_version >= "3.6" and python_full_version < "3.0.0" or pyth
 biopython==1.78; python_version >= "3.6"
 colorama==0.4.4; python_version >= "3.6" and python_full_version < "3.0.0" and sys_platform == "win32" and python_version < "4.0" or sys_platform == "win32" and python_version >= "3.6" and python_full_version >= "3.5.0" and python_version < "4.0"
 commonmark==0.9.1; python_version >= "3.6" and python_version < "4.0"
-iniconfig==1.1.1; python_version >= "3.6"
+iniconfig==2.0.0; python_version >= "3.6"
 joblib==1.0.1; python_version >= "3.6"
 numpy==1.23.3; python_version >= "3.7"
 packaging==20.9; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
